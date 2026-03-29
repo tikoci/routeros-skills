@@ -62,7 +62,6 @@ RouterOS CLI uses path-based navigation, not Unix command pipelines:
 - `[find ...]` is the query expression (like WHERE)
 - Strings use `""` (double quotes only)
 - Comments use `#`
-- Line continuation: `\` at end of line
 - Variables: `:local myVar "value"` and `$myVar`
 - No pipes, no redirection, no subshell
 

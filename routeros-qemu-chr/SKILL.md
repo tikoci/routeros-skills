@@ -19,7 +19,7 @@ Cloud Hosted Router (CHR) is MikroTik's x86_64 and aarch64 RouterOS image design
 
 **Standard x86 image has a proprietary boot partition** — it looks like an EFI System Partition in GPT but is NOT FAT. UEFI firmware (OVMF) cannot read it. Only SeaBIOS can boot it via MBR chain-load.
 
-The `fat-chr` repackaged image converts this to standard FAT16 with `EFI/BOOT/BOOTX64.EFI`, enabling UEFI boot. Required for Apple Virtualization.framework, optional everywhere else.
+The `fat-chr` repackaged image converts this to standard FAT16 with `EFI/BOOT/BOOTX64.EFI`, enabling UEFI boot. Required for Apple Virtualization.framework on X86 macOS, optional everywhere else.
 
 **Disk layout** (128 MiB, both architectures): Hybrid GPT+MBR, partition 1 = boot (~33 MiB), partition 2 = ext4 root (~94 MiB).
 

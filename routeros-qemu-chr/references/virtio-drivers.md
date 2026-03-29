@@ -48,8 +48,8 @@ The x86_64 kernel was designed for hypervisor use (Xen, Hyper-V, KVM support all
 
 Since 9p is x86-only and not mountable via RouterOS CLI:
 
-- **REST API file upload**: `PUT /rest/file` with multipart form data
+- **/tool/fetch**: RouterOS can pull files from an HTTP server on the host
+- **REST API file upload**: `PUT /rest/file` for small text files, **no binaries**
 - **SCP**: `scp -P <ssh-port> file.npk admin@127.0.0.1:/`
 - **SFTP**: Works via RouterOS SSH
 - **FTP**: RouterOS has built-in FTP server
-- **/tool/fetch**: RouterOS can pull files from an HTTP server on the host
