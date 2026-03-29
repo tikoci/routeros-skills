@@ -43,15 +43,15 @@ All features below are `/system/device-mode/update` properties. Every feature is
 | `socks` | mode default | - | - | yes | yes |
 | `email` | mode default | - | yes | yes | yes |
 | `container` | always off | - | - | - | yes* |
-| `zerotier` | always off | - | - | - | yes* |
+| `zerotier` | mode default | - | - | yes | yes |
 | `traffic-gen` | always off | - | - | - | - |
 | `partitions` | always off | - | - | - | - |
 | `routerboard` | always off | - | - | - | - |
 | `install-any-version` | always off | - | - | - | - |
 
-*ROSE mode enables `container` and `zerotier` by default; on all other modes they must be explicitly enabled.
+*ROSE mode enables `container` by default; on all other modes it must be explicitly enabled.
 
-"Always off" features require explicit `property=yes` regardless of mode. "Mode default" features are enabled/disabled by the mode choice.
+"Always off" features (per official docs: traffic-gen, container, partitions, routerboard, install-any-version) require explicit `property=yes` regardless of mode. "Mode default" features are enabled/disabled by the mode choice.
 
 ## Other Properties
 

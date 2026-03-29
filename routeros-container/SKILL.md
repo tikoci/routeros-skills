@@ -110,28 +110,54 @@ For containers that need to be on the same L2 network as physical interfaces (e.
 
 This gives the container direct L2 access to devices on ether5.
 
-## Environment Variables
+## Environment Variables and Mounts
 
-Environment variables are configured via `/container/envs`:
+There are two ways to attach env vars and mounts to a container (from 7.21+):
+
+### Inline (preferred for 7.21+)
+
+Set `env=` and `mount=` directly on `/container/add` — keeps the container self-contained:
 
 ```routeros
-# RouterOS 7.20+ syntax (CLI and REST API use the same property names)
-/container/envs/add key=MY_VAR list=MYAPP value="hello world"
-/container/envs/add key=DB_HOST list=MYAPP value=172.17.0.3
-
-# Pre-7.20: property was 'name=' instead of 'list='
-/container/envs/add key=MY_VAR name=MYAPP value="hello world"
+# Inline env vars and mount (7.21+)
+/container/add remote-image=pihole/pihole:latest interface=veth1 \
+  env="TZ=Europe/Riga,WEBPASSWORD=secret" \
+  mount="src=disk1/pihole,dst=/etc/pihole" \
+  root-dir=disk1/images/pihole logging=yes
 ```
 
-**Property name changes at 7.20:**
-| Context | Pre-7.20 | 7.20+ |
-|---|---|---|
-| Env list name field (`/container/envs`) | `name=` | `list=` |
-| Container env reference (`/container`) | `envlist=` | `envlists=` |
+This is also how `/app` YAML works under the hood — inline is the modern pattern and easier for automation (no separate linked objects to manage).
 
-CLI and REST API property names are **always the same** on a given RouterOS version — both reflect the underlying `/console/inspect` command tree. Any perceived CLI-vs-REST difference is syntax (CLI keyword parsing vs JSON keys), not different property names.
+### Named Lists (works across all versions)
 
-> **Note:** The property details above are confirmed against working code and 7.22 documentation (via rosetta MCP). The change point is 7.20 based on the commit history of `tools/container-manager.sh` (commit 4305181).
+Create env vars and mounts as separate objects, then reference by name:
+
+```routeros
+# Create named env list (7.20+ uses 'list=', pre-7.20 used 'name=')
+/container/envs/add list=MYAPP key=TZ value="Europe/Riga"
+/container/envs/add list=MYAPP key=WEBPASSWORD value="secret"
+
+# Create named mount
+/container/mounts/add name=appdata src=disk1/appdata dst=/data
+
+# Reference from container (7.20+ uses 'envlists=', pre-7.20 used 'envlist=')
+/container/add file=myimage.tar interface=veth1 \
+  envlists=MYAPP mountlists=appdata root-dir=disk1/myapp
+```
+
+**Best practice:** Always place container volumes on external disk (`disk1/`), never on internal flash storage.
+
+### Property Name History
+
+The naming of env/mount reference properties changed at version boundaries:
+
+| Version | Env list grouping (`/container/envs`) | Container env reference (`/container/add`) | Container mount reference |
+|---|---|---|---|
+| Pre-7.20 | `name=` | `envlist=` (singular) | *(not available)* |
+| 7.20 | `list=` | `envlists=` (plural) | *(not available)* |
+| 7.21+ | `list=` | `envlists=` + inline `env=` | `mountlists=` + inline `mount=` |
+
+> **Version note:** Property names above are confirmed against `/console/inspect` command tree data. `envlist` (singular) was removed at 7.20 and replaced by `envlists` (plural) — they are different properties, not aliases. Inline `env=` and `mount=` were added at 7.21.
 
 ## Container Image Formats
 
@@ -171,8 +197,9 @@ See the `tikoci-oci-image-building` skill for building compliant images without 
 ### CLI
 
 ```routeros
-# Create container
-/container/add file=myimage.tar interface=veth-myapp envlist=MYAPP \
+# Create container (7.21+ inline syntax)
+/container/add file=myimage.tar interface=veth-myapp \
+  env="MY_VAR=hello" mount="src=disk1/appdata,dst=/data" \
   root-dir=disk1/myapp logging=yes
 
 # Start
@@ -237,35 +264,33 @@ async function deleteContainer(id) {
 - **No `.stopped` field exists** — only check `.running`
 - **Delete while stopping = HTTP 400** — must poll `.running` until `"false"` before DELETE
 - **`file=` for local tar**, `remote-image=` for registry pull
-- **Container `envlists`** (with trailing `s`) references the env list name — note the plural
+- **Container `envlists=`** (plural, 7.20+) references the env list name — note the plural. Pre-7.20 used `envlist=` (singular). See env/mount version history above.
 
-## Container Properties
+## Container Properties (from 7.22)
+
+Selected properties from `/container/add`. This is **not exhaustive** — use `rosetta` MCP tools (`routeros_command_tree` at `/container/add`) for the full list on a specific version.
 
 | Property | Description |
 |---|---|
-| `tag` | Image tag / name |
 | `interface` | VETH interface |
-| `envlist` / `envlists` | Environment variable list name (see version notes above) |
+| `env` | Inline environment variables (7.21+). Comma-separated `KEY=value` pairs |
+| `envlists` | Named env list reference (7.20+). See env/mount section above |
+| `mount` | Inline volume mount (7.21+). `src=host/path,dst=/container/path` |
+| `mountlists` | Named mount list reference (7.21+). See env/mount section above |
 | `root-dir` | Storage location for container filesystem |
-| `mounts` | Volume mounts (`src=host/path,dst=/container/path`) |
+| `file` | Container tar file (local import) |
+| `remote-image` | Container image name (registry pull) |
 | `cmd` | Override container CMD |
 | `entrypoint` | Override container ENTRYPOINT |
 | `hostname` | Container hostname |
 | `dns` | DNS server for container |
 | `logging` | Enable container stdout/stderr to RouterOS log (`yes`/`no`) |
+| `start-on-boot` | Auto-start container on device boot (`yes`/`no`) |
 | `workdir` | Override working directory |
-
-## Volumes
-
-```routeros
-# Named mount
-/container/mounts/add name=appdata src=disk1/appdata dst=/data
-
-# Reference in container
-/container/add ... mounts=appdata
-```
-
-**Best practice:** Always place container volumes on external disk (`disk1/`), never on internal flash storage.
+| `name` | Container name (for `[find where name=...]`) |
+| `devices` | Pass through physical devices (7.20+) |
+| `cpu-list` | CPU core affinity |
+| `memory-high` | RAM usage limit in bytes |
 
 ## Architecture Mapping
 

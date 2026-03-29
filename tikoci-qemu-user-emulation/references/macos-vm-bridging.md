@@ -112,4 +112,4 @@ poweroff -f
 3. **Kernel/module version must match exactly** — get both from the same `linux-virt` APK (don't mix netboot kernel with APK modules)
 4. **Module files may be compressed** (`.ko.gz`) — busybox `insmod` cannot load compressed modules. Decompress at build time: `find modules/ -name '*.ko.gz' -exec gunzip {} \;`
 5. **Merged-usr in Alpine** — `/lib` → `/usr/lib` symlink breaks cpio overlay of `/lib/modules/`. Embed modules directly in the initramfs rootfs
-6. **`netinstall-cli` requires an IPv4 address** on the interface even though it does its own BOOTP/TFTP — use a link-local address like `169.254.100.100/16`
+6. **`netinstall-cli` requires an IPv4 address** on the interface even though it does its own BOOTP/TFTP — use a link-local address like `169.254.1.1/16`
