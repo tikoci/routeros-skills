@@ -146,7 +146,6 @@ await fetch(`${base}/console/inspect`, {
 
 ## Known Version Differences
 
-- **Pre-7.22**: Some property names use hyphens in REST that use underscores in CLI
 - **7.22+**: `/app` YAML schema support (machine-readable API documentation)
 - **7.18+**: `!empty` sentence type in API protocol (indicates zero results, vs `!done` which may have data)
 - **7.20.8+**: Minimum for reliable API protocol streaming
