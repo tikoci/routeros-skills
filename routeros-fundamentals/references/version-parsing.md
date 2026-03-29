@@ -109,11 +109,19 @@ function getDownloadUrl(version: string, file: string): string {
   return `https://${host}/routeros/${version}/${file}`;
 }
 
+// Package naming: {pkg}-{version}-{arch}.npk
+// EXCEPTION: x86 packages omit the architecture suffix:
+//   routeros-7.22.npk (not routeros-7.22-x86.npk)
+//   container-7.22.npk (not container-7.22-x86.npk)
+//   But the all_packages zip DOES use x86: all_packages-x86-7.22.zip
+//
 // Common files:
-// chr-{ver}.img.zip         — x86_64 CHR disk image
-// chr-{ver}-arm64.img.zip   — aarch64 CHR disk image
-// chr-{ver}.vdi.zip         — VirtualBox format (used by some CI)
-// all_packages-x86-{ver}.zip — extra packages bundle
+// routeros-{ver}-{arch}.npk     — system package (x86: routeros-{ver}.npk)
+// all_packages-{arch}-{ver}.zip — extra packages bundle
+// chr-{ver}.img.zip             — x86_64 CHR disk image
+// chr-{ver}-arm64.img.zip       — aarch64 CHR disk image
+// chr-{ver}.vdi.zip             — VirtualBox format (used by some CI)
+// netinstall-{ver}.tar.gz       — netinstall-cli binary (7.18+)
 ```
 
 **CI pattern:** Always try `download.mikrotik.com` first, then fall back to `cdn.mikrotik.com`.
