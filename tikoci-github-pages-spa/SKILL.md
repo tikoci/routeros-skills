@@ -11,9 +11,33 @@ GitHub REST/GraphQL API for dynamic data with no backend.
 ## Constraints
 
 - **No backend** — GitHub Pages is static file hosting. All logic runs in the browser.
-- **No build tools** — no webpack, Vite, npm scripts. Single `.html` files with inline JS.
+- **No build tools for client JS** — no webpack, Vite, or bundlers. Single `.html` files with inline JS. (Build scripts may use bun for data fetching and page generation at deploy time.)
 - **No web frameworks** — no React, Vue, Svelte. Vanilla JavaScript only.
 - **60 req/hr** — unauthenticated GitHub API rate limit shared across all pages on the same origin.
+
+## Two Shared Libraries — Same Patterns, Independent Projects
+
+Two tikoci projects implement these SPA patterns independently:
+
+| | **tikoci.github.io** (`shared.js`) | **restraml** (`restraml-shared.js`) |
+|---|---|---|
+| Scope | Portfolio site + tools | RouterOS schema tools |
+| Constants | `TIKOCI` (owner, pagesUrl) | `RESTRAML` (owner, repo, pagesUrl, apiContentsUrl) |
+| Version parsing | Not needed | `parseVersion()`, `compareVersions()`, `isPreRelease()`, `rebuildSelect()` |
+| Data fetching | `fetchGitHubContents()`, `fetchGitHubPagesFile()` | `fetchVersionList()` with localStorage cache |
+| Event utilities | Extracted: `debounce()`, `createCancelToken()` | Inline per-page |
+| Query params | Extracted: `readQueryParams()`, `writeQueryParams()` | Inline per-page |
+| Share | `initShareButton()` (new) + `initShareModal()` (legacy) | `initShareModal()` |
+| Nav | `SITE_TOOLS` + `initToolsDropdown()` | Not present |
+| Changelog | Not present | `initChangelogModal()`, `renderChangelogContent()` |
+| Init timing | `<script>` at body end (no DOMContentLoaded) | `DOMContentLoaded` in `initThemeSwitcher` |
+
+Both share identical: brand gradient system, theme switcher icons/logic, `escapeHtml()`,
+`initGitHubDropdown()`, and the companion CSS file (font stacks, code tightening, logo swap,
+page guide, share modal, utility classes).
+
+The patterns in this skill apply to **both** libraries. Code examples use generic names —
+each project may extract helpers differently or keep the logic inline.
 
 ## GitHub API Fetching with Rate-Limit Resilience
 
@@ -187,82 +211,119 @@ and checkboxes fire immediately because they represent a single discrete state c
 
 ## Shareable URLs with Query Parameters
 
-### Writing Query Params
+The core logic: read URL search params into a plain object, apply to controls; after
+interaction, write control state back to the URL. **`replaceState` not `pushState`** — every
+control change updates the URL, and `pushState` would fill browser history with junk.
+
+tikoci.github.io extracts these as `readQueryParams()` / `writeQueryParams()` helpers;
+restraml does the same logic inline per page. Either approach works.
+
+### Reading and Writing Query Params
 
 ```javascript
-function writeQueryParams() {
-    const params = new URLSearchParams();
-    if (textInput.value) params.set('q', textInput.value);
-    if (versionSelect.value) params.set('version', versionSelect.value);
-    if (extraCheckbox.checked) params.set('extra', 'true');
-    // Only include non-default values to keep URLs short
-    const qs = params.toString();
+// Read: URL search params → plain object
+function readQueryParams() {
+    const obj = {};
+    for (const [k, v] of new URLSearchParams(location.search)) {
+        obj[k] = v;
+    }
+    return obj;
+}
+
+// Write: object → URL. Falsy values omitted. Returns void.
+function writeQueryParams(params) {
+    const sp = new URLSearchParams();
+    for (const [k, v] of Object.entries(params)) {
+        if (v) sp.set(k, v);
+    }
+    const qs = sp.toString();
     const url = qs ? `${location.pathname}?${qs}` : location.pathname;
-    history.replaceState(null, '', url);  // replaceState — NOT pushState
-    return new URL(url, location.href).href;
+    history.replaceState({}, '', url);  // replaceState — NOT pushState
 }
 ```
 
-**`replaceState` not `pushState`**: Every keystroke or checkbox toggle updates the URL.
-Using `pushState` would fill the browser history with junk entries — back button becomes useless.
+### Applying Params to Controls
 
-### Reading Query Params (Timing is Critical)
+Query params populate controls, and control changes write params back:
+
+```javascript
+const params = readQueryParams();
+if (params.version) versionSelect.value = params.version;
+if (params.q) textInput.value = params.q;
+if (params.extra === 'true') extraCheckbox.checked = true;
+
+// After user interaction, update the URL:
+writeQueryParams({
+    version: versionSelect.value,
+    q: textInput.value,
+    extra: extraCheckbox.checked ? 'true' : '',
+});
+```
+
+### Timing is Critical — Read Params After Async Data
 
 ```javascript
 // WRONG: Reading params before async data loads
-readQueryParams();  // <select> has no options yet!
+const params = readQueryParams();
+versionSelect.value = params.version;  // ❌ <select> has no options yet!
 
-// RIGHT: Read params AFTER version list populates the <select>
+// RIGHT: Read params AFTER async data populates the <select>
 fetchVersionList().then(versions => {
-    populateSelect(versions);     // Now <select> has options
-    readQueryParams();             // Now we can set select.value
-    if (hasInitialParams()) {
-        doSearch();                // Trigger initial search from URL
-    }
+    populateSelect(versionSelect, versions);   // Now <select> has options
+    const params = readQueryParams();
+    if (params.version) versionSelect.value = params.version;
+    if (hasInitialParams(params)) doSearch();   // Trigger from deep link
 });
 ```
 
-**Why timing matters:** If the URL has `?version=7.22`, but the `<select>` hasn't been
-populated from the async API call yet, `select.value = '7.22'` silently fails. Always
-read params **after** async data loads.
+`fetchVersionList` and `populateSelect` are placeholders — restraml has these as real shared
+functions; tikoci.github.io uses `fetchGitHubContents()` and inline option creation. The
+pattern is identical: **populate controls from async data, then apply query params.**
 
-### Reading Params — Defensive Pattern
+**Why timing matters:** If the URL has `?version=7.22`, but the `<select>` hasn't been
+populated from the async API call yet, `select.value = '7.22'` silently fails.
+
+### Set select defensively (validate option exists)
 
 ```javascript
-function readQueryParams() {
-    const params = new URLSearchParams(location.search);
-
-    if (params.has('q')) textInput.value = params.get('q');
-
-    // Set select only if the value exists as an option
-    if (params.has('version')) {
-        const v = params.get('version');
-        if ([...versionSelect.options].some(o => o.value === v)) {
-            versionSelect.value = v;
-        }
-        // Silently ignore invalid values
+if (params.version) {
+    const v = params.version;
+    if ([...versionSelect.options].some(o => o.value === v)) {
+        versionSelect.value = v;
     }
-
-    // Boolean params: only set if explicitly 'true'
-    if (params.get('extra') === 'true') extraCheckbox.checked = true;
+    // Silently ignore invalid values — don't break on stale URLs
 }
 ```
 
-### Inline "Copied!" Share Button
+### Share Button Patterns
+
+**Inline share button** (tikoci.github.io `initShareButton()`):
 
 ```javascript
-shareBtn.addEventListener('click', async () => {
-    const url = writeQueryParams();
-    try {
-        await navigator.clipboard.writeText(url);
-        shareBtn.textContent = '✓ Copied!';
-        setTimeout(() => { shareBtn.textContent = 'Share'; }, 1800);
-    } catch {
-        // Fallback for non-HTTPS or denied permission
-        prompt('Copy this URL:', url);
-    }
+btn.addEventListener('click', () => {
+    writeQueryParams({ version: versionSelect.value, q: textInput.value });
+    navigator.clipboard.writeText(location.href).then(() => {
+        btn.textContent = '✓ Copied!';
+        setTimeout(() => { btn.textContent = 'Share'; }, 1800);
+    }).catch(() => { /* fallback */ });
 });
 ```
+
+**Share modal** (both projects use `initShareModal()`):
+
+```javascript
+initShareModal({
+    modalId: 'share-modal',
+    linkId: 'share-link',
+    closeId: 'share-close',
+    copyId: 'share-copy-btn',
+    urlId: 'share-url',
+    beforeShow: () => writeQueryParams({ version, q }),
+});
+```
+
+The modal approach uses a `<dialog>` with a URL input and copy button. The inline button
+approach is simpler — prefer it for new pages.
 
 ## Version Parsing
 
@@ -302,32 +363,103 @@ const key = `${version}/${subdir}`;
 ```
 Page Load
   │
-  ├─ Set random brand gradient (CSS custom property)
-  ├─ Load shared CSS + JS
+  ├─ <head>: Pico CSS, shared.css, page <style>
+  │    └─ shared.js runs immediately (IIFE at top):
+  │         ├─ Set random --brand-gradient (CSS custom property)
+  │         └─ Project constants defined
   │
-  ├─ DOMContentLoaded
+  ├─ <body> content renders
+  │
+  ├─ <script src="shared.js"> loaded at body end
+  ├─ Page init (inline <script> or DOMContentLoaded):
   │    ├─ initThemeSwitcher()
   │    ├─ Bind event listeners (input, change)
-  │    │
-  │    └─ fetchVersionList()  ──→  GitHub API (cached)
+  │    └─ fetchVersionList() / fetchData()  ──→  GitHub API (+ cache)
   │         │
-  │         ├─ populateSelects()
-  │         ├─ readQueryParams()  ← timing-critical: after selects populated
-  │         └─ if (hasParams) doSearch()  ← auto-trigger from deep link
+  │         ├─ populate controls (selects, etc.)
+  │         ├─ apply query params  ← timing-critical: after controls populated
+  │         └─ if (has params) doSearch()  ← auto-trigger from deep link
   │
   └─ User Interaction Loop
        │
-       ├─ Text input → debounce 400ms → doSearch()
-       ├─ Select change → immediate → doSearch()
-       ├─ Checkbox change → immediate → doSearch()
+       ├─ Text input → debounce ~400ms → handler()
+       ├─ Select change → immediate → handler()
+       ├─ Checkbox change → immediate → handler()
        │
-       └─ doSearch()
-            ├─ myId = ++requestId  (cancellation token)
-            ├─ fetch data (in-memory cache check first)
-            ├─ if (myId !== requestId) return  (stale check)
+       └─ handler()
+            ├─ id = cancel.next()               (cancellation token)
+            ├─ data = await fetch(...)           (cache check first)
+            ├─ if (id !== cancel.current) return (stale check)
             ├─ render results
-            └─ writeQueryParams()  (update URL)
+            └─ update URL query params           (replaceState)
 ```
+
+**Init timing:** tikoci.github.io uses `<script>` at body end (DOM already parsed, no
+`DOMContentLoaded` needed). restraml uses `DOMContentLoaded` inside `initThemeSwitcher()`.
+Both work — the key invariant is that DOM elements exist when JS references them.
+
+## Shared Helpers Available in Both Libraries
+
+### Brand Gradient System
+
+Both shared.js files pick a random MikroTik-inspired gradient and set `--brand-gradient`
+on `<html>` immediately (IIFE, no DOM needed). Same 10 color pairs, same gradient format.
+Used by `.brand-reverse` class for brand styling across hero sections and nav elements.
+
+### Lazy-Loaded GitHub Dropdown
+
+`initGitHubDropdown(listId)` — both libraries. Fetches repos with 3+ stars on first
+`<details>` open, avoiding unnecessary API hits on page load. Falls back to a static
+"All repositories" link.
+
+### HTML Escaping
+
+`escapeHtml(str)` — both libraries. Escapes `&`, `<`, `>` for safe `innerHTML` insertion.
+
+## tikoci.github.io-Specific Additions
+
+These helpers exist only in tikoci.github.io's `shared.js` (not restraml):
+
+- **`SITE_TOOLS` + `initToolsDropdown(listId)`** — central tools list array; populates nav
+  `<ul>` and auto-marks current page with `aria-current="page"`.
+- **`fetchGitHubContents(repo, path)`** — generic GitHub Contents API directory listing.
+- **`fetchGitHubPagesFile(repo, path)`** — fetch raw files from Pages (no rate limit).
+- **`debounce(fn, ms)`** / **`createCancelToken()`** — extracted event utilities.
+- **`readQueryParams()`** / **`writeQueryParams(params)`** — extracted URL helpers.
+- **`initShareButton(buttonId, beforeCopy, label)`** — inline share (no modal).
+
+## restraml-Specific Additions
+
+These helpers exist only in restraml's `restraml-shared.js` (not tikoci.github.io):
+
+- **`parseVersion()`** / **`compareVersions()`** / **`isPreRelease()`** — RouterOS version
+  parsing, comparison, and pre-release detection.
+- **`rebuildSelect(sel, versions, showAll)`** — rebuilds `<select>` options (Safari fix:
+  remove-and-readd instead of `option.hidden`).
+- **`fetchVersionList()`** — localStorage-cached version directory listing with stale
+  fallback on 403. Includes concurrent-call deduplication.
+- **`initChangelogModal()`** / **`renderChangelogContent()`** — MikroTik changelog viewer
+  dialog with search, font sizing, and diff-link generation.
+
+## Build-Time GitHub API Token Resolution
+
+For build scripts that fetch GitHub data at build time (not client-side), the token
+resolution order avoids hardcoded secrets:
+
+1. `GITHUB_TOKEN` environment variable — available in CI (GitHub Actions provides this)
+2. `gh auth token` — auto-detected if [GitHub CLI](https://cli.github.com/) is installed locally
+3. Anonymous — falls back to cached data on rate-limit failure (60 req/hr)
+
+```typescript
+function resolveGitHubToken(): string | null {
+    if (process.env.GITHUB_TOKEN) return process.env.GITHUB_TOKEN;
+    try {
+        return execSync('gh auth token', { encoding: 'utf8' }).trim();
+    } catch { return null; }
+}
+```
+
+This pattern ensures builds work everywhere without manual token setup.
 
 ## Common Mistakes
 

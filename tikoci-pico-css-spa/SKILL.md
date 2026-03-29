@@ -179,13 +179,23 @@ details.dropdown ul li { direction: ltr; }
 
 ### Font Override
 
+Pico defines emoji and system-font CSS variables. Mirror the **full fallback stack** so fonts
+degrade gracefully across platforms:
+
 ```css
 :root {
-    --pico-font-family-sans-serif: Manrope, system-ui, sans-serif;
-    --pico-font-family-monospace: "JetBrains Mono", monospace;
+    --pico-font-family-sans-serif: Manrope, system-ui, "Segoe UI", Roboto,
+        Oxygen, Ubuntu, Cantarell, Helvetica, Arial, "Helvetica Neue",
+        sans-serif, var(--pico-font-family-emoji);
+    --pico-font-family-monospace: "JetBrains Mono", ui-monospace, SFMono-Regular,
+        "SF Mono", Menlo, Consolas, "Liberation Mono", monospace,
+        var(--pico-font-family-emoji);
     --pico-font-family: "JetBrains Mono", var(--pico-font-family-sans-serif);
 }
 ```
+
+**`var(--pico-font-family-emoji)`** — Pico defines this variable with the platform emoji stack.
+Append it to your overrides so emoji render natively.
 
 ### Inline Code Line-Height Fix
 
@@ -362,11 +372,12 @@ zone widgets, problem panels). The fix requires a **specificity sandwich**:
         <small>Footer text</small>
     </footer>
 
-    <!-- Shared JS utilities -->
+    <!-- Shared JS utilities (at body end, or use DOMContentLoaded) -->
     <script src="shared.js"></script>
     <script>
         // Page-specific JS — inline, no build tools
         initThemeSwitcher();
+        // ... wire event listeners, fetch data, etc.
     </script>
 </body>
 </html>
@@ -418,6 +429,121 @@ In-page help using Pico's native `<details>`:
 </details>
 ```
 
+The `.behind-curtain` class provides styling for implementation/technical notes at the
+bottom of the guide — typically lighter/smaller text that reveals how the tool works.
+
+## Brand Gradient System
+
+Randomized MikroTik-inspired accent gradient, set once per page load via JS:
+
+```javascript
+// shared.js sets --brand-gradient on <html> immediately
+const GRADIENTS = [
+    'linear-gradient(135deg, #0066cc 0%, #00aaff 100%)',
+    'linear-gradient(135deg, #cc3300 0%, #ff6633 100%)',
+    // ... array of brand-safe gradients
+];
+document.documentElement.style.setProperty('--brand-gradient',
+    GRADIENTS[Math.floor(Math.random() * GRADIENTS.length)]);
+```
+
+Use with the `.brand-reverse` utility class. Two variants exist:
+
+```css
+/* Variant A: gradient text (tikoci.github.io hero sections) */
+.brand-reverse {
+    background: var(--brand-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* Variant B: white-on-gradient pill (restraml nav brand) */
+.brand-reverse {
+    display: inline-block;
+    background: var(--brand-gradient, linear-gradient(135deg, #3660B9, #5F2965));
+    color: #fff;
+    padding: 0.05em 0.4em;
+    border-radius: var(--pico-border-radius);
+    font-weight: 800;
+    letter-spacing: 0.06em;
+}
+```
+
+Pickone per project — both use the same `--brand-gradient` CSS custom property.
+
+## Nav Brand Link with Dark/Light Logo Swap
+
+Combine Pico nav with responsive logo images that swap for dark mode:
+
+```html
+<nav>
+    <ul>
+        <li>
+            <a href="/" class="nav-brand-link">
+                <img data-theme="light" src="logos/mikrotik-dark.svg" alt="MikroTik">
+                <img data-theme="dark" src="logos/mikrotik-light.svg" alt="MikroTik">
+                <span class="brand-text">TIKOCI</span>
+            </a>
+        </li>
+    </ul>
+    <!-- ... dropdown menus, theme switcher ... -->
+</nav>
+```
+
+On mobile, hide the logos and show a compact symbol via `@media` queries.
+
+## Category Badges with `<mark>`
+
+Pico styles `<mark>` as highlighted inline text. Use for category tags:
+
+```html
+<mark>containers</mark> <mark>dev-tools</mark>
+```
+
+Customize colors per category by overriding `--pico-mark-background-color` in scoped rules.
+
+## Project Card Grid
+
+```css
+.project-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1rem;
+}
+```
+
+Cards are `<article>` elements inside the grid — Pico handles all card styling.
+
+## Plausible Analytics Integration
+
+Include in `<head>` before any other scripts:
+
+```html
+<script async src="https://plausible.io/js/pa-ubWop5eYckoDPVbIjXU4_.js"></script>
+<script>window.plausible=window.plausible||function(){(plausible.q=plausible.q||[]).push(arguments)};
+plausible.init=plausible.init||function(i){plausible.o=i||{}};plausible.init()</script>
+```
+
+Track custom events: `plausible('Event Name', { props: { key: value } })`.
+The stub ensures calls don't throw if the script hasn't loaded or is blocked.
+
+## Switch Label Consistency
+
+When a `<nav>` has multiple `role="switch"` toggles, keep all labels consistent:
+
+```css
+#my-switches label {
+    font-size: 0.88rem;
+    font-style: italic;
+}
+#my-switches label code {
+    font-style: normal;  /* technical terms stay upright */
+}
+```
+
+This avoids per-label `<i>` tags — let CSS handle italic uniformly.
+
 ## Common Mistakes with Pico
 
 1. **Using `data-theme="auto"`** — forces light mode silently. Remove the attribute instead.
@@ -425,5 +551,8 @@ In-page help using Pico's native `<details>`:
 3. **Wrapping everything in `<div>`** — use `<article>`, `<section>`, `<nav>`, `<details>` instead.
 4. **Forgetting dark mode dual-rule** — need both `@media` and `[data-theme=dark]` selectors.
 5. **Not scoping third-party resets** — Pico bleeds into Monaco, diff2html, etc. Always scope resets.
-6. **Using `role="switch"` without `aria-checked`** — requires JS to toggle `aria-checked` attribute.
+6. **Using JS to toggle `role="switch"` appearance** — Pico v2 styles `role="switch"` via the
+   `:checked` CSS pseudo-class on `<input type="checkbox">`, so the visual toggle works without
+   JavaScript. You do NOT need JS to set `aria-checked`. Just use a standard checkbox with
+   `role="switch"` and Pico handles the rest.
 7. **Overriding with too-high specificity** — IDs break the library's own internal styles.
