@@ -78,7 +78,8 @@ function isPreRelease(version: string): boolean {
 ```
 
 Pre-release versions:
-- Are hosted on `cdn.mikrotik.com` (not `download.mikrotik.com`)
+- Use `download.mikrotik.com` as the primary source, same as stable releases
+- `cdn.mikrotik.com` is a backup mirror/cache and may lag slightly for very new releases
 - May have incomplete features or known bugs
 - Should be excluded from user-facing version lists by default (opt-in display)
 
@@ -103,9 +104,9 @@ The response is plain text — just the version string, no JSON.
 
 ```typescript
 function getDownloadUrl(version: string, file: string): string {
-  // Stable releases: download.mikrotik.com
-  // Pre-releases: cdn.mikrotik.com
-  const host = isPreRelease(version) ? "cdn.mikrotik.com" : "download.mikrotik.com";
+  // Use the primary MikroTik download host for all releases.
+  // Fall back to cdn.mikrotik.com only if the primary host is unavailable.
+  const host = "download.mikrotik.com";
   return `https://${host}/routeros/${version}/${file}`;
 }
 
@@ -125,7 +126,7 @@ function getDownloadUrl(version: string, file: string): string {
 ```
 
 **CI pattern:** Always try `download.mikrotik.com` first, then fall back to `cdn.mikrotik.com`.
-This handles edge cases where beta builds appear on download.mikrotik.com temporarily.
+Treat `cdn.mikrotik.com` as a backup mirror/cache rather than a version-specific host.
 
 ## Checking If a Version Is "Built"
 
