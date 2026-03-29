@@ -22,7 +22,7 @@ RouterOS runs a Linux kernel (5.6.3) but **everything above the kernel is MikroT
 **What DOES exist:**
 - RouterOS CLI — its own language, not shell. Accessed via SSH, serial, WinBox, or WebFig
 - REST API at `/rest/` (HTTP, port 80 by default) — the primary programmatic interface
-- RouterOS scripting language (`.rsc` files) — its own syntax, not bash
+- RouterOS scripting language (`.rsc` files) — its own syntax, not bash. See [Scripting reference](./references/scripting.md)
 - WebFig (web UI) on port 80
 - WinBox protocol on port 8291
 
@@ -32,6 +32,7 @@ RouterOS runs a Linux kernel (5.6.3) but **everything above the kernel is MikroT
 - Do NOT look for config files at `/etc/` — configuration is in the RouterOS database
 - Do NOT assume `ping` works the same — it's `/tool/ping` or `/ping` in CLI
 - Do NOT suggest installing packages via `apt` or `opkg` — upload `.npk` via SCP then `/system/reboot`
+- See [Extra packages reference](./references/extra-packages.md) for the full package list and installation pattern
 
 ## RouterOS CLI Syntax
 
@@ -181,4 +182,10 @@ CHR (Cloud Hosted Router) is available only for `x86` and `arm64`.
 ## Additional Resources
 
 - For REST API details and `/console/inspect` command tree: see [REST API reference](./references/rest-api-patterns.md)
+- For version parsing, comparison, and download URL logic: see [Version parsing reference](./references/version-parsing.md)
+- For extra packages (container, iot, zerotier, etc.): see [Extra packages reference](./references/extra-packages.md)
+- For RouterOS scripting language syntax: see [Scripting reference](./references/scripting.md)
 - For command tree browsing and property lookups: use the `rosetta` MCP server tools (`routeros_search`, `routeros_get_page`, `routeros_command_tree`)
+- For the /app YAML container format (7.22+): see the `routeros-app-yaml` skill
+- For /console/inspect tree traversal and schema generation: see the `routeros-command-tree` skill
+- For running CHR in QEMU (local or CI): see the `routeros-qemu-chr` skill

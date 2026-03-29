@@ -108,7 +108,7 @@ const auth = {
 
 ## /console/inspect — Command Tree Introspection
 
-RouterOS exposes its entire command tree via `/console/inspect`. This is how tools like `restraml` and `rosetta` build their command databases:
+RouterOS exposes its entire command tree via `/console/inspect`. This is how tools like `restraml` and `rosetta` build their command databases. For full details on tree traversal, node types, and schema generation, see the **`routeros-command-tree`** skill.
 
 ```typescript
 // List child paths under /ip
@@ -120,19 +120,29 @@ await fetch(`${base}/console/inspect`, {
     path: "ip",
   }),
 });
+// Returns: [{type: "child", name: "address", "node-type": "path"}, ...]
 
-// Get syntax for a specific command
+// Get syntax description for an argument
 await fetch(`${base}/console/inspect`, {
   method: "POST",
   ...auth,
   body: JSON.stringify({
     request: "syntax",
-    path: "ip.address.add",
+    path: "ip,address,add,address",   // comma-separated, NOT dot or slash
   }),
 });
+// Returns: [{type: "syntax", text: "IP address"}]
 ```
 
-**Inspect request types:** `child`, `syntax`, `highlight`, `completion`
+**Request types:** `child` (enumerate children), `syntax` (help text), `highlight` (syntax coloring), `completion` (tab-completion)
+
+**Path format:** Comma-separated segments — `"ip,address,add"` (not `"ip.address.add"` or `"/ip/address/add"`).
+
+**Node types:** `dir` (directory), `path` (navigable level), `cmd` (executable command), `arg` (parameter).
+
+**Dangerous paths to skip:** `where`, `do`, `else`, `rule`, `command`, `on-error` — these crash the REST server when inspected.
+
+**CLI→REST mapping:** `get`→GET, `add`→PUT (creates!), `set`→PATCH, `remove`→DELETE, others→POST.
 
 ## Known Version Differences
 

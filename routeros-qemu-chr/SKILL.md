@@ -303,4 +303,6 @@ Use unique host ports per instance when running multiple CHRs (9180, 9181, 9182.
 
 - [VirtIO driver matrix](./references/virtio-drivers.md) — full driver support table
 - [Known issues](./references/known-issues.md) — boot failures, cross-arch limitations
+- [GitHub Actions CI patterns](./references/github-actions-ci.md) — running CHR on GitHub-hosted runners
 - For RouterOS CLI/REST once booted: see the `routeros-fundamentals` skill
+- For /app YAML container format (requires CHR with container package): see the `routeros-app-yaml` skill
