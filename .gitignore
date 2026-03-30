@@ -1,0 +1,7 @@
+# Only publish routeros-* skills to GitHub
+/*
+!routeros-*/
+!README.md
+!LICENSE
+!.gitignore
+.DS_Store
