@@ -1,6 +1,7 @@
-# Only publish routeros-* skills to GitHub
+# Publish routeros-* and tikoci-* skills to GitHub
 /*
 !routeros-*/
+!tikoci-*/
 !README.md
 !LICENSE
 !.gitignore
