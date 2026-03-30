@@ -1,6 +1,6 @@
 ---
 name: routeros-fundamentals
-description: 'RouterOS domain knowledge for AI agents. Use when: working with MikroTik RouterOS, writing RouterOS CLI/script commands, calling RouterOS REST API, debugging why a Linux command fails on RouterOS, or when the user mentions MikroTik, RouterOS, CHR, or /ip /system /interface paths.'
+description: "RouterOS v7 domain knowledge for AI agents. Use when: working with MikroTik RouterOS, writing RouterOS CLI/script commands, calling RouterOS REST API, debugging why a Linux command fails on RouterOS, or when the user mentions MikroTik, RouterOS, CHR, or /ip /system /interface paths. Scope: RouterOS 7.x (long-term and newer) only — v6 is NOT covered and accuracy for v6 problems will be low."
 ---
 
 # RouterOS Fundamentals
