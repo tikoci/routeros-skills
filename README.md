@@ -1,6 +1,6 @@
 # MikroTik RouterOS "SkillStore" (`SKILL.md`) for AI assistants 
 
-Custom instruction skills for [GitHub Copilot](https://docs.github.com/en/copilot/customizing-copilot/adding-custom-instructions-for-github-copilot) that teach AI coding assistants about [MikroTik RouterOS](https://mikrotik.com/) v7.
+Custom instruction skills for [GitHub Copilot](https://docs.github.com/en/copilot/customizing-copilot/adding-custom-instructions-for-github-copilot) and Claude Code that teach AI coding assistants about [MikroTik RouterOS](https://mikrotik.com/) v7.
 
 ## Skills
 
