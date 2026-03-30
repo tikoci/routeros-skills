@@ -146,6 +146,6 @@ await fetch(`${base}/console/inspect`, {
 
 ## Known Version Differences
 
-- **7.22+**: `/app` YAML schema support (machine-readable API documentation)
+- **7.21+**: `/app` path exists (built-in app listing); `/app/add` with YAML creation from 7.22
 - **7.18+**: `!empty` sentence type in API protocol (indicates zero results, vs `!done` which may have data)
 - **7.20.8+**: Minimum for reliable API protocol streaming

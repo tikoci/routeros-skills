@@ -1,11 +1,11 @@
 ---
 name: routeros-app-yaml
-description: "RouterOS /app YAML format for container applications (7.22+). Use when: writing or validating RouterOS /app YAML files, working with MikroTik container apps, building docker-compose-like definitions for RouterOS, creating /app store schemas, debugging /app validation errors, or when the user mentions /app, tikapp, or RouterOS container YAML."
+description: "RouterOS /app YAML format for container applications (7.21+ builtin app, 7.22+ custom YAML creation). Use when: writing or validating RouterOS /app YAML files, working with MikroTik container apps, building docker-compose-like definitions for RouterOS, creating /app store schemas, debugging /app validation errors, or when the user mentions /app, tikapp, or RouterOS container YAML."
 ---
 
-# RouterOS /app YAML Format (7.22+)
+# RouterOS /app YAML Format (7.21+)
 
-RouterOS 7.22 introduced `/app` — a **docker-compose-like YAML format** for defining container applications on MikroTik routers. It is NOT docker-compose — RouterOS has significant differences.
+RouterOS 7.21 introduced the `/app` path (built-in app listing and management). The full YAML app creation feature (`/app/add`) appeared in **7.22** (first seen in 7.22beta5). Think of it as MikroTik's opinionated alternative to `docker-compose` — but it is NOT docker-compose, with significant differences.
 
 ## What /app Is
 

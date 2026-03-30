@@ -151,13 +151,13 @@ Create env vars and mounts as separate objects, then reference by name:
 
 The naming of env/mount reference properties changed at version boundaries:
 
-| Version | Env list grouping (`/container/envs`) | Container env reference (`/container/add`) | Container mount reference |
+| Version | Env list grouping (`/container/envs/add`) | Container env reference (`/container/add`) | Container mount reference |
 |---|---|---|---|
-| Pre-7.20 | `name=` | `envlist=` (singular) | *(not available)* |
-| 7.20 | `list=` | `envlists=` (plural) | *(not available)* |
+| Pre-7.20 | `key=`, `value=` only (no grouping property) | *(no env reference property)* | *(not available)* |
+| 7.20 | `list=` added | `envlists=` (plural) added | *(not available)* |
 | 7.21+ | `list=` | `envlists=` + inline `env=` | `mountlists=` + inline `mount=` |
 
-> **Version note:** Property names above are confirmed against `/console/inspect` command tree data. `envlist` (singular) was removed at 7.20 and replaced by `envlists` (plural) — they are different properties, not aliases. Inline `env=` and `mount=` were added at 7.21.
+> **Version note:** Property names for 7.20+ are confirmed against `/console/inspect` command tree data. Pre-7.20, `/container/envs/add` had only `key` and `value` with no grouping mechanism; `/container/add` had no env reference property. Inline `env=` and `mount=` were added at 7.21.
 
 ## Container Image Formats
 
@@ -308,9 +308,9 @@ const resource = await fetch(`${base}/system/resource`, auth).then(r => r.json()
 const arch = resource["architecture-name"]; // "arm64", "arm", "x86"
 ```
 
-## /app System (7.22+)
+## /app System (7.21+/7.22+)
 
-RouterOS 7.22 introduced `/app` — a docker-compose-like YAML system for defining container applications. See the `routeros-app-yaml` skill for the full YAML specification.
+RouterOS 7.21 introduced the `/app` path (built-in app listing). Full YAML app creation (`/app/add`) was added in 7.22. See the `routeros-app-yaml` skill for the full YAML specification.
 
 ```routeros
 # List available apps
