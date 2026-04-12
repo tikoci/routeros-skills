@@ -5,7 +5,23 @@ description: "Building OCI container images without Docker using crane and stand
 
 # OCI Image Building Without Docker
 
-## Why Build Without Docker
+## CRITICAL: When NOT to Use crane for Standard Docker Images
+
+**Do not use crane to build images for standard Docker/containerd runtimes.** After extensive debugging across multiple approaches, crane-based image construction (both single-layer and `crane append` + jq config modification) produces images that fail on Docker 28+ with containerd image store. The failure mode: `exec /entrypoint.sh: no such file or directory` for ALL binaries, even Debian's own `ls` and `cat`, despite `crane export` confirming all files exist in the image.
+
+**Root cause never fully diagnosed.** The overlay filesystem mount appears empty regardless of how the image is constructed without a real Docker build.
+
+**The anti-patterns that do NOT work:**
+1. `crane export base | tar xf` → add files → `tar cf layer.tar` → hand-craft `config.json` + `manifest.json` → `crane push`  
+   _Fails: empty overlay on Docker 28+ even though `crane export` confirms files exist_
+2. `crane append -b base -f additions.tar -o intermediate.tar` → extract → `jq` modify config → rename config by sha256 → `crane push`  
+   _Fails: same empty overlay symptom after push_
+
+**Use Dockerfile + `docker buildx` for anything destined for standard Docker/containerd runtimes.**
+
+---
+
+## Why Build Without Docker (RouterOS / Constrained Runtimes Only)
 
 Some environments lack Docker (e.g., RouterOS containers, minimal CI, macOS without Docker Desktop). `crane` (from go-containerregistry) can export and manipulate OCI images without requiring a container runtime.
 
@@ -69,7 +85,74 @@ shasum -a 256 layer.tar | cut -d' ' -f1
 
 A standard tar archive of the complete filesystem rootfs:
 ```sh
-tar cf layer.tar -C rootfs .
+# Entries have no prefix: bin, etc, entrypoint.sh
+(cd rootfs && tar cf - *) > layer.tar
+```
+
+**Important limitations:** Hand-crafted single-layer Docker v1 tars work with `crane push` for registry upload but DO NOT work with `docker load` or `docker pull` on Docker 28+ (containerd image store). Docker's overlay filesystem gets an empty mount — all exec calls fail with `no such file or directory`. The root cause is unclear (SHA-256 diff_ids appear correct, `crane export` shows files exist). **Use `crane append` for multi-layer images instead** — this is the recommended approach for non-RouterOS targets.
+
+**When to use single-layer:** Only for RouterOS `/container` which requires exactly one uncompressed layer. For standard Docker/containerd runtimes, use `crane append` (see below).
+
+## Building Multi-Layer Images with `crane append`
+
+For standard Docker/containerd runtimes, use `crane append` to add files on top of a base image. This preserves the base layers intact (Docker knows how to mount them) and avoids the single-layer diff_id issue.
+
+### Basic flow
+
+```sh
+# 1. Create a tar of JUST your additions (not the full rootfs)
+mkdir -p staging/app
+cp myapp staging/app/myapp
+cp entrypoint.sh staging/entrypoint.sh
+(cd staging && tar cf - entrypoint.sh app) > additions.tar
+
+# 2. Append to base image, output Docker v1 tar
+crane append -b debian:bookworm-slim --platform linux/amd64 \
+  -f additions.tar -t myimage:local -o intermediate.tar
+
+# 3. Modify config (Cmd, WorkingDir) — crane append inherits base config
+mkdir extract && tar xf intermediate.tar -C extract
+cfg=$(jq -r '.[0].Config' extract/manifest.json)
+jq '.config.Cmd=["/entrypoint.sh"] | .config.WorkingDir="/app"' \
+  "extract/$cfg" > extract/config.tmp
+new_hash=$(sha256sum extract/config.tmp | cut -d' ' -f1)
+new_cfg="sha256:$new_hash"
+mv extract/config.tmp "extract/$new_cfg"
+rm "extract/$cfg"
+jq --arg c "$new_cfg" '.[0].Config=$c' extract/manifest.json > extract/manifest.tmp
+mv extract/manifest.tmp extract/manifest.json
+tar cf final.tar -C extract .
+
+# 4. Push to registry
+crane push final.tar registry/myimage:tag
+```
+
+### Config modification
+
+`crane append` inherits the base image's config (e.g., `Cmd: ["bash"]` from debian). To change it:
+- Extract the Docker v1 tar
+- Modify config JSON with `jq`
+- Recompute config hash (file is named by sha256)
+- Rename file and update manifest.json reference
+
+`crane mutate` can modify config for **remote images** (already pushed to a registry) but **cannot** operate on local Docker v1 tarballs.
+
+### Multi-platform with crane append
+
+```sh
+# Build per-platform tars
+for plat in linux/amd64 linux/arm64; do
+  crane append -b debian:bookworm-slim --platform "$plat" \
+    -f "additions-${plat//\//-}.tar" -t myimage:local \
+    -o "image-${plat//\//-}.tar"
+  # ... modify config ...
+  crane push "image-${plat//\//-}.tar" "registry/myimage:tag-${plat//\//-}"
+done
+
+# Create multi-arch index
+crane index append -t registry/myimage:tag \
+  -m registry/myimage:tag-linux-amd64 \
+  -m registry/myimage:tag-linux-arm64
 ```
 
 ## Building an Alpine-Based Image
