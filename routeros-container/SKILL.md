@@ -133,7 +133,7 @@ This is also how `/app` YAML works under the hood — inline is the modern patte
 Create env vars and mounts as separate objects, then reference by name:
 
 ```routeros
-# Create named env list (7.20+ uses 'list=', pre-7.20 used 'name=')
+# Create named env list (7.20+ — the 'list=' property groups envs together)
 /container/envs/add list=MYAPP key=TZ value="Europe/Riga"
 /container/envs/add list=MYAPP key=WEBPASSWORD value="secret"
 
@@ -190,7 +190,7 @@ myimage.tar
 └── layer.tar        # Uncompressed tar of the full filesystem
 ```
 
-See the `tikoci-oci-image-building` skill for building compliant images without Docker.
+These constraints are the key difference from standard OCI images — most base images from public registries already meet requirement 1 and 2 via registry pull; local tar builds must satisfy all three.
 
 ## Container Lifecycle
 
@@ -335,7 +335,6 @@ Netinstall specifically requires L2 bridge access for BOOTP/TFTP, which is why t
 
 **Related skills:**
 - For netinstall and device-mode automation: see the `routeros-netinstall` skill
-- For building OCI images compatible with RouterOS: see the `tikoci-oci-image-building` skill
 - For the /app YAML format: see the `routeros-app-yaml` skill
 - For general RouterOS fundamentals (CLI, REST, scripting): see the `routeros-fundamentals` skill
 

@@ -294,6 +294,13 @@ Use unique host ports per instance when running multiple CHRs (9180, 9181, 9182.
 
 ## Known Limitations
 
+- **QGA (Guest Agent) requires KVM** — RouterOS CHR's QGA daemon only starts when it
+  detects a KVM hypervisor via CPUID. Under HVF (macOS) or TCG (software emulation),
+  CPUID 0x40000000 returns no KVM vendor string and 0x40000001 returns no KVM features,
+  so the daemon never starts. QEMU correctly provides the virtio-serial port and sends
+  PORT_OPEN (event 6) — the guest simply never opens it (`query-chardev` shows
+  `frontend-open=false`). This is NOT a QEMU bug. MikroTik documents QGA exclusively
+  under the "KVM" section. QGA testing requires Linux + KVM (e.g., mikropkl lab).
 - **`check-installation` fails on aarch64** in all QEMU environments — this is an unresolvable firmware/DTB issue (see [known issues](./references/known-issues.md))
 - **Direct `-kernel` boot does not work** for either architecture — RouterOS needs its full firmware boot path
 - **Cross-arch TCG: x86_64 on aarch64 host is not viable** — x86 I/O port emulation is too slow (~300s+ timeouts). The reverse (aarch64 on x86_64) works fine (~20s)

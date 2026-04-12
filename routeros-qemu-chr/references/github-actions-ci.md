@@ -41,15 +41,14 @@ Always try `download.mikrotik.com` first, fall back to `cdn.mikrotik.com`:
 - name: Download CHR image
   run: |
     ROSVER="${{ inputs.rosver }}"
-    # Primary: download.mikrotik.com (stable releases)
-    # Fallback: cdn.mikrotik.com (beta/rc releases)
+    # download.mikrotik.com serves all versions (stable + beta/rc).
+    # cdn.mikrotik.com is a fallback mirror — try if primary is unavailable.
     wget -q "https://download.mikrotik.com/routeros/${ROSVER}/chr-${ROSVER}.vdi.zip" \
       || wget -q "https://cdn.mikrotik.com/routeros/${ROSVER}/chr-${ROSVER}.vdi.zip"
     unzip -o "chr-${ROSVER}.vdi.zip"
 ```
 
-**Do not change this order.** Stable versions (e.g., `7.22`) are only on `download.mikrotik.com`.
-Beta/RC versions (e.g., `7.23beta2`) are on `cdn.mikrotik.com`.
+**Do not change this order.** `download.mikrotik.com` is authoritative for all versions. `cdn.mikrotik.com` is a fallback mirror and may lag on new releases.
 
 ## Disk Conversion
 
