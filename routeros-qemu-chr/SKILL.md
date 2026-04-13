@@ -7,7 +7,7 @@ description: 'MikroTik RouterOS CHR (Cloud Hosted Router) with QEMU. Use when: r
 
 ## What Is CHR
 
-Cloud Hosted Router (CHR) is MikroTik's x86_64 and aarch64 RouterOS image designed for virtual machines. Free license allows unlimited use with 1 Mbps speed limit — sufficient for development, testing, and API work. Full-speed paid licenses also exist.
+Cloud Hosted Router (CHR) is MikroTik's x86_64 and aarch64 RouterOS image designed for virtual machines. Free license allows unlimited use with 1 Mbps speed limit — sufficient for development, testing, API work, and packet sniffer debugging. A free 60-day trial removes the speed limit entirely (requires a free mikrotik.com account). See [CHR licensing reference](./references/chr-licensing.md) for full details on license tiers, trial activation, and expiry behavior.
 
 ## Image Variants
 
@@ -311,5 +311,7 @@ Use unique host ports per instance when running multiple CHRs (9180, 9181, 9182.
 - [VirtIO driver matrix](./references/virtio-drivers.md) — full driver support table
 - [Known issues](./references/known-issues.md) — boot failures, cross-arch limitations
 - [GitHub Actions CI patterns](./references/github-actions-ci.md) — running CHR on GitHub-hosted runners
+- [CHR licensing](./references/chr-licensing.md) — free tier (1 Mbps), 60-day trial, paid tiers, expiry behavior
 - For RouterOS CLI/REST once booted: see the `routeros-fundamentals` skill
+- For packet capture and TZSP streaming from CHR: see the `routeros-sniffer` skill
 - For /app YAML container format (requires CHR with container package): see the `routeros-app-yaml` skill

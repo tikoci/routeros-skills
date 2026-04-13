@@ -161,6 +161,7 @@ CHR (Cloud Hosted Router) is available only for `x86` and `arm64`.
 - For the /app YAML container format (7.22+): see the `routeros-app-yaml` skill
 - For /console/inspect tree traversal and schema generation: see the `routeros-command-tree` skill
 - For running CHR in QEMU (local or CI): see the `routeros-qemu-chr` skill
+- For packet capture, /tool/sniffer, and TZSP streaming: see the `routeros-sniffer` skill
 
 **MCP tools:**
 - For command tree browsing and property lookups: use the `rosetta` MCP server tools (`routeros_search`, `routeros_get_page`, `routeros_command_tree`)
