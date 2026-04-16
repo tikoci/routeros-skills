@@ -12,6 +12,8 @@ Custom instruction skills for [GitHub Copilot](https://docs.github.com/en/copilo
 | **routeros-command-tree** | `/console/inspect` API — command tree introspection, schema generation, CLI-to-REST mapping. |
 | **routeros-qemu-chr** | MikroTik CHR (Cloud Hosted Router) with QEMU — boot, VirtIO, acceleration, CI/CD patterns. |
 | **routeros-netinstall** | `netinstall-cli` for automated RouterOS device flashing — etherboot, BOOTP/TFTP, modescript. |
+| **routeros-mndp** | MNDP (MikroTik Neighbor Discovery Protocol) — wire format, TLV parsing, `/ip/neighbor`. |
+| **routeros-sniffer** | RouterOS packet capture — `/tool/sniffer`, TZSP streaming, firewall mangle mirroring. |
 
 ## Install
 

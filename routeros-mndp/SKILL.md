@@ -249,7 +249,6 @@ function parseMndpResponse(buf: Buffer): Record<string, string | number> {
 
 | Language | Source | Notes |
 |----------|--------|-------|
-| TypeScript/Bun | `mcp-monorepo/mcp-mikrotik` | Full implementation with multi-interface, SO_REUSEPORT, IPv6 |
 | Go | github.com/middelink/mikrotik-fwupdate | Used as protocol ground truth during original research |
 | Elixir | hex.pm mndp package | Confirms TLV type IDs |
 | C | Various open-source MNDP clients | Direct setsockopt for REUSEPORT |
