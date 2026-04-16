@@ -31,7 +31,7 @@ RouterOS runs a Linux kernel (5.6.3) but **everything above the kernel is MikroT
 - Do NOT suggest `mount`, `fdisk`, `mkfs` — use `/disk` commands instead
 - Do NOT look for config files at `/etc/` — configuration is in the RouterOS database
 - Do NOT assume `ping` works the same — it's `/tool/ping` or `/ping` in CLI
-- Do NOT suggest installing packages via `apt` or `opkg` — upload `.npk` via SCP then `/system/reboot`
+- Do NOT suggest installing packages via `apt` or `opkg` — upload `.npk` via SCP then `/system/package/apply-changes` (7.18+) or `/system/reboot` (<7.18)
 - See [Extra packages reference](./references/extra-packages.md) for the full package list and installation pattern
 
 ## RouterOS CLI Syntax
@@ -154,6 +154,10 @@ CHR (Cloud Hosted Router) is available only for `x86` and `arm64`.
 - For extra packages (container, iot, zerotier, etc.): see [Extra packages reference](./references/extra-packages.md)
 - For device-mode (modes, feature matrix, physical confirmation): see [Device-mode reference](./references/device-mode.md)
 - For RouterOS scripting language syntax: see [Scripting reference](./references/scripting.md)
+- For user management, SSH keys, admin account: see [Users REST reference](./references/routeros-users-rest.md)
+- For IP addressing, routing, DHCP, DNS, interfaces: see [Networking REST reference](./references/routeros-networking-rest.md)
+- For firewall filter/NAT/mangle and rule ordering: see [Firewall REST reference](./references/routeros-firewall-rest.md)
+- For Bun runtime bugs affecting HTTP (req.destroy, pool, secrets): see [Bun runtime gotchas](./references/bun-runtime-gotchas.md)
 
 **Related skills:**
 - For the /container subsystem (VETH, device-mode, lifecycle): see the `routeros-container` skill

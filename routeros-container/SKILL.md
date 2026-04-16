@@ -41,22 +41,24 @@ For the full feature matrix, modes, update properties, and physical confirmation
 /system/package/print where name=container
 ```
 
-**Method 1: Upload .npk file + reboot** (offline)
+**Method 1: Upload .npk file + apply-changes** (offline)
 ```sh
 # Upload via SCP (or Winbox drag-and-drop, or WebFig file upload)
 scp container-7.22-arm64.npk admin@router:/
 ```
 ```routeros
-# Then reboot to activate
-/system/reboot
+# Apply changes (triggers reboot AND activates — /system/reboot does NOT work!)
+/system/package/apply-changes
 ```
+
+⚠️ **Critical: `/system/package/apply-changes` was added in RouterOS 7.18.** On 7.18+, always use it — a plain `/system/reboot` discards uploaded packages. On versions <7.18, `/system/reboot` IS the correct (and only) method. (Lab-verified: 7.22.1 uses apply-changes, 7.10 requires reboot. Version check via rosetta command tree.)
 
 **Method 2: Online package update** (requires internet)
 ```routeros
 /system/package/update check-for-updates
 /system/package/update install
 ```
-This downloads and installs all available updates including extra packages. To enable a specific package already uploaded but not active, use `/system/package/enable container` then `/system/reboot`.
+This downloads and installs all available updates including extra packages. To enable a specific package already uploaded but not active, use `/system/package/enable container` then `/system/package/apply-changes`.
 
 ## Networking Setup
 
