@@ -14,7 +14,6 @@ Custom instruction skills for [GitHub Copilot](https://docs.github.com/en/copilo
 | **routeros-netinstall** | `netinstall-cli` for automated RouterOS device flashing — etherboot, BOOTP/TFTP, modescript. |
 | **routeros-mndp** | MNDP (MikroTik Neighbor Discovery Protocol) — wire format, `/ip/neighbor`, WinBox discovery. |
 | **routeros-sniffer** | RouterOS packet capture and TZSP streaming — `/tool/sniffer`, firewall sniff-tzsp, Wireshark integration. |
-| **routeros-crossref** | Cross-project knowledge map — which tikoci project owns which RouterOS domain, critical cross-cutting gotchas. |
 
 ## Install
 
