@@ -8,8 +8,23 @@ runs directly in QEMU on the `ubuntu-latest` runner — no Docker-in-Docker need
 
 ## Runner Prerequisites
 
-GitHub-hosted `ubuntu-latest` runners have **KVM available** via `/dev/kvm`. This is critical
-for performance — without KVM, CHR boots in TCG (software emulation) which is 5-10x slower.
+**x86 `ubuntu-latest` runners** have KVM available via `/dev/kvm`. GitHub migrated all Linux
+runners to a KVM-capable VM SKU when it doubled public-repo runners to 4-core in January 2024,
+and confirmed nested virtualization support across all Linux runners (public and private) by
+April 2024.
+
+> **Caution:** GitHub officially describes nested virtualization as "technically possible…
+> not officially supported… experimental." It works reliably in practice but is not covered
+> by GitHub's SLA. Always use the conditional fallback pattern in the QEMU Launch section
+> so builds degrade gracefully to TCG rather than hard-fail if KVM is unavailable.
+
+**ARM64 runners** (`ubuntu-24.04-arm`): use partner images (likely AWS Graviton). KVM
+availability is **not confirmed** for these runners. Assume TCG only; always use the
+conditional fallback.
+
+**Performance without KVM:** x86 CHR boots in TCG software emulation at roughly 5–6× slower
+than KVM (measured: ~5 s with KVM vs ~30 s with TCG to first login prompt). Full boot to a
+responsive REST API takes 1–3 minutes with KVM on x86; plan for longer without it.
 
 ### Installing QEMU
 
@@ -32,6 +47,16 @@ binary name, not the package name). Also install `qemu-utils` for `qemu-img`.
     sudo udevadm control --reload-rules
     sudo udevadm trigger --name-match=kvm
 ```
+
+**What this step does:** `/dev/kvm` already exists on x86 `ubuntu-latest` runners, but its
+default permissions restrict it to the `kvm` group. The udev rule changes the mode to `0666`
+(world-writable) so the runner user can open it without a `sudo`/re-login dance. Without this
+step, `/dev/kvm` exists but QEMU will fail immediately with "permission denied" when
+`-enable-kvm` is specified — it does **not** silently fall back to TCG.
+
+**This step is a no-op on ARM64 runners** where `/dev/kvm` likely doesn't exist — the udev
+trigger completes without creating the device, so it's safe to include unconditionally. The
+real guard is in the QEMU launch (see below).
 
 ## CHR Image Download Pattern
 
@@ -64,13 +89,24 @@ Convert VDI to QCOW2 (native QEMU format, supports snapshots):
 ```yaml
 - name: Start CHR
   run: |
-    nohup sh -c "exec qemu-system-x86_64 \
+    # Detect KVM — check *writability*, not just existence.
+    # /dev/kvm exists on x86 runners but is restricted until the "Enable KVM" udev step runs.
+    # On ARM64 runners /dev/kvm likely doesn't exist at all.
+    # QEMU does NOT fall back to TCG on -enable-kvm failure; it hard-errors immediately.
+    KVM_OPTS=""
+    if [ -w /dev/kvm ]; then
+      KVM_OPTS="-enable-kvm -cpu host"
+      echo "KVM available — using hardware acceleration."
+    else
+      echo "::warning::KVM not writable — QEMU will run in TCG software emulation (slower)."
+    fi
+    nohup qemu-system-x86_64 \
       -M q35 -m 256 -smp 1 \
-      -enable-kvm \
+      ${KVM_OPTS} \
       -drive file=chr.qcow2,format=qcow2,if=virtio \
       -netdev user,id=net0,hostfwd=tcp::9180-:80,hostfwd=tcp::9122-:22 \
       -device virtio-net-pci,netdev=net0 \
-      -display none -serial none" \
+      -display none -serial none \
       > /tmp/qemu.log 2>&1 &
     echo $! > /tmp/qemu.pid
 ```
@@ -199,11 +235,15 @@ conflicts. The `git checkout -- .` / `git clean -fd` are required because `bun i
 
 ## Debugging CI Failures
 
-1. **Boot timeout**: Check `/tmp/qemu.log` artifact for QEMU errors (KVM unavailable, corrupt image)
-2. **Empty `rosver`**: Check `bun rest2raml.js --version` output parsing (the `xargs` step)
-3. **Push rejection after 5 retries**: Too many concurrent builds — increase retry count or add jitter
-4. **Download fails**: Check both `download.mikrotik.com` and `cdn.mikrotik.com` for the version
-5. **SCP fails**: Ensure sshpass is installed and SSH port forwarding (9122→22) is correct
+1. **Boot timeout**: Check `/tmp/qemu.log` artifact for QEMU errors
+2. **`Permission denied` opening `/dev/kvm`**: The "Enable KVM" udev step ran after QEMU
+   launched, or was skipped. Ensure it runs before the QEMU step.
+3. **No KVM acceleration warning in logs**: KVM is available but `[ -w /dev/kvm ]` fails —
+   the Enable KVM step may have been skipped or the udev rule didn't take effect.
+4. **Empty `rosver`**: Check `bun rest2raml.js --version` output parsing (the `xargs` step)
+5. **Push rejection after 5 retries**: Too many concurrent builds — increase retry count or add jitter
+6. **Download fails**: Check both `download.mikrotik.com` and `cdn.mikrotik.com` for the version
+7. **SCP fails**: Ensure sshpass is installed and SSH port forwarding (9122→22) is correct
 
 ## Daily Auto-Detection Workflow
 
