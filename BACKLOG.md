@@ -345,9 +345,14 @@ interactions worth grounding.
 
 ### `routeros-netinstall`
 
-- Mode script (`-sm`) examples — the skill mentions it but doesn't show a
-  ready-to-copy mode script. Add one for the common case (enable container
-  device-mode + set timezone).
+- Keep the skill disciplined around **pure `netinstall-cli` behavior** and only
+  mention `tikoci/netinstall` as a wrapper/reference, not as the feature model.
+- Track unresolved behavior in `tikoci/netinstall/BACKLOG.md` instead of
+  guessing in the skill — especially the exact interaction matrix for `-r`,
+  `-e`, no flag, and `-s`.
+- Add more visible grounding where a version boundary matters, especially for
+  `-sm` requiring RouterOS + netinstall 7.22+ and for configure-script reset
+  persistence.
 
 ### `routeros-command-tree`
 
