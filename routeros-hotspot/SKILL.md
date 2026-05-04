@@ -190,7 +190,7 @@ The external provider authenticates the user and redirects back to the `$(link-l
 
 **Related skills:**
 - `routeros-fundamentals` — RouterOS CLI syntax, REST API, scripting basics
-- `routeros-certificates` (planned) — certificate download, import, and chain verification
+- `routeros-certificates` (in backlog) — for the full certificate chain handling pattern
 
 **MCP tools:**
 - `rosetta` MCP server — `/tool/ping`, `/ip/hotspot` command tree inspection (`routeros_search`, `routeros_get_page`)
