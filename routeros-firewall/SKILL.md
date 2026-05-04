@@ -133,6 +133,7 @@ L7 alternation: `(a|b|c)` is correct. `(a)|(b)|(c)` has POSIX ERE operator prece
 | `remove [find dynamic=no]` in scripts | Tag-based: `remove [find comment~"prefix-"]` only |
 | Forgetting `place-before=` on accept rules | Default appends — accept rules below drops never fire |
 | `connection-state=new,established` | Valid states: `new`, `established`, `related`, `invalid`, `untracked` |
+| `action=log` or `passthrough=yes` stops evaluation | Non-terminal actions continue to next rule — a `drop` below still fires |
 | Combining fasttrack + mangle routing marks | fasttrack bypasses mangle — pick one or the other |
 | `(a)|(b)|(c)` alternation in L7 regexp | Use `(a|b|c)` — grouped form inside one set of parentheses |
 | One firewall rule per interface | Use `in-interface-list=` with a named interface list |
