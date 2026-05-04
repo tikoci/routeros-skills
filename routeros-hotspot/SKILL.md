@@ -16,7 +16,7 @@ Hotspot traffic intercept runs **before** the regular firewall input/forward cha
 
 - `/ip/hotspot` binds to a bridge or interface — all traffic on that interface enters the hotspot chain first
 - Firewall rules blocking TCP 80/443 from the hotspot interface do **NOT** block the captive portal login page — hotspot handles it before the firewall sees it
-- The firewall placeholder `action=passthrough chain=unused-hs-chain` must exist — RouterOS uses it as an anchor point for hotspot rules
+- RouterOS automatically injects dynamic firewall rules (`hs-unauth`, `hs-auth` chains) — do not manually create, remove, or interfere with these hotspot-managed rules
 
 **Common mistake:** Adding a DROP rule for port 443 from bridge-hotspot to "fix a security gap" — this breaks the HTTPS login page silently.
 
@@ -30,14 +30,14 @@ Hotspot traffic intercept runs **before** the regular firewall input/forward cha
   mac-auth-mode=mac-as-username-and-password \
   dns-name=login.example.com \
   ssl-certificate=login.example.com.crt_0 \
-  nas-port-type=ethernet \
+  nas-port-type=ethernet \   # use wireless-ieee-802-11-g for wireless hotspots
   use-radius=yes \
   radius-accounting=yes \
   html-directory-override=hotspot-files
 ```
 
 Key properties:
-- `ssl-certificate=` — RouterOS appends `_0` on certificate import; reference the imported name, not the filename
+- `ssl-certificate=` — reference the name after import (RouterOS appends `_0` to imported certificate names)
 - `html-directory-override=` — must match the exact folder name on the router's filesystem
 - `login-by=https` — serves the login page over HTTPS; requires `www-ssl` service enabled with the same certificate
 - `use-radius=yes` — when set, **local `/ip/hotspot/user` entries are bypassed**; adding them has no effect
@@ -107,9 +107,8 @@ Use a consistent `comment=` tag for idempotent add/remove. Without it, repeated 
 # Remove only our entries, not manually-added ones
 /ip/hotspot/walled-garden/ip/remove [find comment="my-wg"]
 
-/ip/hotspot/walled-garden/ip
-add dst-host=example.com   action=accept comment="my-wg"
-add dst-host=*.example.com action=accept comment="my-wg"
+/ip/hotspot/walled-garden/ip/add dst-host=example.com   action=accept comment="my-wg"
+/ip/hotspot/walled-garden/ip/add dst-host=*.example.com action=accept comment="my-wg"
 ```
 
 **IP vs HTTP walled garden:**
@@ -124,7 +123,12 @@ The hotspot profile references `ssl-certificate=name.crt_0` (RouterOS appends `_
 /ip/service/set www-ssl disabled=no certificate=login.example.com.crt_0 tls-version=only-1.2
 ```
 
-For the full certificate download → import pattern, see the `routeros-certificates` skill (planned).
+Quick import pattern:
+```routeros
+/certificate import file-name=login.example.com.crt passphrase=""
+/certificate import file-name=login.example.com.key passphrase=""
+# After import, the certificate appears as login.example.com.crt_0
+```
 
 ## External Captive Portal — HTML Template Variables
 
@@ -133,6 +137,7 @@ RouterOS substitutes `$(variable)` server-side in all HTML files from `html-dire
 | Variable | Description |
 |---|---|
 | `$(link-login-only)` | RouterOS login URL (without redirect) — pass to external auth |
+| `$(link-login)` | Full login URL with `?dst=` redirect appended — use `$(link-login-only)` for external auth to avoid double-encoding the redirect |
 | `$(link-orig)` | Original URL the client requested |
 | `$(server-name)` | Hotspot instance name |
 | `$(mac)` | Client MAC address |
@@ -180,6 +185,19 @@ The external provider authenticates the user and redirects back to the `$(link-l
 | Wildcard HTTPS domains in `/ip/hotspot/walled-garden` | Use `/ip/hotspot/walled-garden/ip` for HTTPS (layer 3 match) |
 | Hotspot on dual-stack network with IPv6 | Hotspot is IPv4-only — IPv6 not supported |
 | `$(link-login)` treated as JavaScript variable | It is RouterOS server-side substitution, not JS |
+
+## Additional Resources
+
+**Related skills:**
+- `routeros-fundamentals` — RouterOS CLI syntax, REST API, scripting basics
+- `routeros-certificates` (planned) — certificate download, import, and chain verification
+
+**MCP tools:**
+- `rosetta` MCP server — `/tool/ping`, `/ip/hotspot` command tree inspection (`routeros_search`, `routeros_get_page`)
+
+**MikroTik docs:**
+- [HotSpot](https://help.mikrotik.com/docs/display/ROS/HotSpot) — official reference
+- [DHCP Server](https://help.mikrotik.com/docs/display/ROS/DHCP) — option 114 configuration
 
 ## RADIUS Integration
 
