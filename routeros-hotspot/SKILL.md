@@ -132,18 +132,49 @@ Quick import pattern:
 
 ## External Captive Portal — HTML Template Variables
 
-RouterOS substitutes `$(variable)` server-side in all HTML files from `html-directory-override` before serving them. These are **not** JavaScript variables — they are filled before the browser receives the page.
+RouterOS substitutes `$(variable)` server-side in any file under `html-directory-override` before serving it. These are **not** JavaScript variables — they are filled before the browser receives the page.
+
+**Servlet pages RouterOS serves** (drop your own to override):
+`login.html`, `flogin.html` (failed-login), `alogin.html` (post-success), `status.html`, `logout.html`, `error.html`, `redirect.html`, `rlogin.html`, `rstatus.html`, `fstatus.html`, `flogout.html`, `radvert.html`, `md5.js`, `errors.txt`. Most external-CP setups only need `login.html` + `alogin.html` + `status.html`.
+
+**Most-used variables for external CP:**
 
 | Variable | Description |
 |---|---|
-| `$(link-login-only)` | RouterOS login URL (without redirect) — pass to external auth |
-| `$(link-login)` | Full login URL with `?dst=` redirect appended — use `$(link-login-only)` for external auth to avoid double-encoding the redirect |
-| `$(link-orig)` | Original URL the client requested |
+| `$(link-login-only)` | Login POST endpoint **without** `?dst=` — preferred for external auth (avoids double-encoding) |
+| `$(link-login)` | Login URL **with** `?dst=` redirect appended |
+| `$(link-orig)` / `$(link-orig-esc)` | Original URL the client requested. **Use `-esc` when interpolating into another URL** |
 | `$(server-name)` | Hotspot instance name |
-| `$(mac)` | Client MAC address |
-| `$(ip)` | Client IP address |
-| `$(error-orig)` | Error message from previous auth attempt |
+| `$(mac)` / `$(mac-esc)` | Client MAC (raw / URL-escaped) |
+| `$(ip)` | Client IP |
+| `$(host-ip)` | IP from hotspot host table (differs from `$(ip)` under one-to-one NAT) |
+| `$(interface-name)`, `$(vlan-id)` | Useful for tenant-aware external auth |
+| `$(error)` / `$(error-orig)` | Localized vs raw error from previous auth attempt |
 | `$(logged-in)` | `yes` if client is already authenticated |
+| `$(trial)` | `yes` if trial access still available for this MAC |
+| `$(username)` / `$(username-esc)` | Authenticated username (status page) |
+| `$(bytes-in[-nice])`, `$(bytes-out[-nice])`, `$(uptime[-secs])`, `$(session-time-left[-secs])` | Status-page counters |
+| `$(radius<id>[u])`, `$(radius<id>-<vnd-id>[u])` | Pass-through of RADIUS Access-Accept attributes — text or unsigned int. Empty / `"0"` when local-DB auth (`use-radius=no`) |
+| `$(http-header-<Name>)` | **Read** an incoming request header — e.g. `$(http-header-User-Agent)`, `$(http-header-Accept-Language)` |
+| `$(if http-status == XYZ)MSG$(endif)` | **Set** the HTTP response status code |
+| `$(if http-header == NAME)VALUE$(endif)` | **Set** a custom response header (different syntax from the read pattern above) |
+
+**Always pick the `-esc` variant** (`$(link-orig-esc)`, `$(mac-esc)`, `$(username-esc)`) when embedding a value into a URL or query string. The non-escaped variants will break parsing or open injection paths if the value contains `&`, `=`, `?`, `#`.
+
+**POST form fields** RouterOS accepts at `$(link-login-only)`:
+`username`, `password`, `domain`, `dst`, `popup`, `session-id`, `var`, `erase-cookie`, `target` (multi-language subdir).
+
+**Conditional syntax** (server-side, not JavaScript):
+
+```
+$(if logged-in == "yes")
+  <a href="$(link-logout)">Logout</a>
+$(else)
+  <form action="$(link-login-only)" method="post">...</form>
+$(endif)
+```
+
+Operators: presence (`$(if VAR)`), `==`, `!=`. Also `$(elif ...)`. No nested arithmetic / string ops.
 
 Generic `login.html` pattern for external captive portal:
 
@@ -162,8 +193,8 @@ Generic `login.html` pattern for external captive portal:
   <script>
     window.addEventListener('load', function () {
       ExternalAuth_redirect(
-        '$(server-name)', '$(mac)', '$(link-login-only)',
-        '$(link-orig)', '$(error-orig)', '$(logged-in)', '$(ip)'
+        '$(server-name)', '$(mac-esc)', '$(link-login-only)',
+        '$(link-orig-esc)', '$(error-orig)', '$(logged-in)', '$(ip)'
       );
     });
   </script>
@@ -171,7 +202,11 @@ Generic `login.html` pattern for external captive portal:
 </html>
 ```
 
-The external provider authenticates the user and redirects back to the `$(link-login-only)` URL with auth tokens. RouterOS then completes the login.
+The external provider authenticates the user and redirects the browser back to `$(link-login-only)` with `username` + `password` + `dst` POST fields. RouterOS validates (local DB or RADIUS), issues the auth cookie, and redirects to `dst`.
+
+**Walled-garden must include the external auth host (and any CDN/asset hosts)** — otherwise the unauthenticated browser cannot reach the redirect script in step 2.
+
+Full variable reference, all servlet pages, RADIUS pass-through patterns, multi-language `target=` mechanics, and HTTP response control: see [references/template-variables.md](./references/template-variables.md).
 
 ## Common LLM Mistakes
 
@@ -185,6 +220,8 @@ The external provider authenticates the user and redirects back to the `$(link-l
 | Wildcard HTTPS domains in `/ip/hotspot/walled-garden` | Use `/ip/hotspot/walled-garden/ip` for HTTPS (layer 3 match) |
 | Hotspot on dual-stack network with IPv6 | Hotspot is IPv4-only — IPv6 not supported |
 | `$(link-login)` treated as JavaScript variable | It is RouterOS server-side substitution, not JS |
+| Embedding `$(link-orig)` / `$(mac)` / `$(username)` into another URL | Use the `-esc` variant — non-esc breaks parsing on `&`, `=`, `?` and may enable injection |
+| Hotspot with PCC / multiple routing tables | Hotspot uses only the default routing table — split-WAN setups need explicit `/ip route rule` for hotspot traffic |
 
 ## Additional Resources
 
