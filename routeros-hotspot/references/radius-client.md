@@ -8,14 +8,14 @@ RouterOS tries RADIUS servers in list order and falls back to the next on timeou
 
 ```routeros
 /radius add \
-  address=185.1.2.3 \
+  address=198.51.100.10 \
   secret="your-shared-secret" \
   service=hotspot \
   timeout=3s \
   comment="radius-primary"
 
 /radius add \
-  address=185.1.2.4 \
+  address=198.51.100.11 \
   secret="your-shared-secret" \
   service=hotspot \
   timeout=3s \
@@ -28,7 +28,7 @@ In automated deployments, create RADIUS entries as `disabled=yes` and enable the
 
 ```routeros
 # At deploy time — disabled until hotspot files are ready
-/radius add address=185.1.2.3 secret="..." service=hotspot timeout=3s \
+/radius add address=198.51.100.10 secret="..." service=hotspot timeout=3s \
   comment="my-radius" disabled=yes
 
 # After hotspot files downloaded:
@@ -44,7 +44,7 @@ Never hardcode RADIUS secrets in scripts. Use a template variable:
 ```routeros
 # In OptiWize or similar template systems:
 # <<radius_secret>> is substituted at deploy time
-/radius add address=185.1.2.3 secret="<<radius_secret>>" service=hotspot \
+/radius add address=198.51.100.10 secret="<<radius_secret>>" service=hotspot \
   timeout=3s comment="my-radius" disabled=yes
 ```
 
@@ -57,8 +57,8 @@ Never hardcode RADIUS secrets in scripts. Use a template variable:
 :local radiusIp [:resolve "radius.example.com"]
 
 # GOOD — use explicit IPs
-/radius add address="185.1.2.3" secret="..." service=hotspot comment="radius-1" disabled=yes
-/radius add address="185.1.2.4" secret="..." service=hotspot comment="radius-2" disabled=yes
+/radius add address="198.51.100.10" secret="..." service=hotspot comment="radius-1" disabled=yes
+/radius add address="198.51.100.11" secret="..." service=hotspot comment="radius-2" disabled=yes
 ```
 
 ## Enable Pattern

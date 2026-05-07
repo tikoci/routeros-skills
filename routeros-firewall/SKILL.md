@@ -1,11 +1,6 @@
 ---
 name: routeros-firewall
-description: "RouterOS firewall filter, NAT, mangle, and address-list configuration.
-  Use when: writing firewall rules in RouterOS, configuring NAT, setting up
-  address-lists or interface-lists, writing idempotent firewall scripts,
-  configuring DNS redirect or port forwarding, or when the user mentions
-  /ip/firewall, chain=forward, chain=input, connection-state, address-list,
-  interface-list, or layer7-protocol on MikroTik."
+description: "RouterOS firewall filter, NAT, mangle, and address-list configuration. Use when: writing firewall rules in RouterOS, configuring NAT, setting up address-lists or interface-lists, writing idempotent firewall scripts, configuring DNS redirect or port forwarding, or when the user mentions /ip/firewall, chain=forward, chain=input, connection-state, address-list, interface-list, or layer7-protocol on MikroTik."
 ---
 
 # RouterOS Firewall
@@ -102,9 +97,11 @@ RouterOS states: `new`, `established`, `related`, `invalid`, `untracked`.
 
 # Force DNS through router (prevents DNS bypass)
 /ip/firewall/nat/add chain=dstnat action=redirect \
-  dst-port=53 protocol=udp to-ports=53 comment="force-dns-udp"
+  in-interface-list=LAN dst-port=53 protocol=udp to-ports=53 \
+  comment="force-dns-udp"
 /ip/firewall/nat/add chain=dstnat action=redirect \
-  dst-port=53 protocol=tcp to-ports=53 comment="force-dns-tcp"
+  in-interface-list=LAN dst-port=53 protocol=tcp to-ports=53 \
+  comment="force-dns-tcp"
 
 # Masquerade outgoing traffic
 /ip/firewall/nat/add chain=srcnat action=masquerade \

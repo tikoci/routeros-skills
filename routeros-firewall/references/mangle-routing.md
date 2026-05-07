@@ -94,7 +94,7 @@ Complete minimal pattern — route traffic from one subnet through an alternate 
   routing-table=vpn-mark distance=1 disabled=yes
 
 # Enable after gateway is configured:
-# /ip/route/set enabled=yes [find routing-table=vpn-mark]
+# /ip/route/enable [find routing-table=vpn-mark]
 ```
 
 ## MSS Clamping
