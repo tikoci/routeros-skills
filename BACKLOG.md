@@ -289,6 +289,21 @@ vs manual). Allowed-address and routing interactions. Preshared-keys.
 WireGuard on RouterOS has a few idiosyncrasies around `mtu` and firewall
 interactions worth grounding.
 
+### `routeros-vrrp`
+
+VRRP (Virtual Router Redundancy Protocol) on RouterOS. LLMs often suggest Linux
+keepalived or HSRP syntax instead of RouterOS's native VRRP implementation.
+
+Key:
+- `/interface/vrrp/add` — creates VRRP virtual interface
+- `vrid=` + `priority=` + `preemption-mode=`
+- VRRP interface used as gateway in DHCP server networks and routing
+- Event hooks: `on-master=`, `on-backup=`, `on-fail=` — NOT `tracked-interface=`
+  or `script=` (those properties do not exist on `/interface/vrrp`)
+- Common mistake: treating VRRP interface like a regular bridge/ethernet interface
+
+Grounding: MikroTik "VRRP" help page, `/console/inspect` at `/interface/vrrp`.
+
 ### `routeros-files-and-backup`
 
 `/file` system, upload/download mechanisms (SCP, FTP, REST PUT, Winbox, WebFig),
