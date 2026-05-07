@@ -338,6 +338,9 @@ Grounding: MikroTik "VRRP" help page, `/console/inspect` at `/interface/vrrp`.
   channel should I target?" decision isn't captured.
 - Add a pointer to the BACKLOG (this file) so model contributors know what's
   planned vs what exists.
+- Add a short RouterOS object lifecycle note covering when to use direct
+  `enable`/`disable` commands versus `set disabled=yes|no` on resources like
+  routes, and call out that many menus expose both forms.
 
 ### `routeros-qemu-chr`
 

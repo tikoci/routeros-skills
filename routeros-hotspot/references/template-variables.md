@@ -228,9 +228,10 @@ There is **no HTML-escape variant**. If a variable can contain user-controlled d
    → RouterOS serves login.html with $(link-login-only), $(mac), $(link-orig-esc)
 2. login.html JS posts client info to external auth provider (auth.example.com)
 3. External provider authenticates user, stores session
-4. External provider redirects browser to:
-     $(link-login-only)?username=<u>&password=<p>&dst=$(link-orig-esc)
-5. RouterOS validates credentials (local DB or RADIUS), issues cookie, redirects to dst
+4. External provider returns a page or redirect target that submits an HTTPS POST to:
+     $(link-login-only)
+     with `username`, `password`, and `dst=$(link-orig-esc)` form fields
+5. RouterOS validates credentials (local DB or RADIUS), issues cookie, and redirects to `dst`
 6. Subsequent requests pass via cookie auth (login-by=cookie)
 ```
 

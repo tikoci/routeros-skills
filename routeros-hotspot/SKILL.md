@@ -1,11 +1,6 @@
 ---
 name: routeros-hotspot
-description: "RouterOS hotspot captive portal for wired/wireless access control.
-  Use when: configuring hotspot on RouterOS, setting up captive portal,
-  writing hotspot profiles or instances, configuring walled garden,
-  setting DHCP option 114 (RFC 8910 captive portal URI), integrating
-  RADIUS with hotspot, or when the user mentions /ip/hotspot,
-  walled-garden, hotspot profile, or captive portal on MikroTik."
+description: "RouterOS hotspot captive portal for wired/wireless access control. Use when: configuring hotspot on RouterOS, setting up captive portal, writing hotspot profiles or instances, configuring walled garden, setting DHCP option 114 (RFC 8910 captive portal URI), integrating RADIUS with hotspot, or when the user mentions /ip/hotspot, walled-garden, hotspot profile, or captive portal on MikroTik."
 ---
 
 # RouterOS Hotspot
@@ -30,7 +25,7 @@ Hotspot traffic intercept runs **before** the regular firewall input/forward cha
   mac-auth-mode=mac-as-username-and-password \
   dns-name=login.example.com \
   ssl-certificate=login.example.com.crt_0 \
-  nas-port-type=ethernet \   # use wireless-ieee-802-11-g for wireless hotspots
+  nas-port-type=ethernet \
   use-radius=yes \
   radius-accounting=yes \
   html-directory-override=hotspot-files
@@ -38,6 +33,7 @@ Hotspot traffic intercept runs **before** the regular firewall input/forward cha
 
 Key properties:
 - `ssl-certificate=` — reference the name after import (RouterOS appends `_0` to imported certificate names)
+- `nas-port-type=` — use `ethernet` for wired hotspots and `wireless-ieee-802-11-g` for wireless hotspots
 - `html-directory-override=` — must match the exact folder name on the router's filesystem
 - `login-by=https` — serves the login page over HTTPS; requires `www-ssl` service enabled with the same certificate
 - `use-radius=yes` — when set, **local `/ip/hotspot/user` entries are bypassed**; adding them has no effect
