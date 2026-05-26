@@ -8,6 +8,7 @@ Custom instruction skills for [GitHub Copilot](https://docs.github.com/en/copilo
 |-------|-------------|
 | **routeros-fundamentals** | RouterOS v7 domain knowledge — CLI, REST API, scripting, architecture. The foundational skill that others build on. |
 | **routeros-container** | RouterOS `/container` subsystem — VETH/bridge networking, OCI images, device-mode, lifecycle management. |
+| **routeros-firewall** | RouterOS firewall filter, NAT, mangle, and address-list configuration — rule ordering, connection tracking, address/interface lists, DNS redirects, and port forwarding. |
 | **routeros-app-yaml** | RouterOS `/app` YAML format for container applications (7.21+ builtin, 7.22+ custom YAML). |
 | **routeros-command-tree** | `/console/inspect` API — command tree introspection, schema generation, CLI-to-REST mapping. |
 | **routeros-qemu-chr** | MikroTik CHR (Cloud Hosted Router) with QEMU — boot, VirtIO, acceleration, CI/CD patterns. |
