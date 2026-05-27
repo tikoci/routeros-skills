@@ -314,24 +314,9 @@ const arch = resource["architecture-name"]; // "arm64", "arm", "x86"
 
 RouterOS 7.21 introduced the `/app` path (built-in app listing). Full YAML app creation (`/app/add`) was added in 7.22. See the `routeros-app-yaml` skill for the full YAML specification.
 
-```routeros
-# List available apps
-/app/print
-
-# Add app from URL
-/app/add yaml-url=https://example.com/myapp.tikapp.yaml
-```
-
 ### /app vs Manual Container Setup
 
-| Concern | Manual (this page) | /app YAML |
-|---|---|---|
-| Networking | Full control — any bridge/VETH/L2 topology | Docker-style: `internal` subnet with port forwarding (NAT) |
-| L2 bridge access | Yes — add VETH + physical port to same bridge | Not directly — but can assign a bridge post-creation via `/app/set network=<bridge>` |
-| Multi-container | Manual per-container setup | Declarative YAML, multiple services |
-| Use case | Raw L2 access (netinstall, DHCP relay, etc.) | Standard app deployment with port forwarding |
-
-Netinstall specifically requires L2 bridge access for BOOTP/TFTP, which is why the manual VETH+bridge approach is used rather than /app. For typical containers that only need port-forwarded TCP/UDP services, `/app` is simpler.
+Use manual `/container` setup when you need full VETH/bridge/L2 control, such as netinstall, DHCP relay, or other raw L2 workflows. Use `/app` YAML for standard multi-container applications that fit RouterOS app networking and port-forwarding conventions.
 
 ## Additional Resources
 
