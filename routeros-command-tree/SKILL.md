@@ -323,6 +323,12 @@ const children = Object.entries(node)
 
 ## Additional Resources
 
+- MikroTik's new manual site has a browsable **CLI Reference** at
+  <https://manual.mikrotik.com/docs/CLI%20Reference/>. It exposes command menus,
+  flags, argument names, and types by package/path (for example,
+  `/docs/CLI%20Reference/system/ip/address`). Treat it as the human-readable
+  companion to `/console/inspect`; when it disagrees with a live router,
+  `/console/inspect` from that router wins.
 - For REST API details: see `routeros-fundamentals` skill → [REST API patterns](../routeros-fundamentals/references/rest-api-patterns.md)
 - For running a CHR to query: see the `routeros-qemu-chr` skill
 - For /app YAML format (a feature visible in the tree under 7.22+): see the `routeros-app-yaml` skill

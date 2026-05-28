@@ -31,18 +31,18 @@ Weakness is assessed from the perspective of a modern general-purpose LLM
 
 ### `routeros-scripting`
 
-**Priority: H.** RouterOS scripting language (`.rsc` and interactive). Currently
-one reference file inside `routeros-fundamentals/references/scripting.md`, but
-the topic is large and LLM-hostile enough to warrant its own skill.
-`async-commands-rest.md` is an early reference in this direction; the full skill
-needs much more.
+**Status: implemented initial skill.** RouterOS scripting language (`.rsc` and
+interactive) now has `routeros-scripting/SKILL.md`, seeded from the old
+`routeros-fundamentals/references/scripting.md` and the new MikroTik manual
+"Scripting Tips and Tricks" / "Scripting examples" pages. The skill intentionally
+focuses on LLM-hostile scripting/config pitfalls instead of copying full examples.
 
 LLMs conflate `.rsc` with bash, shell, or TCL. Common invented syntax:
 `if ($var == "foo") then`, `echo $var`, backtick command substitution. None of
 these exist. Real idioms: `:if ($var = "foo") do={ ... }`, `:put $var`,
 `[/system/resource/get board-name]`.
 
-Suggested contents:
+Future expansion / corpus-mining targets (not all missing from the initial skill):
 - Variable scoping (`:local`, `:global`) and why assigning to an undeclared
   variable fails
 - Control flow (`:if`, `:foreach`, `:while`, `:do { } on-error={ }`)
