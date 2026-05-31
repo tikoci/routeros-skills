@@ -7,12 +7,13 @@
 #   make link    # idempotently symlink every routeros-* into both dirs
 #   make check   # report any repo skill missing from either dir (non-zero exit)
 #   make unlink   # remove this repo's routeros-* symlinks from both dirs
+#   make install-hooks  # run `make link` automatically after pull/checkout
 
 REPO    := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
 SKILLS  := $(notdir $(wildcard $(REPO)/routeros-*))
 TARGETS := $(HOME)/.copilot/skills $(HOME)/.claude/skills
 
-.PHONY: link unlink check
+.PHONY: link unlink check install-hooks
 
 link:
 	@for t in $(TARGETS); do \
@@ -43,3 +44,8 @@ check:
 	done; \
 	if [ $$rc -eq 0 ]; then echo "check: all $(words $(SKILLS)) skills linked into both dirs"; fi; \
 	exit $$rc
+
+install-hooks:
+	@chmod +x "$(REPO)/hooks/"* 2>/dev/null || true; \
+	git -C "$(REPO)" config core.hooksPath hooks && \
+	echo "install-hooks: core.hooksPath -> hooks (post-merge/post-checkout run 'make link')"

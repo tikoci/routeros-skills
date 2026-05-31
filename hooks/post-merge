@@ -1,0 +1,5 @@
+#!/bin/sh
+# Re-link skills after `git pull`/merge so newly-added routeros-* dirs are
+# symlinked into ~/.copilot/skills and ~/.claude/skills. Idempotent.
+# Enable with: make install-hooks
+exec make -C "$(git rev-parse --show-toplevel)" link

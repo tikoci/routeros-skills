@@ -1,0 +1,5 @@
+#!/bin/sh
+# Re-link skills after `git checkout`/clone so newly-present routeros-* dirs are
+# symlinked into ~/.copilot/skills and ~/.claude/skills. Idempotent.
+# Enable with: make install-hooks
+exec make -C "$(git rev-parse --show-toplevel)" link
