@@ -30,34 +30,51 @@ Every RouterOS device participates by default.
 
 ## How Discovery Works
 
-1. **Listener sends a refresh packet** — a 9-byte UDP datagram to 255.255.255.255:5678
+1. **Listener sends a refresh packet** — a small UDP datagram to 255.255.255.255:5678 (MAC-Telnet sends a minimal 4-byte zeroed header; a 9-byte form also works — see below)
 2. **All RouterOS devices on the LAN reply** — each sends a TLV-encoded announcement with identity, version, board, MAC, IP, uptime, etc.
 3. **Replies arrive asynchronously** — devices respond within milliseconds to seconds depending on network conditions
 4. **RouterOS devices also announce periodically** (~60s cycle) without being prompted — passive listening works but is slow to populate
 
 ### Refresh Packet (Discovery Request)
 
-A 9-byte packet that triggers immediate replies from all RouterOS devices on the broadcast domain:
+A short packet that triggers immediate replies from all RouterOS devices on the broadcast
+domain. The minimal form is just a zeroed 4-byte header — this is exactly what MAC-Telnet
+sends (`unsigned int message = 0;`):
 
 ```
 Offset  Length  Value       Field
-0       2       0x0000      type (MNDP)
-2       2       0x0000      sequence number (0 for request)
-4       2       0x0000      TLV type (none)
-6       2       0x0000      TLV length (none)
-8       1       0x00        padding
+0       1       0x00        header byte 0 (version per MAC-Telnet; "unknown" per Wireshark)
+1       1       0x00        header byte 1 (ttl per MAC-Telnet)
+2       2       0x0000      seqno / checksum
 ```
 
-As raw bytes: `00 00 00 00 00 00 00 00 00`
+As raw bytes (minimal): `00 00 00 00`
+
+Some implementations append an explicit refresh TLV (type 6, length 0). The complete
+header + empty-TLV form is 8 bytes (`00 00 00 00 00 06 00 00`); some implementations add
+a trailing zero byte (non-semantic padding), giving 9 bytes. RouterOS accepts all forms:
+
+```
+Offset  Length  Value       Field
+0       4       00 00 00 00 header (2 header bytes + 2-byte seqno)
+4       2       0x0006      TLV type = 6 (refresh)   ← big-endian
+6       2       0x0000      TLV length = 0
+8       1       0x00        optional trailing pad (non-semantic)
+```
+
+As raw bytes (9-byte form): `00 00 00 00 00 06 00 00 00`
 
 ### Response Packet
 
 ```
 Offset  Length  Field
-0       2       type = 0x0000 (MNDP)
-2       2       sequence number (monotonically increasing per device)
+0       2       header bytes (version + ttl per MAC-Telnet; "unknown" per Wireshark)
+2       2       sequence number (big-endian; per-device counter)
 4+      TLV[]   zero or more TLV records (see below)
 ```
+
+The first 4 bytes are a fixed header; parsers skip the first 2 bytes and read the
+sequence number as a big-endian uint16, then iterate TLVs from offset 4.
 
 ## TLV Format
 
@@ -65,31 +82,44 @@ Each TLV (Type-Length-Value) record in the response:
 
 ```
 Offset  Length  Field
-0       2       type   (little-endian uint16)
-2       2       length (little-endian uint16) — byte count of value
+0       2       type   (big-endian uint16)
+2       2       length (big-endian uint16) — byte count of value
 4       N       value  (raw bytes — interpretation depends on type)
 ```
 
-**Byte order:** TLV type and length are little-endian. Value encoding varies by type.
+**Byte order:** TLV type and length are **big-endian** (network byte order — `ntohs`).
+This is confirmed by the canonical reference implementations: MAC-Telnet's `protocol.c`
+(`type = ntohs(type); len = ntohs(len);`) and the official Wireshark MNDP dissector
+(`packet-mndp.c`, which reads both with `ENC_BIG_ENDIAN`).
+
+**Value encoding varies by type and is the most common footgun:** string TLVs are UTF-8,
+IPv4/IPv6/MAC are raw network-order bytes, but **TLV 10 (uptime) is a little-endian
+uint32** — the *only* little-endian value in the entire protocol. Everything else
+multi-byte is big-endian/raw.
 
 ### TLV Type Reference
 
 | Type | Hex    | Name           | Value Format | Notes |
 |------|--------|----------------|-------------|-------|
-| 1    | 0x0001 | MAC Address    | 6 bytes, big-endian | Per-interface MAC, not chassis MAC |
+| 1    | 0x0001 | MAC Address    | 6 raw bytes (network order) | Per-interface MAC, not chassis MAC |
 | 5    | 0x0005 | Identity       | UTF-8 string | Hostname — same across all interfaces |
 | 7    | 0x0007 | Version        | UTF-8 string | e.g. `7.18 (stable)`, `7.22rc1` |
 | 8    | 0x0008 | Platform       | UTF-8 string | Usually `MikroTik` |
-| 10   | 0x000a | Board          | UTF-8 string | e.g. `RB4011iGS+5HacQ2HnD`, `CHR` |
-| 11   | 0x000b | Uptime         | 4 bytes LE uint32 | Seconds since boot |
-| 12   | 0x000c | Software ID    | UTF-8 string | License identifier |
-| 13   | 0x000d | Board (alt)    | UTF-8 string | Some firmware uses type 13 instead of 10 |
-| 14   | 0x000e | Unpack         | 1 byte | Firmware compression flag |
-| 15   | 0x000f | IPv6 Address   | 16 bytes | Link-local or global IPv6 |
+| 10   | 0x000a | Uptime         | 4 bytes **LE** uint32 | Seconds since boot — the only little-endian value |
+| 11   | 0x000b | Software ID    | UTF-8 string | License identifier |
+| 12   | 0x000c | Board          | UTF-8 string | e.g. `RB4011iGS+5HacQ2HnD`, `CHR` |
+| 14   | 0x000e | Unpack         | 1 byte | Firmware compression flag (some parsers treat as IPv6-present flag) |
+| 15   | 0x000f | IPv6 Address   | 16 raw bytes | Link-local or global IPv6 |
 | 16   | 0x0010 | Interface Name | UTF-8 string | Sending interface on the router (e.g. `ether1`) |
-| 17   | 0x0011 | IPv4 Address   | 4 bytes, big-endian | IP of the sending interface |
+| 17   | 0x0011 | IPv4 Address   | 4 raw bytes (network order) | IP of the sending interface |
 
-**Board name:** Some firmware versions use TLV type 10, others use type 13. Parsers should handle both — prefer type 10 if both are present.
+**Source of truth:** these type IDs match the canonical MAC-Telnet `protocol.c`
+(`MT_MNDPTYPE_*` enum) and the Wireshark MNDP dissector value table exactly. Note in
+particular that **uptime is type 10, software-id is type 11, and board is type 12** —
+a common mistake is to off-by-one these (uptime=11/board=13), which silently misparses
+real RouterOS packets.
+
+**Packing TLVs (types 2, 3, 9):** related to `/ip` packing/compression. Safe to skip.
 
 ## Multi-Interface Behavior
 
@@ -204,39 +234,35 @@ IPv6 link-local addresses include a zone ID (e.g., `fe80::1%en0`) that identifie
 
 ```typescript
 function parseMndpResponse(buf: Buffer): Record<string, string | number> {
-  const view = new DataView(buf.buffer, buf.byteOffset, buf.byteLength);
-  let offset = 4; // skip 2-byte type + 2-byte sequence
+  let offset = 4; // skip 2-byte header (version, ttl) + 2-byte sequence
   const fields: Record<string, string | number> = {};
 
   while (offset + 4 <= buf.length) {
-    const tlvType = view.getUint16(offset, true);     // little-endian
-    const tlvLen  = view.getUint16(offset + 2, true);  // little-endian
+    const tlvType = buf.readUInt16BE(offset);      // big-endian
+    const tlvLen  = buf.readUInt16BE(offset + 2);  // big-endian
     offset += 4;
 
-    if (offset + tlvLen > buf.length) break; // malformed
+    if (offset + tlvLen > buf.length) break; // malformed / truncated
     const value = buf.subarray(offset, offset + tlvLen);
 
     switch (tlvType) {
-      case 1:  // MAC Address — 6 bytes big-endian
+      case 1:  // MAC Address — 6 raw bytes
         fields.macAddress = [...value].map(b => b.toString(16).padStart(2, "0")).join(":");
         break;
       case 5:  fields.identity = value.toString("utf8"); break;
       case 7:  fields.version = value.toString("utf8"); break;
       case 8:  fields.platform = value.toString("utf8"); break;
-      case 10: // Board (primary)
-      case 13: // Board (alternate — some firmware)
-        if (!fields.board) fields.board = value.toString("utf8");
+      case 10: // Uptime — 4 bytes LITTLE-ENDIAN uint32 (the only LE value)
+        if (tlvLen === 4) fields.uptime = value.readUInt32LE(0);
         break;
-      case 11: // Uptime — 4 bytes LE uint32 (seconds)
-        fields.uptime = view.getUint32(offset - tlvLen, true);
-        break;
-      case 12: fields.softwareId = value.toString("utf8"); break;
+      case 11: fields.softwareId = value.toString("utf8"); break;
+      case 12: fields.board = value.toString("utf8"); break;
       case 15: // IPv6 — 16 bytes
-        fields.ipv6 = formatIpv6(value);
+        if (tlvLen === 16) fields.ipv6 = formatIpv6(value);
         break;
       case 16: fields.interfaceName = value.toString("utf8"); break;
-      case 17: // IPv4 — 4 bytes big-endian
-        fields.ipv4 = `${value[0]}.${value[1]}.${value[2]}.${value[3]}`;
+      case 17: // IPv4 — 4 raw bytes
+        if (tlvLen === 4) fields.ipv4 = `${value[0]}.${value[1]}.${value[2]}.${value[3]}`;
         break;
     }
     offset += tlvLen;
@@ -249,10 +275,15 @@ function parseMndpResponse(buf: Buffer): Record<string, string | number> {
 
 | Language | Source | Notes |
 |----------|--------|-------|
-| Go | github.com/middelink/mikrotik-fwupdate | Used as protocol ground truth during original research |
+| C | github.com/haakonnessjoen/MAC-Telnet (`protocol.c`, `protocol.h`) | **Canonical ground truth.** TLV enum + `ntohs` big-endian TLVs + `le32toh` uptime |
+| C (dissector) | Wireshark `epan/dissectors/packet-mndp.c` | Official protocol dissector — confirms type IDs and `ENC_BIG_ENDIAN` TLVs |
+| Go | github.com/middelink/mikrotik-fwupdate | Secondary protocol cross-check |
 | Elixir | hex.pm mndp package | Confirms TLV type IDs |
-| C | Various open-source MNDP clients | Direct setsockopt for REUSEPORT |
-| Swift | Open-source macOS implementations | Confirms big-endian MAC encoding |
+| Swift | Open-source macOS implementations | Confirms raw-byte MAC encoding |
+
+**Verified:** The TLV type IDs and byte order in this skill were cross-checked against
+MAC-Telnet's `protocol.c` and the Wireshark dissector — both agree that TLV type/length
+are big-endian and that uptime (type 10) is the sole little-endian value.
 
 ## Related Skills
 
