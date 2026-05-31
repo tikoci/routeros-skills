@@ -53,6 +53,16 @@ ln -s ~/GitHub/routeros-skills/$skill ~/.copilot/skills/$skill
 ln -s ~/GitHub/routeros-skills/$skill ~/.claude/skills/$skill
 ```
 
+   Or, idempotently link **all** skills into both dirs (preferred — avoids the
+   "committed but never symlinked" drift):
+
+```sh
+make link    # symlink every routeros-* into ~/.copilot/skills and ~/.claude/skills
+make check   # verify every repo skill is linked into both dirs (non-zero exit if not)
+```
+
+   Note: a symlinked skill is only picked up on a **fresh** assistant session.
+
 3. Commit and push to GitHub.
 
 ## Current symlink state (reference)

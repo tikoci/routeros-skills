@@ -10,11 +10,13 @@ Custom instruction skills for [GitHub Copilot](https://docs.github.com/en/copilo
 | **routeros-scripting** | RouterOS scripting and CLI config automation — `.rsc` syntax, `[find]` selectors, script-safe IDs, arrays, globals, scheduler policies. |
 | **routeros-container** | RouterOS `/container` subsystem — VETH/bridge networking, OCI images, device-mode, lifecycle management. |
 | **routeros-firewall** | RouterOS firewall filter, NAT, mangle, and address-list configuration — rule ordering, connection tracking, address/interface lists, DNS redirects, and port forwarding. |
+| **routeros-hotspot** | RouterOS hotspot captive portal for wired/wireless access control — hotspot chains, profiles, walled garden, DHCP option 114 (RFC 8910), RADIUS integration. |
 | **routeros-app-yaml** | RouterOS `/app` YAML format for container applications (7.21+ builtin, 7.22+ custom YAML). |
 | **routeros-command-tree** | `/console/inspect` API — command tree introspection, schema generation, CLI-to-REST mapping. |
 | **routeros-qemu-chr** | MikroTik CHR (Cloud Hosted Router) with QEMU — boot, VirtIO, acceleration, CI/CD patterns. |
 | **routeros-netinstall** | `netinstall-cli` for automated RouterOS device flashing — etherboot, BOOTP/TFTP, modescript. |
 | **routeros-mndp** | MNDP (MikroTik Neighbor Discovery Protocol) — wire format, `/ip/neighbor`, WinBox discovery. |
+| **routeros-mac-telnet** | MAC-Telnet (UDP 20561) — Layer-2 terminal by MAC address, 22-byte header, control blocks, MD5 + MTWEI (EC-SRP) auth. |
 | **routeros-sniffer** | RouterOS packet capture and TZSP streaming — `/tool/sniffer`, firewall sniff-tzsp, Wireshark integration. |
 
 ## Install
