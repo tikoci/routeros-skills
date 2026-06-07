@@ -1,6 +1,6 @@
 ---
 name: routeros-qemu-chr
-description: 'MikroTik RouterOS CHR (Cloud Hosted Router) with QEMU. Use when: running RouterOS in QEMU, booting CHR images, debugging CHR boot failures, setting up VirtIO devices for RouterOS, choosing between SeaBIOS and UEFI boot, configuring QEMU port forwarding for RouterOS REST API, or selecting QEMU acceleration (KVM/HVF/TCG).'
+description: 'MikroTik RouterOS CHR (Cloud Hosted Router) with QEMU. Use when: running RouterOS in QEMU, booting CHR images, debugging CHR boot failures, setting up VirtIO devices for RouterOS, choosing between SeaBIOS and UEFI boot, configuring QEMU port forwarding for RouterOS REST API, setting up inter-VM socket networking or host-side L2 capture of guest broadcasts (e.g. MNDP), or selecting QEMU acceleration (KVM/HVF/TCG).'
 ---
 
 # RouterOS CHR with QEMU
@@ -203,6 +203,52 @@ All architectures: `virtio-net-pci`. No exceptions:
 -device virtio-net-pci,netdev=net0
 ```
 
+`user` (SLIRP) is a userspace NAT — ideal for management (hostfwd of REST/SSH/WinBox),
+but it **terminates Layer 2**: broadcasts and non-forwarded UDP never reach the host or
+other VMs. For anything L2 (inter-VM links, neighbor discovery, MAC-Telnet) add a second
+NIC on a `socket` netdev.
+
+### L2 Networking: `socket` netdevs (inter-VM links + host capture)
+
+QEMU's `socket` netdev carries raw Ethernet frames over a host socket — rootless, no extra
+setup:
+
+```sh
+# TCP, point-to-point — one side listens, the other connects
+-netdev socket,id=net1,listen=:4001            # VM A (start first)
+-netdev socket,id=net1,connect=127.0.0.1:4001  # VM B
+# UDP multicast — shared L2 segment for N VMs
+-netdev socket,id=net1,mcast=230.0.0.1:4001
+```
+
+> **⚠ `mcast` is broken on macOS.** QEMU's mcast socket sets only `SO_REUSEADDR`, but
+> macOS/BSD require `SO_REUSEPORT` on every socket sharing a multicast port — so on macOS
+> nothing is delivered between local sockets: two VMs on the same group don't discover each
+> other, and a host listener gets zero frames. It works on **Linux** (and CI). For
+> point-to-point on macOS use TCP `listen`/`connect`; there is **no rootless multi-VM L2
+> segment on macOS** today (use `socket_vmnet`, privileged-once, for that).
+
+#### Host capture of guest L2 frames (e.g. MNDP)
+
+To let a **host process** receive a guest's broadcasts — MNDP neighbor discovery (the
+protocol WinBox's "Neighbors" tab uses, UDP/5678) being the first case — make the host one
+end of a TCP `socket` netdev:
+
+1. Host runs a TCP **server** on a loopback port.
+2. CHR gets a second NIC: `-netdev socket,id=net1,connect=127.0.0.1:<port>` — the host must
+   be listening **before** QEMU starts, since QEMU is the connecting side.
+3. QEMU streams every guest frame to the host, **length-prefixed**: a 4-byte big-endian
+   length, then the raw Ethernet frame.
+4. Host strips the prefix and parses Ethernet → IPv4 → UDP/5678 → MNDP TLVs.
+
+Writing a length-prefixed frame back over the same connection **injects** L2 into the guest
+(e.g. an MNDP refresh to trigger an immediate reply — the same primitive MAC-Telnet needs).
+Loopback-only, so nothing leaks onto the LAN; works on macOS, Linux, and Windows alike.
+
+Reference implementation + verified evidence: `tikoci/quickchr` (`examples/mndp/`,
+`docs/mndp.md`, `test/lab/mndp/REPORT.md`). For the MNDP wire format and TLV table, see the
+`routeros-mndp` skill.
+
 ## Acceleration Detection
 
 ```typescript
@@ -310,6 +356,11 @@ Use unique host ports per instance when running multiple CHRs (9180, 9181, 9182.
 - **Direct `-kernel` boot does not work** for either architecture — RouterOS needs its full firmware boot path
 - **Cross-arch TCG: x86_64 on aarch64 host is not viable** — x86 I/O port emulation is too slow (~300s+ timeouts). The reverse (aarch64 on x86_64) works fine (~20s)
 - **No `virtio_mmio` driver** — always use explicit `-device virtio-blk-pci`, never rely on `if=virtio` on aarch64
+- **`socket,mcast=` inter-VM networking is broken on macOS** — QEMU sets only
+  `SO_REUSEADDR`; macOS/BSD need `SO_REUSEPORT` to share a multicast port, so no frames are
+  delivered between local sockets (VMs don't discover each other; host capture gets nothing).
+  Use TCP `socket` (listen/connect) for point-to-point, or `socket_vmnet` for a shared
+  segment. Works on Linux/CI. Verified in `tikoci/quickchr` (`test/lab/mndp/REPORT.md`)
 
 ## Additional Resources
 
@@ -319,4 +370,5 @@ Use unique host ports per instance when running multiple CHRs (9180, 9181, 9182.
 - [CHR licensing](./references/chr-licensing.md) — free tier (1 Mbps), 60-day trial, paid tiers, expiry behavior
 - For RouterOS CLI/REST once booted: see the `routeros-fundamentals` skill
 - For packet capture and TZSP streaming from CHR: see the `routeros-sniffer` skill
+- For MNDP neighbor-discovery wire format / TLVs (received via the host-capture recipe above): see the `routeros-mndp` skill
 - For /app YAML container format (requires CHR with container package): see the `routeros-app-yaml` skill
