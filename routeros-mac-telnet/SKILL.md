@@ -217,8 +217,13 @@ PASSWORD value = 0x00 ‖ MD5( 0x00 ‖ password ‖ salt )      // 17 bytes tot
 - Leading `0x00`, then the 16-byte MD5 digest of (`0x00` + password bytes +
   16-byte salt). The client sends only `BEGINAUTH` in step 3 and waits for the
   server's 16-byte salt.
-- Modern RouterOS rejects MD5 unless legacy/`allow weak login` is enabled, so a
-  16-byte salt from a current device usually means it was explicitly downgraded.
+- Modern RouterOS no longer accepts MD5 in practice. Verified on stock CHR 7.23:
+  the device offers a **16-byte salt to a classic client** (one that sends only
+  `BEGINAUTH`, with no MTWEI offer) but then **rejects the MD5 proof even for
+  credentials it accepts over REST/native-API** ("login failure … via
+  mac-telnet" in the device log). So a 16-byte salt does **not** mean MD5 will be
+  honored — you must drive MTWEI to log in. MD5 stays useful only for genuinely
+  legacy/downgraded gear.
 
 ### MTWEI (EC-SRP over Curve25519) — current default
 
@@ -270,12 +275,21 @@ from this summary:
 Constants worth pinning in tests: client/server public key = **33 bytes**
 (`MTWEI_PUBKEY_LEN`), validator/proof = **32 bytes** (`MTWEI_VALIDATOR_LEN`).
 
-### Minimal-client pragmatics
+### Auth-mode pragmatics
 
-A client that implements **only MD5** can still be useful: detect a 49-byte
-PASSSALT and fail cleanly with "device requires MTWEI" rather than mishandling
-it. (This is exactly what `tikoci/centrs` does — it rejects any PASSSALT whose
-length ≠ 16 as unsupported MTWEI and points the user to SSH/API.)
+To log into current RouterOS you must implement **MTWEI** — an MD5-only client
+gets a 16-byte salt but its proof is refused (see *Classic MD5* above). A robust
+client offers MTWEI in `BEGINAUTH` by default and falls back to MD5 only when the
+device returns a 16-byte salt (legacy gear). `tikoci/centrs` does this — it
+implements **both** MD5 and MTWEI (`src/protocols/mtwei.ts`, a dependency-free
+BigInt port of `mtwei.c`) and is validated over real L2 against stock CHR 7.23.
+
+**`END_AUTH` does not mean the login succeeded.** A *failed* login also sends
+`END_AUTH`, immediately followed by a `PLAINDATA` "Login failed, incorrect
+username or password" message and `END`. Confirm success only when real terminal
+output (a prompt/banner) arrives; treat `END_AUTH` → "Login failed" → `END` (or
+an `END` right after `END_AUTH` with no prompt) as auth failure. Grounded on CHR
+7.23 via `centrs`.
 
 ## Reliability & Retransmission
 
@@ -349,7 +363,7 @@ control; the default may allow all interfaces.
 |------|--------|-------|
 | C | `haakonnessjoen/MAC-Telnet` (`protocol.c/.h`, `mactelnet.c`, `mactelnetd.c`, `mtwei.c/.h`) | **Canonical ground truth.** Header offsets, control magic, MD5 + MTWEI. MTWEI added 2022. |
 | .NET 10 | `KCTech-Lab/KC.MacTelnet` (`MacTelnetDriver/Proto/*`, `Proto/Auth/Ecsrp*`) | Modern client; implements **MTWEI** against current RouterOS 7.x; pluggable terminal engine. |
-| TypeScript | `tikoci/centrs` (`src/protocols/mac-telnet.ts`) | Pure codec + injectable-sink session state machine; **MD5 only**, detects and rejects MTWEI; scripted-peer unit tests (no L2 needed). |
+| TypeScript | `tikoci/centrs` (`src/protocols/mac-telnet.ts`, `mtwei.ts`) | Pure codec + injectable-sink session state machine; **MD5 + MTWEI** (dependency-free BigInt EC-SRP port of `mtwei.c`); scripted-peer unit tests + real-L2 CHR-7.23 integration via quickchr `socket-connect`. |
 
 **Verified:** the header layout (22 bytes, direction-swapped session-key/client-
 type), control-block magic `56 34 12 ff`, big-endian length, little-endian
