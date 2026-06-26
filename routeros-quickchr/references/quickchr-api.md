@@ -23,9 +23,9 @@ completed when the promise resolves (background/library use). Common `StartOptio
 |---|---|
 | `name` | machine name (must not start with `-`) |
 | `channel` | one of `"stable"`, `"long-term"`, `"testing"`, `"development"` |
-| `version` | pinned RouterOS, e.g. `"7.23.1"` (mutually informative with `channel`) |
+| `version` | pinned RouterOS, e.g. `"7.23.1"` (may be used with `channel`; if both are set, they should be consistent) |
 | `arch` | `"x86"` or `"arm64"` (default: host arch) |
-| `secureLogin` | `true` → managed `quickchr` user with a stored password; `false` → open admin. Alias: `noAuth` |
+| `secureLogin` | `true` → managed `quickchr` user with a stored password; `false` → open admin. Inverse alias: `noAuth` (`noAuth: true` ≙ `secureLogin: false`). Prefer `secureLogin` in new configs. |
 | `cpu`, `mem` | vCPUs / MiB RAM |
 | `background` | run detached (the library default for automation) |
 | `networks` | `NetworkSpecifier[]` — extra NICs (see networking) |
@@ -53,7 +53,7 @@ entry points: `QuickCHR.list()`, `QuickCHR.get(name)`, `QuickCHR.stop(name)`.
 | `subprocessEnv()` | env vars for a child process (see below) |
 | `descriptor()` | structured `{ urls, auth, ports, status, version, … }` |
 | `snapshot(...)` | qcow2 savevm/loadvm/list/delete |
-| `qga(cmd, args?)` | QEMU Guest Agent (x86 + **KVM only**) |
+| `qga(cmd, args?)` | QEMU Guest Agent (x86 on **Linux with KVM only**; excludes macOS/HVF and Windows) |
 | `stop()` / `remove()` / `destroy()` | lifecycle teardown |
 
 **Properties:** `name`, `ports`, `restUrl`, `sshPort`, `portBase`,
@@ -66,9 +66,12 @@ entry points: `QuickCHR.list()`, `QuickCHR.get(name)`, `QuickCHR.stop(name)`.
 `QUICKCHR_REST_BASE`, `QUICKCHR_SSH_PORT`, `QUICKCHR_AUTH`, and the legacy-compat
 `URLBASE` (= REST base, includes `/rest`) and `BASICAUTH`. **`BASICAUTH` /
 `QUICKCHR_AUTH` are raw `user:password`** — base64-encode for an
-`Authorization: Basic …` header. Output is **secret-bearing**. `descriptor()`
-throws `MACHINE_STOPPED` if the machine isn't running — check status before using
-stored ports.
+`Authorization: Basic …` header. **⚠️ Secret-bearing output:** never log/print these
+values, never include them in thrown error messages, and never commit them to
+version control (including `.env`, CI logs, or debug artifacts). Prefer redaction
+(`***`) in diagnostics and keep values in memory only for the minimum needed scope.
+`descriptor()` throws `MACHINE_STOPPED` if the machine isn't running — check status
+before using stored ports.
 
 ## Port layout
 
