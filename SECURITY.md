@@ -19,8 +19,8 @@ So the practical security surface is the **CI workflows** and the **dev dependen
 
 The repository's [Security tab](https://github.com/tikoci/routeros-skills/security) is the live source of current alerts and advisories. This section describes *what* checks run and *why*, so it stays meaningful even when the badge is at 0.
 
-- **CodeQL** — GitHub [Default Setup](https://github.com/tikoci/routeros-skills/settings/security_analysis), `default` query suite (the org-managed baseline). Language: `javascript-typescript` (the Bun helper script). Runs on push to `main` and pull requests. Default Setup is used because the org auto-enables it on public repos; an advanced repo-managed workflow (which could also scan the `actions` workflow YAML) would conflict with it.
-- **Code Quality (AI findings, preview)** — not enabled.
+- **CodeQL** — GitHub [Default Setup](https://github.com/tikoci/routeros-skills/settings/security_analysis), `default` query suite (the org-managed baseline). Languages: `javascript-typescript` (the Bun helper script) and `actions` (the workflow YAML — this is what raises the `actions/unpinned-tag` advice, so third-party Actions in [`.github/workflows/**`](.github/workflows) are pinned to a commit SHA with a `# vX.Y.Z` comment and kept fresh by Dependabot). Runs on push to `main` and pull requests. Default Setup is used because the org auto-enables it on public repos; an advanced repo-managed workflow would conflict with it.
+- **Code Quality (AI findings, preview)** — enabled. Surfaces non-security code-quality suggestions for the Bun script and Markdown prose; GitHub can open autofix PRs for them (labeled `gh-ai-finding`). These are advisory, not a merge gate.
 - **Dependency review** — [`.github/workflows/dependency-review.yml`](.github/workflows/dependency-review.yml), `fail-on-severity: high`, on pull requests.
 - **Dependabot alerts** — enabled.
 - **Secret scanning** — enabled (GitHub default for public repositories), with push protection.
