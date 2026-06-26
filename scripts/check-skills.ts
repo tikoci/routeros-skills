@@ -30,7 +30,13 @@ if (files.length === 0) {
 }
 
 for (const file of files) {
-	const dir = file.split("/")[0];
+	const pathMatch = file.match(/^(routeros-[^/]+)\/(SKILL\.md)$/);
+	if (!pathMatch) {
+		fail(file, `matched path does not conform to expected structure "routeros-*/SKILL.md": ${file}`);
+		continue;
+	}
+
+	const dir = pathMatch[1];
 	const text = await Bun.file(file).text();
 
 	const fm = text.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n?/);
