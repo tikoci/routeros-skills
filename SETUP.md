@@ -42,6 +42,19 @@ cd ~/GitHub/routeros-skills && git pull
 
 Because the AI tools follow symlinks to the real files, `git pull` immediately takes effect — no re-linking needed.
 
+## Linting locally
+
+CI gates every PR on markdownlint + cspell + a `SKILL.md` validator (and an offline link check). Run the same gate before pushing:
+
+```sh
+cd ~/GitHub/routeros-skills
+bun install        # one-time: cspell + markdownlint-cli2 (devDeps)
+make lint          # markdownlint + cspell + skill validator
+make lint-links    # offline relative-link + #anchor check (needs `lychee`)
+```
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for what each check does and the spelling-dictionary policy.
+
 ## Adding a new routeros-* skill
 
 1. Create `~/GitHub/routeros-skills/routeros-<name>/SKILL.md` (and optionally `references/`)
@@ -63,13 +76,13 @@ make check   # verify every repo skill is linked into both dirs (non-zero exit i
 
    Note: a symlinked skill is only picked up on a **fresh** assistant session.
 
-3. Commit and push to GitHub.
+1. Commit and push to GitHub.
 
 ## Current symlink state (reference)
 
 After setup, `ls -la ~/.copilot/skills/` should show all `routeros-*` entries as symlinks pointing to `~/GitHub/routeros-skills/routeros-*`, for example:
 
-```
+```text
 lrwxr-xr-x  routeros-fundamentals -> /Users/<you>/GitHub/routeros-skills/routeros-fundamentals
 lrwxr-xr-x  routeros-container    -> /Users/<you>/GitHub/routeros-skills/routeros-container
 ...
