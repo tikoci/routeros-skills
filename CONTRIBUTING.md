@@ -44,7 +44,7 @@ make lint-links    # offline relative-link + #anchor check (needs lychee)
 | `links` | `lychee` (offline) | Broken **relative** links and `#anchors`. External URLs are skipped so a flaky network never fails the gate. |
 | `actionlint` | `actionlint` | Mistakes in the workflow YAML itself. |
 
-Security workflows (CodeQL, dependency review) also run — see [`SECURITY.md`](SECURITY.md).
+Security checks (CodeQL default setup, dependency review) also run — see [`SECURITY.md`](SECURITY.md).
 
 ## Spelling: dictionary vs. typo
 
