@@ -23,7 +23,7 @@ completed when the promise resolves (background/library use). Common `StartOptio
 |---|---|
 | `name` | machine name (must not start with `-`) |
 | `channel` | one of `"stable"`, `"long-term"`, `"testing"`, `"development"` |
-| `version` | pinned RouterOS, e.g. `"7.23.1"` (mutually informative with `channel`) |
+| `version` | pinned RouterOS, e.g. `"7.23.1"` (may be used with `channel`; if both are set, they should be consistent) |
 | `arch` | `"x86"` or `"arm64"` (default: host arch) |
 | `secureLogin` | `true` → managed `quickchr` user with a stored password; `false` → open admin. Inverse alias: `noAuth` (`noAuth: true` ≙ `secureLogin: false`). Prefer `secureLogin` in new configs. |
 | `cpu`, `mem` | vCPUs / MiB RAM |
