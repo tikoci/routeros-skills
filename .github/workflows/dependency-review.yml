@@ -1,0 +1,24 @@
+name: Dependency Review
+
+# Gates new/changed dependencies on PRs. This repo only carries dev-time lint
+# tooling (cspell, markdownlint-cli2), but those still pull a transitive tree —
+# this catches a known-vulnerable or badly-licensed package before it lands.
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  dependency-review:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Review dependency changes
+        uses: actions/dependency-review-action@v5
+        with:
+          fail-on-severity: high

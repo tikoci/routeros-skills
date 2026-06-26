@@ -588,7 +588,7 @@ curl -s -u admin: 'http://127.0.0.1:9100/rest/ip/address?interface=ether2'
 
 ### Quick network setup sequence
 
-```
+```text
 1. GET  /rest/interface                              → find available interfaces
 2. PUT  /rest/ip/address  {address, interface}       → assign IP
 3. PUT  /rest/ip/route    {dst-address, gateway}     → add default route (if no DHCP)
@@ -602,6 +602,7 @@ All networking endpoints can return stale/wrong data briefly after boot. Use the
 ---
 
 > **Source:**
+>
 > - Rosetta page IDs: 328247 (IP Addressing), 328084 (IP Routing), 24805500 (DHCP), 37748767 (DNS), 129531938 (IP Pools)
 > - Rosetta property lookups: `actual-interface`, `add-default-route`, `use-peer-dns`, `use-peer-ntp`, `address-pool`, `allow-remote-requests`, `servers`
 > - Rosetta command trees: `/ip/address`, `/ip/route`, `/ip/dhcp-client`, `/ip/dhcp-server`, `/ip/dhcp-server/network`, `/ip/dns`, `/ip/dns/cache`, `/ip/pool`, `/interface`

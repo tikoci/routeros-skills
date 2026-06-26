@@ -1,5 +1,7 @@
 # MikroTik RouterOS "SkillStore" (`SKILL.md`) for AI assistants
 
+[![CI](https://github.com/tikoci/routeros-skills/actions/workflows/ci.yml/badge.svg)](https://github.com/tikoci/routeros-skills/actions/workflows/ci.yml)
+
 Custom instruction skills for [GitHub Copilot](https://docs.github.com/en/copilot/customizing-copilot/adding-custom-instructions-for-github-copilot) and Claude Code (and similar AI coding assistants) that teach them about [MikroTik RouterOS](https://mikrotik.com/) v7.
 
 ## Skills
@@ -54,9 +56,12 @@ These skills cover **RouterOS 7.x** (long-term and newer releases). RouterOS v6 
 
 ## Contributing
 
-1. Fork this repository
+1. Fork this repository (or branch, if you have write access)
 2. Edit or add skills (each skill is a `<name>/SKILL.md` folder)
-3. Open a pull request
+3. Run the checks locally: `make lint` (and `make lint-links` if you have [lychee](https://lychee.cli.rs/))
+4. Open a pull request — `main` is protected, so all changes land via PR
+
+Every PR is gated by [CI](.github/workflows/ci.yml) (markdownlint + cspell + a `SKILL.md` validator + offline link check) and reviewed by CodeRabbit and Copilot. See [CONTRIBUTING.md](CONTRIBUTING.md) for the local setup, the dictionary policy, and what each check does.
 
 Feedback, corrections, and new skill ideas are welcome via [issues](https://github.com/tikoci/routeros-skills/issues).
 

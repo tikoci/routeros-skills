@@ -175,7 +175,7 @@ See the [VirtIO driver matrix](./references/virtio-drivers.md) for the full tabl
 
 ### The `if=virtio` Trap (aarch64)
 
-```
+```text
                          x86_64 (q35)              aarch64 (virt)
 if=virtio shorthand →    virtio-blk-pci (PCI) ✅    virtio-blk-device (MMIO) ❌
 -device virtio-blk-pci → virtio-blk-pci (PCI) ✅    virtio-blk-pci (PCI) ✅
@@ -337,6 +337,7 @@ QEMU user-mode networking (`-netdev user,hostfwd=...`) for typical RouterOS serv
 | WinBox | 8291 | 9291 | `tcp::9291-:8291` |
 
 Multiple forwards in one netdev:
+
 ```sh
 -netdev user,id=net0,hostfwd=tcp::9180-:80,hostfwd=tcp::9122-:22,hostfwd=tcp::9728-:8728
 ```

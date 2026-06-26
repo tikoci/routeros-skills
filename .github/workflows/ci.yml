@@ -1,0 +1,63 @@
+name: CI
+
+# Gate for the routeros-* skills: deterministic, fast checks that must pass
+# before merge to main. Semantic review (RouterOS accuracy, prose) is handled
+# separately by CodeRabbit + Copilot, which review every PR org-wide — see
+# .coderabbit.yaml. Keep this workflow to mechanical, reproducible checks.
+#
+# Jobs:
+#   lint       — markdownlint-cli2 + cspell + the SKILL.md validator (bun run check)
+#   links      — lychee, offline: relative links + #anchors (external URLs skipped)
+#   actionlint — lints these workflow files themselves
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# Least-privilege: these jobs only read the repo.
+permissions:
+  contents: read
+
+# Cancel superseded runs on the same ref (e.g. rapid PR pushes).
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    name: lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: oven-sh/setup-bun@v2
+      - run: bun install --frozen-lockfile
+      - name: markdownlint + cspell + skill validator
+        run: bun run check
+
+  links:
+    name: links
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      # Offline mode validates relative links and #anchors against the
+      # filesystem and SKIPS external http(s) URLs — so a flaky network or a
+      # rate-limited host never fails the gate. (External-URL checking can be
+      # added later as a separate, non-blocking scheduled workflow.)
+      - name: Link & anchor check (offline)
+        uses: lycheeverse/lychee-action@v2
+        with:
+          # --exclude-path node_modules is belt-and-suspenders: this job does a
+          # bare checkout (no `bun install`), so node_modules shouldn't exist —
+          # but the flag keeps a local `make lint-links` run clean too.
+          args: "--offline --include-fragments --exclude-path node_modules './**/*.md'"
+          fail: true
+
+  actionlint:
+    name: actionlint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Lint workflow YAML
+        uses: raven-actions/actionlint@v2

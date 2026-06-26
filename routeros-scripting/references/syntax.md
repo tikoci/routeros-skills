@@ -304,6 +304,7 @@ Scripts have permission policies that control what they can access:
 | `romon` | RoMON access |
 
 **Rules:**
+
 - A script can only execute another script with **equal or higher** permissions
 - `dont-require-permissions=yes` bypasses the check (useful for Netwatch/scheduler scripts with limited permissions)
 - When run from CLI, **user permissions** apply. Use `run use-script-permissions` to use the script's own policy set.
@@ -426,6 +427,7 @@ sensitive data require `sensitive`; file operations commonly require `ftp`. Use
 - **Global variables survive across script runs** but NOT across reboots
 
 > **Source:**
+>
 > - Rosetta: page 47579229 (Scripting) — comprehensive language reference
 > - Reference: `rest-api-patterns.md` — REST vs scripting interface differences
 > - MikroTik manual: [Scripting Tips and Tricks](https://manual.mikrotik.com/docs/Developer%20Guides/Scripting/scripting-tips-and-tricks/)

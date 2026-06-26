@@ -8,12 +8,13 @@
 #   make check   # report any repo skill missing from either dir (non-zero exit)
 #   make unlink   # remove this repo's routeros-* symlinks from both dirs
 #   make install-hooks  # run `make link` automatically after pull/checkout
+#   make lint    # run the same lint gate as CI (markdownlint + cspell + skill validator)
 
 REPO    := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
 SKILLS  := $(notdir $(wildcard $(REPO)/routeros-*))
 TARGETS := $(HOME)/.copilot/skills $(HOME)/.claude/skills
 
-.PHONY: link unlink check install-hooks
+.PHONY: link unlink check install-hooks lint
 
 link:
 	@for t in $(TARGETS); do \
@@ -49,3 +50,14 @@ install-hooks:
 	@chmod +x "$(REPO)/hooks/"* 2>/dev/null || true; \
 	git -C "$(REPO)" config core.hooksPath hooks && \
 	echo "install-hooks: core.hooksPath -> hooks (post-merge/post-checkout run 'make link')"
+
+# Same gate CI runs: markdownlint-cli2 + cspell + the SKILL.md validator.
+# Requires Bun + a one-time `bun install` (devDeps: cspell, markdownlint-cli2).
+lint:
+	@cd "$(REPO)" && bun run check
+
+# Offline link + #anchor check (mirrors the CI `links` job). Requires `lychee`
+# on PATH (`brew install lychee`). External URLs are skipped — relative links
+# and same-/cross-file anchors only.
+lint-links:
+	@cd "$(REPO)" && lychee --offline --include-fragments --exclude-path node_modules './**/*.md'

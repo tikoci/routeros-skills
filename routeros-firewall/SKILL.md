@@ -132,24 +132,28 @@ L7 alternation: `(a|b|c)` is correct. `(a)|(b)|(c)` has POSIX ERE operator prece
 | `connection-state=new,established` | Valid states: `new`, `established`, `related`, `invalid`, `untracked` |
 | `action=log` or `passthrough=yes` stops evaluation | Non-terminal actions continue to next rule — a `drop` below still fires |
 | Combining fasttrack + mangle routing marks | fasttrack bypasses mangle — pick one or the other |
-| `(a)|(b)|(c)` alternation in L7 regexp | Use `(a|b|c)` — grouped form inside one set of parentheses |
+| `(a)\|(b)\|(c)` alternation in L7 regexp | Use `(a\|b\|c)` — grouped form inside one set of parentheses |
 | One firewall rule per interface | Use `in-interface-list=` with a named interface list |
 | IPv6 traffic handled by `/ip/firewall` | IPv6 uses a **separate** `/ipv6/firewall` — rules do not apply cross-protocol |
 
 ## Additional Resources
 
 **Related skills:**
+
 - `routeros-fundamentals` — RouterOS CLI syntax, REST API, scripting basics
 - `routeros-hotspot` — hotspot chain interaction with firewall, walled garden
 
 **Reference files in this skill:**
+
 - [references/mangle-routing.md](./references/mangle-routing.md) — policy routing with routing marks, `hotspot=auth` matcher
 - [references/dos-protection.md](./references/dos-protection.md) — `psd`, `tarpit`, `connection-limit` DoS patterns
 
 **MCP tools:**
+
 - `rosetta` MCP — `/ip/firewall` command tree inspection (`routeros_search`, `routeros_get_page`)
 
 **MikroTik docs:**
+
 - [Firewall Filter](https://help.mikrotik.com/docs/display/ROS/Filter) — filter chain reference
 - [NAT](https://help.mikrotik.com/docs/display/ROS/NAT) — NAT actions reference
 - [Connection tracking](https://help.mikrotik.com/docs/display/ROS/Connection+tracking) — connection states

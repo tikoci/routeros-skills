@@ -147,7 +147,7 @@ This requires a power-cycle confirmation (see device-mode reference).
 
 ## Recommended Pattern for quickchr
 
-```
+```text
 1. POST /rest/system/package/update/check-for-updates   → reveals available packages
 2. POST /rest/system/package/enable {"numbers":"<name>"}  → schedule enable
 3. POST /rest/system/package/apply-changes {}             → reboot + apply

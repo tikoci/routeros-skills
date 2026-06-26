@@ -137,7 +137,7 @@ Empty string (text variants) or `"0"` (unsigned variants) when local-DB auth (no
 
 **Reading request headers:** use `$(http-header-<HeaderName>)` — direct substitution, no conditional needed. Header name is case-sensitive as sent by the client. Examples:
 
-```
+```text
 Detected language: $(http-header-Accept-Language)
 $(if http-header-User-Agent == "MyKioskApp/1.0")
   ...kiosk-specific markup...
@@ -146,7 +146,7 @@ $(endif)
 
 **Setting response status / headers:** use the `$(if ...)` form — note that `http-status` and `http-header` (without dash + name) are **special tokens** the substitution engine recognizes:
 
-```
+```text
 $(if http-status == 302)Found$(endif)
 $(if http-header == Location)https://example.com/welcome$(endif)
 ```
@@ -159,7 +159,7 @@ The two patterns coexist: `$(http-header-User-Agent)` reads, `$(if http-header =
 
 ## Conditional Syntax
 
-```
+```text
 $(if VAR)
   shown when VAR is non-empty
 $(elif VAR == "value")
@@ -223,7 +223,7 @@ There is **no HTML-escape variant**. If a variable can contain user-controlled d
 
 ## External Captive Portal Flow
 
-```
+```text
 1. Unauth client requests any URL
    → RouterOS serves login.html with $(link-login-only), $(mac), $(link-orig-esc)
 2. login.html JS posts client info to external auth provider (auth.example.com)

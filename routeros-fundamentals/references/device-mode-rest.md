@@ -41,7 +41,7 @@ Returns a **flat JSON object** (not an array). All values are strings — boolea
 
 Supports field selection:
 
-```
+```text
 GET /rest/system/device-mode?.proplist=mode,container
 → {"mode":"advanced","container":"false"}
 ```
@@ -78,7 +78,7 @@ POST /rest/system/device-mode/update
 
 The recommended flow used in `src/lib/device-mode.ts`:
 
-```
+```text
 1. POST /rest/system/device-mode/update
    - Include desired changes + activation-timeout=30s
    - Fire and forget (don't await — it blocks)

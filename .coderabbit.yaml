@@ -1,0 +1,52 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+#
+# CodeRabbit + GitHub Copilot review every PR in this org. This config makes
+# them COMPLEMENT the CI lint gate instead of duplicating it: spelling and
+# Markdown structure are already enforced deterministically by cspell +
+# markdownlint-cli2 (see .github/workflows/ci.yml), so CodeRabbit is steered
+# toward the thing only a reader can judge — RouterOS factual accuracy and the
+# repo's footnote-grounding discipline.
+
+language: en-US
+
+reviews:
+  profile: chill
+  request_changes_workflow: false
+  high_level_summary: true
+  poem: false
+  auto_review:
+    enabled: true
+    drafts: false
+    base_branches:
+      - main
+
+  # Don't spend review on machine-generated / non-prose files.
+  path_filters:
+    - "!bun.lock"
+    - "!project-words.txt"
+
+  path_instructions:
+    - path: "**/SKILL.md"
+      instructions: >-
+        This file is a published AI-agent skill for MikroTik RouterOS v7.
+        Spelling and Markdown structure are already gated by CI (cspell +
+        markdownlint-cli2) — do NOT re-report those. Focus on: (1) RouterOS
+        factual accuracy — CLI/REST/scripting syntax and whether claims hold on
+        RouterOS 7.x (this repo does not cover v6); (2) the footnote-grounding
+        discipline — each non-obvious claim should be traceable to a verifiable
+        source (a help.mikrotik.com URL, a public tikoci repo, or a
+        /console/inspect query); flag claims that look ungrounded or
+        contradicted by RouterOS 7 behavior; (3) public-skill hygiene — these
+        files must NOT reference non-public projects or user-local environment
+        facts. Also sanity-check the YAML frontmatter `name` (must equal the
+        directory) and `description`.
+    - path: "routeros-*/references/**/*.md"
+      instructions: >-
+        Reference material backing a skill. Same priorities as SKILL.md:
+        RouterOS 7.x factual accuracy and source-grounded claims over style.
+        Spelling/Markdown are handled by CI — don't duplicate.
+
+  tools:
+    # CI owns markdownlint; turning it off here avoids duplicate inline comments.
+    markdownlint:
+      enabled: false
