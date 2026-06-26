@@ -66,9 +66,12 @@ entry points: `QuickCHR.list()`, `QuickCHR.get(name)`, `QuickCHR.stop(name)`.
 `QUICKCHR_REST_BASE`, `QUICKCHR_SSH_PORT`, `QUICKCHR_AUTH`, and the legacy-compat
 `URLBASE` (= REST base, includes `/rest`) and `BASICAUTH`. **`BASICAUTH` /
 `QUICKCHR_AUTH` are raw `user:password`** — base64-encode for an
-`Authorization: Basic …` header. Output is **secret-bearing**. `descriptor()`
-throws `MACHINE_STOPPED` if the machine isn't running — check status before using
-stored ports.
+`Authorization: Basic …` header. **⚠️ Secret-bearing output:** never log/print these
+values, never include them in thrown error messages, and never commit them to
+version control (including `.env`, CI logs, or debug artifacts). Prefer redaction
+(`***`) in diagnostics and keep values in memory only for the minimum needed scope.
+`descriptor()` throws `MACHINE_STOPPED` if the machine isn't running — check status
+before using stored ports.
 
 ## Port layout
 
