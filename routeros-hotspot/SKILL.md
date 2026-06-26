@@ -32,6 +32,7 @@ Hotspot traffic intercept runs **before** the regular firewall input/forward cha
 ```
 
 Key properties:
+
 - `ssl-certificate=` — reference the name after import (RouterOS appends `_0` to imported certificate names)
 - `nas-port-type=` — use `ethernet` for wired hotspots and `wireless-ieee-802-11-g` for wireless hotspots
 - `html-directory-override=` — must match the exact folder name on the router's filesystem
@@ -108,6 +109,7 @@ Use a consistent `comment=` tag for idempotent add/remove. Without it, repeated 
 ```
 
 **IP vs HTTP walled garden:**
+
 - `/ip/hotspot/walled-garden/ip` — layer 3 match by destination host, applied BEFORE authentication. Use for HTTPS destinations.
 - `/ip/hotspot/walled-garden` — layer 7 URL pattern match, requires HTTP. Does NOT work for HTTPS.
 
@@ -120,6 +122,7 @@ The hotspot profile references `ssl-certificate=name.crt_0` (RouterOS appends `_
 ```
 
 Quick import pattern:
+
 ```routeros
 /certificate import file-name=login.example.com.crt passphrase=""
 /certificate import file-name=login.example.com.key passphrase=""
@@ -136,7 +139,7 @@ Use `$(link-login-only)` as the login POST endpoint, pass the original destinati
 
 **Conditional syntax** (server-side, not JavaScript):
 
-```
+```text
 $(if logged-in == "yes")
   <a href="$(link-logout)">Logout</a>
 $(else)
@@ -194,13 +197,16 @@ The external provider authenticates the user and redirects the browser back to `
 ## Additional Resources
 
 **Related skills:**
+
 - `routeros-fundamentals` — RouterOS CLI syntax, REST API, scripting basics
 - `routeros-certificates` (in backlog) — for the full certificate chain handling pattern
 
 **MCP tools:**
+
 - `rosetta` MCP server — `/tool/ping`, `/ip/hotspot` command tree inspection (`routeros_search`, `routeros_get_page`)
 
 **MikroTik docs:**
+
 - [HotSpot](https://help.mikrotik.com/docs/display/ROS/HotSpot) — official reference
 - [DHCP Server](https://help.mikrotik.com/docs/display/ROS/DHCP) — option 114 configuration
 

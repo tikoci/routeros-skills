@@ -41,7 +41,7 @@ A short packet that triggers immediate replies from all RouterOS devices on the 
 domain. The minimal form is just a zeroed 4-byte header — this is exactly what MAC-Telnet
 sends (`unsigned int message = 0;`):
 
-```
+```text
 Offset  Length  Value       Field
 0       1       0x00        header byte 0 (version per MAC-Telnet; "unknown" per Wireshark)
 1       1       0x00        header byte 1 (ttl per MAC-Telnet)
@@ -54,7 +54,7 @@ Some implementations append an explicit refresh TLV (type 6, length 0). The comp
 header + empty-TLV form is 8 bytes (`00 00 00 00 00 06 00 00`); some implementations add
 a trailing zero byte (non-semantic padding), giving 9 bytes. RouterOS accepts all forms:
 
-```
+```text
 Offset  Length  Value       Field
 0       4       00 00 00 00 header (2 header bytes + 2-byte seqno)
 4       2       0x0006      TLV type = 6 (refresh)   ← big-endian
@@ -66,7 +66,7 @@ As raw bytes (9-byte form): `00 00 00 00 00 06 00 00 00`
 
 ### Response Packet
 
-```
+```text
 Offset  Length  Field
 0       2       header bytes (version + ttl per MAC-Telnet; "unknown" per Wireshark)
 2       2       sequence number (big-endian; per-device counter)
@@ -80,7 +80,7 @@ sequence number as a big-endian uint16, then iterate TLVs from offset 4.
 
 Each TLV (Type-Length-Value) record in the response:
 
-```
+```text
 Offset  Length  Field
 0       2       type   (big-endian uint16)
 2       2       length (big-endian uint16) — byte count of value
@@ -124,6 +124,7 @@ real RouterOS packets.
 ## Multi-Interface Behavior
 
 A RouterOS device with N active interfaces sends **N separate MNDP announcements** — one per interface. Each announcement has:
+
 - A **different MAC address** (the interface's own MAC)
 - A **different interface name** (TLV 16)
 - A **different IP address** (if assigned)

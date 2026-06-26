@@ -10,7 +10,7 @@ Wireshark natively decodes TZSP. No plugins needed.
 
 To see ONLY TZSP traffic and avoid noise:
 
-```
+```text
 udp port 37008
 ```
 
@@ -20,13 +20,13 @@ Apply this as a **capture filter** (not display filter) before starting capture.
 
 If capturing all traffic, use a display filter:
 
-```
+```text
 tzsp
 ```
 
 Or to see the inner decoded protocol:
 
-```
+```text
 tzsp && ip.addr == 192.168.88.100
 ```
 
@@ -116,11 +116,12 @@ Use `tshark` or Wireshark to actually decode the captured file.
 
 When using QEMU user-mode networking (`-netdev user`), the network path for TZSP is:
 
-```
+```text
 CHR (guest) → QEMU NAT (10.0.2.2) → host loopback/interface → tshark/Wireshark
 ```
 
 Key details:
+
 - The CHR sees `10.0.2.2` as its default gateway — this is the host from the guest's perspective
 - Configure `streaming-server=10.0.2.2:37008` on the CHR
 - Listen on the host with `tshark -i any -f "udp port 37008"`

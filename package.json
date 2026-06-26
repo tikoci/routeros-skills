@@ -1,0 +1,17 @@
+{
+  "name": "routeros-skills",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Lint tooling for the routeros-* skills repo (cspell + markdownlint-cli2 + skill validator). The skills themselves are plain Markdown — this package only exists to gate quality in CI and locally.",
+  "scripts": {
+    "check": "bun run lint:markdown && bun run lint:cspell && bun run lint:skills",
+    "lint:markdown": "markdownlint-cli2 \"**/*.md\"",
+    "lint:cspell": "cspell lint . --no-progress",
+    "lint:skills": "bun scripts/check-skills.ts"
+  },
+  "devDependencies": {
+    "cspell": "^10.0.0",
+    "markdownlint-cli2": "^0.21.0"
+  }
+}

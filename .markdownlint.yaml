@@ -1,0 +1,64 @@
+# markdownlint rules config (read by both markdownlint-cli2 and IDE extensions)
+# https://github.com/DavidAnson/markdownlint
+#
+# NOTE: unlike most tikoci repos (which exclude skills/ as LLM instruction files),
+# here the SKILL.md files ARE the product and ARE linted. See .markdownlint-cli2.yaml.
+
+# MD013 — line length: long lines are normal in technical docs and tables
+MD013: false
+
+# MD024 — duplicate headings: skills repeat section headers ("Example", "Why",
+# "Gotchas") within and across files; that's intentional structure, not an error
+MD024: false
+
+# MD033 — inline HTML: allow elements GitHub renders in its Markdown flavor.
+# <kbd> is used for keyboard shortcuts; the others are semantic HTML GitHub supports.
+MD033:
+  allowed_elements:
+    - kbd
+    - mark
+    - details
+    - summary
+    - sub
+    - sup
+    - abbr
+    - dl
+    - dt
+    - dd
+    - figure
+    - figcaption
+    - br
+
+# MD036 — emphasis as heading: italic annotations ("note", asides) are intentional
+MD036: false
+
+# MD028 — blank line in blockquote: GitHub renders these fine; used for separation
+MD028: false
+
+# MD001 — heading increment: skills jump heading levels for visual grouping
+MD001: false
+
+# MD060 — table column style: compact separators (---) are fine
+MD060: false
+
+# --- Signal rules explicitly enabled ---
+
+# MD040 — fenced code blocks must have a language tag (routeros, text, bash, ...)
+MD040: true
+
+# MD046 — fenced code blocks only (no indented code blocks)
+MD046:
+  style: fenced
+
+# MD048 — consistent fence style (backticks)
+MD048:
+  style: backtick
+
+# MD058 — blank lines around tables
+MD058: true
+
+# MD034 — no bare URLs (must be wrapped in <> or [text](url))
+MD034: true
+
+# MD042 — no empty links ([text]() or [text](#))
+MD042: true
