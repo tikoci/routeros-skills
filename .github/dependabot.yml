@@ -1,0 +1,12 @@
+version: 2
+# Keep the SHA-pinned third-party Actions in .github/workflows/** fresh.
+# Without this, pinning to a commit SHA (required by the CodeQL
+# actions/unpinned-tag rule) would silently freeze versions forever.
+# Dependabot bumps the SHA and updates the trailing `# vX.Y.Z` comment.
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: ci

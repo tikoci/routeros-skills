@@ -50,6 +50,13 @@ This repo is the **single source of truth** for all `routeros-*` skills. Locally
 
 Non-`routeros-*` skills (e.g. `tikoci-*`, `screenshot`, `sql-as-rag`) are personal/project-scoped and live only in the local `~/.*/skills/` directories, **not** in this repo. See [SETUP.md](SETUP.md) for the full local setup guide.
 
+**The Skill Set is the `routeros-*/` folders only.** Everything else at the repo root is the **CI/QA and tooling layer** that validates and ships those skills — it is *not* part of the skill content and is not symlinked into `~/.*/skills/`:
+
+- `.github/` — CI workflows (lint, link check, dependency review), CodeQL Default Setup, and Dependabot config
+- `scripts/` — the `SKILL.md` validator (`check-skills.ts`) run by CI and `make lint`
+- `hooks/` — optional local git hooks that re-symlink skills after checkout/merge (`make install-hooks`)
+- `Makefile`, `.markdownlint*.yaml`, `cspell.json`, `project-words.txt`, `package.json`, `bun.lock` — lint/build configuration and the dev dependency tree
+
 ## Scope
 
 These skills cover **RouterOS 7.x** (long-term and newer releases). RouterOS v6 is not covered and accuracy for v6 questions will be low.

@@ -31,7 +31,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-      - uses: oven-sh/setup-bun@v2
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
       - run: bun install --frozen-lockfile
       - name: markdownlint + cspell + skill validator
         run: bun run check
@@ -46,7 +46,7 @@ jobs:
       # rate-limited host never fails the gate. (External-URL checking can be
       # added later as a separate, non-blocking scheduled workflow.)
       - name: Link & anchor check (offline)
-        uses: lycheeverse/lychee-action@v2
+        uses: lycheeverse/lychee-action@8646ba30535128ac92d33dfc9133794bfdd9b411 # v2.8.0
         with:
           # --exclude-path node_modules is belt-and-suspenders: this job does a
           # bare checkout (no `bun install`), so node_modules shouldn't exist —
@@ -60,4 +60,4 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - name: Lint workflow YAML
-        uses: raven-actions/actionlint@v2
+        uses: raven-actions/actionlint@205b530c5d9fa8f44ae9ed59f341a0db994aa6f8 # v2.1.2

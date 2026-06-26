@@ -11,6 +11,12 @@
 ignores:
   - "node_modules/**"
   - "**/node_modules/**"
+  # Git internals: remote-tracking ref/log files inherit the branch name, and
+  # the AI-findings autofix bot names branches after the file they touch
+  # (e.g. ai-findings-autofix/...-SKILL.md), so `.git/**` can contain paths
+  # ending in `.md`. Fresh CI checkouts don't have these refs, but a local
+  # `make lint` after fetching them would otherwise fail on git internals.
+  - ".git/**"
   # LLM instruction files — different audience, intentionally loose structure.
   # None live in this repo today; listed defensively in case one is added.
   - "CLAUDE.md"
