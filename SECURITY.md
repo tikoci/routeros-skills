@@ -19,10 +19,10 @@ So the practical security surface is the **CI workflows** and the **dev dependen
 
 The repository's [Security tab](https://github.com/tikoci/routeros-skills/security) is the live source of current alerts and advisories. This section describes *what* checks run and *why*, so it stays meaningful even when the badge is at 0.
 
-- **CodeQL** — repo-managed workflow at [`.github/workflows/codeql.yml`](.github/workflows/codeql.yml) with config [`.github/codeql/codeql-config.yml`](.github/codeql/codeql-config.yml). Query suite: `security-and-quality` (security-extended + code-quality). Languages: `javascript-typescript` (the Bun helper) and `actions` (the workflow YAML — the higher-value target here). Schedule: push to `main`, pull requests to `main`, weekly cron.
+- **CodeQL** — GitHub [Default Setup](https://github.com/tikoci/routeros-skills/settings/security_analysis), `extended` query suite (security-extended). Languages: `javascript-typescript` (the Bun helper) and `actions` (the workflow YAML — the higher-value target here). Runs on push to `main` and pull requests. Default Setup is used because the org auto-enables it on public repos; an advanced repo-managed workflow would conflict with it.
 - **Code Quality (AI findings, preview)** — not enabled.
 - **Dependency review** — [`.github/workflows/dependency-review.yml`](.github/workflows/dependency-review.yml), `fail-on-severity: high`, on pull requests.
-- **Dependabot security updates** — not enabled.
+- **Dependabot alerts** — enabled.
 - **Secret scanning** — enabled (GitHub default for public repositories), with push protection.
 - **Private vulnerability reporting** — enabled.
 
