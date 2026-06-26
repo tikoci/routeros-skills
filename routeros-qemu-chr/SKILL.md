@@ -368,6 +368,9 @@ Use unique host ports per instance when running multiple CHRs (9180, 9181, 9182.
 - [Known issues](./references/known-issues.md) — boot failures, cross-arch limitations
 - [GitHub Actions CI patterns](./references/github-actions-ci.md) — running CHR on GitHub-hosted runners
 - [CHR licensing](./references/chr-licensing.md) — free tier (1 Mbps), 60-day trial, paid tiers, expiry behavior
+- For the **quickchr** reference implementation — driving CHR from tests &
+  automation (`QuickCHR.start`, `exec`/`rest`, networking recipes, the connection
+  surface for harnesses): see the `routeros-quickchr` skill
 - For RouterOS CLI/REST once booted: see the `routeros-fundamentals` skill
 - For packet capture and TZSP streaming from CHR: see the `routeros-sniffer` skill
 - For MNDP neighbor-discovery wire format / TLVs (received via the host-capture recipe above): see the `routeros-mndp` skill
