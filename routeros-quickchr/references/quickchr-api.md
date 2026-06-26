@@ -22,9 +22,9 @@ completed when the promise resolves (background/library use). Common `StartOptio
 | Field | Meaning |
 |---|---|
 | `name` | machine name (must not start with `-`) |
-| `channel` | `"stable" \| "long-term" \| "testing" \| "development"` |
+| `channel` | one of `"stable"`, `"long-term"`, `"testing"`, `"development"` |
 | `version` | pinned RouterOS, e.g. `"7.23.1"` (mutually informative with `channel`) |
-| `arch` | `"x86" \| "arm64"` (default: host arch) |
+| `arch` | `"x86"` or `"arm64"` (default: host arch) |
 | `secureLogin` | `true` → managed `quickchr` user with a stored password; `false` → open admin. Alias: `noAuth` |
 | `cpu`, `mem` | vCPUs / MiB RAM |
 | `background` | run detached (the library default for automation) |
@@ -47,7 +47,7 @@ entry points: `QuickCHR.list()`, `QuickCHR.get(name)`, `QuickCHR.stop(name)`.
 | `exec(cmd, opts?)` | run a CLI command/script → `{ output, via }`. `opts.via`: `auto`/`rest`/`qga`/`console` |
 | `waitForBoot(timeoutMs?)` | optional re-check that REST is up (start() already waits) |
 | `waitFor(cond, timeoutMs?)` | poll an arbitrary async predicate (e.g. "/dude enabled") |
-| `installPackage(name\|names)` | download + install + reboot; returns names actually installed |
+| `installPackage(names)` | one name or an array; download + install + reboot; returns names actually installed |
 | `availablePackages()` | package names available for this version/arch |
 | `upload(local, remote?)` / `download(remote, local)` | SCP file transfer |
 | `subprocessEnv()` | env vars for a child process (see below) |

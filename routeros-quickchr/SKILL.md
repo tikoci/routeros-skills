@@ -18,8 +18,8 @@ test grounding.
 **Reach for quickchr when** you want to apply config and read it back, iterate on
 REST/scripting against a live box, or run integration tests against CHR.
 
-**Don't** when you only need documentation (use the `rosetta` MCP / the
-`routeros-fundamentals` skill), or you're flashing physical hardware (use the
+**Don't reach for it** when you only need documentation (use the `rosetta` MCP /
+the `routeros-fundamentals` skill), or you're flashing physical hardware (use the
 `routeros-netinstall` skill). For raw QEMU boot internals without the quickchr
 wrapper, see the `routeros-qemu-chr` skill.
 
@@ -61,7 +61,7 @@ See also [`references/quickchr-api.md`](./references/quickchr-api.md) in this sk
 |---|---|
 | Boot / create a machine | `QuickCHR.start(opts)` → REST-ready `ChrInstance` |
 | Pick RouterOS | `channel` (`stable`/`long-term`/`testing`/`development`) **or** `version` (`"7.23.1"`) |
-| Architecture | `arch: "x86" \| "arm64"` |
+| Architecture | `arch:` — `"x86"` or `"arm64"` |
 | Managed login vs open admin | `secureLogin: true` (managed user, real password) / `false` |
 | Run a CLI command | `instance.exec(cmd, opts?)` |
 | REST call | `instance.rest(path, init?)` |
