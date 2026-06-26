@@ -11,6 +11,7 @@ Bun's `node:http` implementation does NOT emit the `error` event when `req.destr
 **Impact:** Any code that calls `req.destroy()` as a timeout mechanism and awaits the error event will hang indefinitely. This is the **primary reason** `rest.ts` uses `node:http` with a manual `done` flag + `setTimeout` + direct `reject()` pattern instead of `fetch()`.
 
 **Fix (used in `rest.ts`):**
+
 ```typescript
 let done = false;
 const timer = setTimeout(() => {
@@ -35,6 +36,7 @@ The original claim: Bun's `fetch()` pools TCP connections by `host:port` and ign
 **Why `rest.ts` still uses `node:http`:** Bug 1 (`req.destroy()` silence) is the real reason. The connection pool defense is belt-and-suspenders — low cost, eliminates an entire class of potential issues even if the pool bug resurfaces in a future Bun version.
 
 **History:** The original pool bug reports (quickchr sessions 008–017) were likely caused by:
+
 - Older Bun versions with actual pool bugs
 - `device-mode/update` connection-dropping behavior misattributed to the pool
 - Post-boot REST race (RouterOS returns wrong data briefly after boot)
@@ -48,6 +50,7 @@ The original claim: Bun's `fetch()` pools TCP connections by `host:port` and ign
 **Impact:** Integration tests that use `Bun.secrets` for MikroTik.com credentials (license renewal) hang in CI or when run from a non-TTY context.
 
 **Fix:** Use environment variables as primary credential source, with `Bun.secrets` as fallback only in interactive terminals:
+
 ```typescript
 const user = process.env.MIKROTIK_WEB_USER ?? (process.stdout.isTTY ? Bun.secrets.get("MIKROTIK_WEB_USER") : undefined);
 ```
@@ -61,6 +64,7 @@ Bun's test runner shares a single event loop across all test files in the same p
 **Impact:** Running multiple lab test files together (`bun test test/lab/`) hangs. This is NOT a connection pool issue — it affects both `fetch()` and `node:http`.
 
 **Fix:** Run lab test files individually:
+
 ```bash
 # CORRECT
 QUICKCHR_INTEGRATION=1 bun test test/lab/device-mode/device-mode.test.ts
@@ -90,6 +94,7 @@ QUICKCHR_INTEGRATION=1 bun test test/lab/
 - **Eventual unification:** If Bun fixes Bug 1, `rest.ts` could migrate back to `fetch()`. Until then, mixed pattern is correct.
 
 > **Source:**
+>
 > - Lab: `test/lab/bun-pool/REPORT.md` — 9 tests across 2 files, Bug 2 disproved
 > - Lab: `test/lab/bun-pool/REPORT.md` — Bug 4 discovered during pool investigation
 > - Instruction: `.github/instructions/bun-http.instructions.md` — Bug 1, 2, 3 descriptions

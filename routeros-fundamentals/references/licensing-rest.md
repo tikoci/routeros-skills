@@ -127,7 +127,7 @@ All `.section` array responses arrive as **HTTP 200**, including errors. The `st
 
 ## Recommended Pattern
 
-```
+```text
 1. POST /rest/system/license/renew with duration="15s"
    Body: {"account":"...","password":"...","level":"p1","duration":"15s"}
 2. Parse array response

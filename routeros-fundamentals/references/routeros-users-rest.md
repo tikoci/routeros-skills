@@ -327,7 +327,7 @@ curl -s -u admin: -X DELETE http://127.0.0.1:9100/rest/user/ssh-keys/*1
 
 From `provision.ts` → `installSshKey()`:
 
-```
+```text
 1. Generate ed25519 keypair with ssh-keygen
    - Store in <machineDir>/ssh/id_ed25519 (private) and .pub (public)
 2. Install public key via serial console:
@@ -394,6 +394,7 @@ Password complexity requirements:
 6. **All values are strings:** Consistent with all RouterOS REST responses — booleans are `"true"`/`"false"`, even disabled is a string.
 
 > **Source:**
+>
 > - Rosetta: pages [8978504](https://help.mikrotik.com/docs/spaces/ROS/pages/8978504/User) (User), [47579162](https://help.mikrotik.com/docs/spaces/ROS/pages/47579162/REST+API) (REST API), [132350014](https://help.mikrotik.com/docs/spaces/ROS/pages/132350014/SSH) (SSH)
 > - Code: `quickchr/src/lib/provision.ts` — createUser, disableAdmin, installSshKey patterns
 > - Instruction: `provisioning.instructions.md` — admin expired caveat, SSH key provisioning

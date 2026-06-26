@@ -10,6 +10,7 @@ description: "RouterOS /container subsystem for running OCI containers on MikroT
 RouterOS 7.x includes a container subsystem (`/container`) that runs OCI-compatible container images directly on MikroTik hardware. It is NOT Docker — it's MikroTik's own implementation with significant differences.
 
 **Requirements:**
+
 - RouterOS 7.x with `container` extra package installed
 - Device-mode must be enabled (requires physical access for initial setup)
 - Sufficient storage (external USB disk recommended, 100+ MB/s, 10K+ random IOPS)
@@ -42,10 +43,12 @@ For the full feature matrix, modes, update properties, and physical confirmation
 ```
 
 **Method 1: Upload .npk file + apply-changes** (offline)
+
 ```sh
 # Upload via SCP (or Winbox drag-and-drop, or WebFig file upload)
 scp container-7.22-arm64.npk admin@router:/
 ```
+
 ```routeros
 # Apply changes (triggers reboot AND activates — /system/reboot does NOT work!)
 /system/package/apply-changes
@@ -54,10 +57,12 @@ scp container-7.22-arm64.npk admin@router:/
 ⚠️ **Critical: `/system/package/apply-changes` was added in RouterOS 7.18.** On 7.18+, always use it — a plain `/system/reboot` discards uploaded packages. On versions <7.18, `/system/reboot` IS the correct (and only) method. (Lab-verified: 7.22.1 uses apply-changes, 7.10 requires reboot. Version check via rosetta command tree.)
 
 **Method 2: Online package update** (requires internet)
+
 ```routeros
 /system/package/update check-for-updates
 /system/package/update install
 ```
+
 This downloads and installs all available updates including extra packages. To enable a specific package already uploaded but not active, use `/system/package/enable container` then `/system/package/apply-changes`.
 
 ## Networking Setup
@@ -166,13 +171,16 @@ The naming of env/mount reference properties changed at version boundaries:
 RouterOS accepts container images in these formats:
 
 ### Option A: Pull from Registry
+
 ```routeros
 /container/config/set registry-url=https://registry-1.docker.io tmpdir=disk1/pull
 /container/add remote-image=library/alpine:latest interface=veth-myapp
 ```
 
 ### Option B: Import Local Tar File
+
 Upload a Docker v1 tar to the router, then:
+
 ```routeros
 /container/add file=myimage.tar interface=veth-myapp
 ```
@@ -185,7 +193,7 @@ RouterOS's container loader has specific requirements for local tar files:
 2. **No gzip compression** — layers must be uncompressed tar
 3. **Docker v1 manifest format** — `manifest.json` + `config.json` + `layer.tar`
 
-```
+```text
 myimage.tar
 ├── manifest.json    # [{"Config":"config.json","RepoTags":["name:tag"],"Layers":["layer.tar"]}]
 ├── config.json      # {"architecture":"arm64","os":"linux","config":{...},"rootfs":{...}}
@@ -305,6 +313,7 @@ When pulling from registries or building images, map RouterOS architecture to Do
 | `x86` | `linux/amd64` |
 
 Query the router's architecture:
+
 ```typescript
 const resource = await fetch(`${base}/system/resource`, auth).then(r => r.json());
 const arch = resource["architecture-name"]; // "arm64", "arm", "x86"
@@ -321,12 +330,15 @@ Use manual `/container` setup when you need full VETH/bridge/L2 control, such as
 ## Additional Resources
 
 **Related skills:**
+
 - For netinstall and device-mode automation: see the `routeros-netinstall` skill
 - For the /app YAML format: see the `routeros-app-yaml` skill
 - For general RouterOS fundamentals (CLI, REST, scripting): see the `routeros-fundamentals` skill
 
 **MCP tools:**
+
 - For RouterOS documentation and property lookups: use the `rosetta` MCP server tools (`routeros_search`, `routeros_get_page`, `routeros_search_properties`)
 
 **External docs:**
-- MikroTik official docs: https://help.mikrotik.com/docs/spaces/ROS/pages/84901929/Container
+
+- MikroTik official docs: <https://help.mikrotik.com/docs/spaces/ROS/pages/84901929/Container>

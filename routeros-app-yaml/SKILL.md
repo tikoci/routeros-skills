@@ -12,6 +12,7 @@ RouterOS 7.21 introduced the `/app` path (built-in app listing and management). 
 The `/app` subsystem lets users define one or more containers as a single "application" in YAML. RouterOS parses the YAML, creates containers, volumes, networks, and config files, then manages the lifecycle.
 
 **Key concepts:**
+
 - Each `/app` is defined by a YAML document with services, configs, volumes, and networks
 - The YAML is loaded into RouterOS via CLI (`/app/add yaml-url=...`) or REST API
 - Built-in apps ship with RouterOS (visible at `GET /rest/app`)
@@ -53,7 +54,7 @@ The `/app` subsystem lets users define one or more containers as a single "appli
 
 ### Category Values (Exhaustive)
 
-```
+```text
 productivity, storage, networking, development, communication,
 file-management, search, video, media, media-management,
 home-automation, monitoring, database, automation, ai,
@@ -98,11 +99,12 @@ RouterOS supports two port mapping string formats. Both are valid; new apps from
 
 ### Old OCI-style (pre-7.23)
 
-```
+```text
 [ip:]host_port:container_port[/tcp|/udp][:label]
 ```
 
 Examples:
+
 ```yaml
 ports:
   - "8080:80/tcp"
@@ -112,11 +114,12 @@ ports:
 
 ### New RouterOS style (7.23+)
 
-```
+```text
 [ip:]host_port:container_port[:label][:tcp|:udp]
 ```
 
 Protocol is appended with colon instead of slash:
+
 ```yaml
 ports:
   - "8080:80:web:tcp"
@@ -138,6 +141,7 @@ ports:
 ### IP Addresses and Placeholders in Ports
 
 Port strings can include literal IPs or placeholder expressions:
+
 ```yaml
 ports:
   - "[accessIP]:[accessPort]:80/tcp:web"      # Old style with placeholders
@@ -242,6 +246,7 @@ The strict schema has regex `pattern` on port strings which **prevents VSCode au
 ### VSCode Integration
 
 Add to VSCode settings for YAML autocompletion:
+
 ```json
 {
   "yaml.schemas": {
@@ -272,4 +277,4 @@ Use `.editor.json` URLs for better autocompletion at the cost of less strict val
 
 - For RouterOS fundamentals, CLI syntax, REST API: see the `routeros-fundamentals` skill
 - For running CHR in QEMU (needed to test /app): see the `routeros-qemu-chr` skill
-- MikroTik forum reference: https://forum.mikrotik.com/t/amm0s-manual-for-custom-app-containers-7-22beta/268036/22
+- MikroTik forum reference: <https://forum.mikrotik.com/t/amm0s-manual-for-custom-app-containers-7-22beta/268036/22>

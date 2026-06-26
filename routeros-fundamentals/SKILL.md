@@ -10,6 +10,7 @@ description: "RouterOS v7 domain knowledge for AI agents. Use when: working with
 RouterOS runs a Linux kernel (5.6.3) but **everything above the kernel is MikroTik's proprietary `nova` system**. This is the single most important fact for agents to internalize.
 
 **What does NOT exist on RouterOS:**
+
 - No `/bin`, `/usr`, `/etc`, `/var` — no FHS layout
 - No bash, sh, ash, zsh — no Unix shell at all
 - No coreutils (`ls`, `cat`, `grep`, `ps`, `mount`, `ip`, `iptables`, etc.)
@@ -20,6 +21,7 @@ RouterOS runs a Linux kernel (5.6.3) but **everything above the kernel is MikroT
 - No `docker`, `podman` — RouterOS has its own `/container` subsystem (7.x+)
 
 **What DOES exist:**
+
 - RouterOS CLI — its own language, not shell. Accessed via SSH, serial, WinBox, or WebFig
 - REST API at `/rest/` (HTTP, port 80 by default) — the primary programmatic interface
 - RouterOS scripting language (`.rsc` files) — its own syntax, not bash. See the `routeros-scripting` skill and [Scripting reference](./references/scripting.md)
@@ -27,6 +29,7 @@ RouterOS runs a Linux kernel (5.6.3) but **everything above the kernel is MikroT
 - WinBox protocol on port 8291
 
 **Common agent mistakes to avoid:**
+
 - Do NOT try `ssh admin@host 'ls /'` — it opens RouterOS CLI, not a shell
 - Do NOT suggest `mount`, `fdisk`, `mkfs` — use `/disk` commands instead
 - Do NOT look for config files at `/etc/` — configuration is in the RouterOS database
@@ -59,6 +62,7 @@ RouterOS CLI uses path-based navigation, not Unix command pipelines:
 ```
 
 **Key syntax differences from shell:**
+
 - `=` assigns properties (no spaces around it)
 - `[find ...]` is the query expression (like WHERE)
 - Interactive `print` row numbers are not script-safe object IDs; use `[find ...]` or `*HEX` internal IDs
@@ -80,6 +84,7 @@ RouterOS REST API at `http://HOST:PORT/rest/`. HTTP verbs map non-standardly:
 | `POST` | command (execute) | `/path/command` |
 
 **Key gotchas:**
+
 - `PUT` creates (NOT updates) — opposite of many REST APIs
 - Empty password auth: `admin:` (colon required, nothing after)
 - WebFig root (`GET /`) returns HTTP 200 without auth — use as health check
@@ -150,6 +155,7 @@ CHR (Cloud Hosted Router) is available only for `x86` and `arm64`.
 ## Additional Resources
 
 **Reference files:**
+
 - New official manual home: <https://manual.mikrotik.com/>. The new site is replacing older Confluence-based `help.mikrotik.com` docs and includes a CLI Reference section at <https://manual.mikrotik.com/docs/CLI%20Reference/>.
 - For REST API details and `/console/inspect` command tree: see [REST API reference](./references/rest-api-patterns.md)
 - For version parsing, comparison, and download URL logic: see [Version parsing reference](./references/version-parsing.md)
@@ -162,6 +168,7 @@ CHR (Cloud Hosted Router) is available only for `x86` and `arm64`.
 - For Bun runtime bugs affecting HTTP (req.destroy, pool, secrets): see [Bun runtime gotchas](./references/bun-runtime-gotchas.md)
 
 **Related skills:**
+
 - For RouterOS scripting and `.rsc`/CLI config automation gotchas: see the `routeros-scripting` skill
 - For the /container subsystem (VETH, device-mode, lifecycle): see the `routeros-container` skill
 - For netinstall-cli and device flashing: see the `routeros-netinstall` skill
@@ -171,4 +178,5 @@ CHR (Cloud Hosted Router) is available only for `x86` and `arm64`.
 - For packet capture, /tool/sniffer, and TZSP streaming: see the `routeros-sniffer` skill
 
 **MCP tools:**
+
 - For command tree browsing and property lookups: use the `rosetta` MCP server tools (`routeros_search`, `routeros_get_page`, `routeros_command_tree`)

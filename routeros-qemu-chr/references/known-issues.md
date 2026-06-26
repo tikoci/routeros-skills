@@ -7,6 +7,7 @@
 **Root cause:** RouterOS runs a 32-bit ARM ELF checker binary that looks for capability files (magic `0xbad0f11e`) in `/ram/`. These files are created from hardware DTB info. On QEMU's `virt` machine with ACPI enabled (required for disk access), EDK2 generates an empty DTB — so no capability files exist and the checker returns non-zero.
 
 **Why it can't be fixed:**
+
 - `acpi=on` — disk works (ACPI PCIe), but DTB empty → no capability files → check fails
 - `acpi=off` + PCI — DTB present, but no `pci-host-ecam-generic` driver → disk not found
 - `acpi=off` + MMIO — DTB present, but no `virtio-mmio` driver → kernel stalls
@@ -37,6 +38,7 @@ The root cause is pervasive: x86 firmware and kernel probe legacy I/O ports duri
 **The reverse works fine:** aarch64 on x86_64 via TCG boots in ~20s (EDK2 UEFI uses 64-bit MMIO throughout).
 
 **Practical CI strategy:**
+
 - x86_64 host: boots ALL machines (x86 native KVM, aarch64 cross-arch TCG)
 - aarch64 host: boots only aarch64 machines (x86 skipped)
 
@@ -45,6 +47,7 @@ The root cause is pervasive: x86 firmware and kernel probe legacy I/O ports duri
 Both pflash units (code + vars) must be identical size (typically 64 MiB). On Ubuntu, `AAVMF_CODE.fd` may be a **symlink** — use `stat -Lc%s` (with `-L`) to get the real file size. Without `-L`, `stat` returns the symlink path length.
 
 To pad a vars file to match the code ROM:
+
 ```sh
 CODE_SIZE=$(stat -Lc%s /usr/share/AAVMF/AAVMF_CODE.fd)
 dd if=/dev/zero of=my-vars.fd bs=1 count=0 seek=$CODE_SIZE

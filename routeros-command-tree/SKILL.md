@@ -25,7 +25,7 @@ RouterOS's command hierarchy has four node types:
 
 ### Tree Example
 
-```
+```text
 / (root dir)
 ├── ip/ (dir)
 │   ├── address/ (path)
@@ -57,7 +57,7 @@ RouterOS's command hierarchy has four node types:
 
 ### Endpoint
 
-```
+```text
 POST /rest/console/inspect
 ```
 
@@ -117,6 +117,7 @@ const syntax = await fetch(`${base}/console/inspect`, {
 ### Path Format
 
 The `path` field uses **comma-separated** segments (not slashes):
+
 - Root: `""` (empty string)
 - `/ip`: `"ip"`
 - `/ip/address`: `"ip,address"`
@@ -164,7 +165,7 @@ These path segments **crash the RouterOS REST server** when their `arg` nodes ar
 for syntax via `/console/inspect`. Always skip syntax lookups for args inside subtrees
 containing any of these names:
 
-```
+```text
 where, do, else, rule, command, on-error
 ```
 
@@ -212,6 +213,7 @@ When generating API schemas from the command tree:
 ### The .proplist and .query Parameters
 
 All POST-based command endpoints accept two special parameters:
+
 - `.proplist` — selects which properties to return (like SQL SELECT)
 - `.query` — filter expression array (like SQL WHERE)
 
@@ -224,6 +226,7 @@ The inspect tree can be converted to multiple schema formats:
 ### inspect.json (Raw Output)
 
 The raw tree as returned by recursive `/console/inspect` calls. Each node has:
+
 ```json
 {
   "address": {
@@ -242,6 +245,7 @@ The raw tree as returned by recursive `/console/inspect` calls. Each node has:
 ### RAML 1.0 (schema.raml)
 
 Converted to RAML 1.0 resource/method notation:
+
 ```yaml
 /ip:
   /address:
