@@ -30,7 +30,7 @@ jobs:
     name: lint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
       - run: bun install --frozen-lockfile
       - name: markdownlint + cspell + skill validator
@@ -40,7 +40,7 @@ jobs:
     name: links
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       # Offline mode validates relative links and #anchors against the
       # filesystem and SKIPS external http(s) URLs — so a flaky network or a
       # rate-limited host never fails the gate. (External-URL checking can be
@@ -58,6 +58,6 @@ jobs:
     name: actionlint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - name: Lint workflow YAML
         uses: raven-actions/actionlint@205b530c5d9fa8f44ae9ed59f341a0db994aa6f8 # v2.1.2
