@@ -1,0 +1,19 @@
+name: routeros-skills CodeQL configuration
+
+# This repo is Markdown skills plus a tiny Bun/TS lint helper. The only code
+# CodeQL sees is scripts/*.ts (javascript-typescript) and the workflow YAML
+# (actions). Everything else is documentation, which CodeQL does not analyze.
+paths-ignore:
+  - node_modules/**
+  - bun.lock
+
+# We track third-party action major tags (e.g. @v5) deliberately rather than
+# SHA-pinning; excluding this rule keeps the CodeQL badge meaningful.
+query-filters:
+  - exclude:
+      id: actions/unpinned-tag
+
+# security-and-quality = security-extended + the code-quality queries. Matches
+# the posture of other tikoci public repos (see tikoci-security-md skill).
+queries:
+  - uses: security-and-quality

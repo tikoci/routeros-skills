@@ -1,0 +1,26 @@
+{
+	"version": "0.2",
+	"language": "en",
+	"enabled": true,
+	"enableGlobDot": true,
+	"ignorePaths": [
+		"node_modules",
+		".git",
+		"bun.lock",
+		"cspell.json",
+		"project-words.txt"
+	],
+	"useGitignore": true,
+	"minWordLength": 3,
+	"flagWords": ["hte", "teh"],
+	"dictionaryDefinitions": [
+		{
+			"name": "project-words",
+			"path": "./project-words.txt",
+			"addWords": true
+		}
+	],
+	"dictionaries": ["project-words"],
+	"words": [],
+	"ignoreWords": []
+}
