@@ -291,6 +291,49 @@ output (a prompt/banner) arrives; treat `END_AUTH` → "Login failed" → `END` 
 an `END` right after `END_AUTH` with no prompt) as auth failure. Grounded on CHR
 7.23 via `centrs`.
 
+## After Login: The Interactive Console
+
+`END_AUTH` drops you into RouterOS's normal readline console — the same shell you
+get over SSH/serial. These facts are grounded on stock CHR 7.23.1 (via
+`tikoci/centrs`'s console reader) and matter whenever you scrape command output
+over MAC-Telnet rather than just relaying to a human's terminal:
+
+- **Terminal-size probe.** On connect the console runs a multi-step ANSI cursor
+  probe to learn the terminal size: `ESC[9999B` / `ESC[9999C` (move the cursor far
+  down / right), `ESC[H` (home), `ESC D`, `ESC Z` (DECID), mode sets
+  (`ESC[4l ESC[20l ESC[?7h ESC[?5l ESC[?25h`), and repeated **`ESC[6n` (DSR
+  cursor-position report)**. Answer each `ESC[6n` with `ESC[<row>;<col>R`.
+  Reporting a wide column makes the console use that width; **ignore the probe and
+  it falls back to 80 columns and wraps the echo**, which breaks naive output
+  scraping. The TERM_WIDTH/TERM_HEIGHT control blocks appear advisory — the ANSI
+  probe wins.
+- **~10s negotiation stall.** The MOTD/prompt does not appear until ~10 seconds
+  after login, on *every* login. Answering the DSR sets the width but does **not**
+  remove the stall — the probe seems to expect a real terminal's clamped cursor
+  tracking across the down/up/right/home sequence, so a fixed DSR answer leaves it
+  unsatisfied and the console waits out a timeout. A cursor-tracking emulator
+  (track row/col in a rows×cols grid, answer each DSR with the real clamped
+  position) is the way to avoid it. A human with a real terminal does not see this.
+- **First-login license gate.** A factory-fresh device prints the banner and
+  `Do you want to see the software license? [Y/n]:` and blocks until answered —
+  exactly the fresh/unconfigured gear MAC-Telnet exists for, so a robust client
+  must detect and answer it (`n`). Later logins skip it.
+- **Prompt, echo, and output shape.** The prompt is `[user@identity] >` (root) or
+  `[user@identity] /path>` (submenu) — each with a trailing space — redrawn with CR + space-padding + CR (not
+  ANSI erase). Keystrokes are echoed and the input line is redrawn. Command
+  responses contain **no ANSI** — only CR, LF, spaces, and text — so a simple CR/LF
+  terminal emulation (CR → column 0 with overwrite, LF → new line) reconstructs the
+  screen. A response is: the echoed `[prompt] > <command>` line, then the output
+  lines, then the trailing prompt; strip the first and last to get clean output. A
+  **successful write prints nothing** (e.g. `/ip/address/add …` returns straight to
+  the prompt — there is no `.id` on the console, unlike REST/the binary API).
+- **Validate without running:** `:put [:parse "<command>"]` over the console prints
+  `(evl …)` for a good parse, `syntax error (line N column M)` for malformed CLI,
+  and `bad parameter <name> (line …)` for an unknown attribute — so one console
+  `:parse` checks both syntax and parameter validity. (Over REST the same string
+  rides an HTTP-200 `ret`; over the binary API `:put [:parse]` returns an opaque
+  object handle and reveals nothing.)
+
 ## Reliability & Retransmission
 
 UDP provides nothing, so the protocol layers on:
@@ -363,7 +406,7 @@ control; the default may allow all interfaces.
 |------|--------|-------|
 | C | `haakonnessjoen/MAC-Telnet` (`protocol.c/.h`, `mactelnet.c`, `mactelnetd.c`, `mtwei.c/.h`) | **Canonical ground truth.** Header offsets, control magic, MD5 + MTWEI. MTWEI added 2022. |
 | .NET 10 | `KCTech-Lab/KC.MacTelnet` (`MacTelnetDriver/Proto/*`, `Proto/Auth/Ecsrp*`) | Modern client; implements **MTWEI** against current RouterOS 7.x; pluggable terminal engine. |
-| TypeScript | `tikoci/centrs` (`src/protocols/mac-telnet.ts`, `mtwei.ts`) | Pure codec + injectable-sink session state machine; **MD5 + MTWEI** (dependency-free BigInt EC-SRP port of `mtwei.c`); scripted-peer unit tests + real-L2 CHR-7.23 integration via quickchr `socket-connect`. |
+| TypeScript | `tikoci/centrs` (`src/protocols/mac-telnet.ts`, `src/protocols/mtwei.ts`, `src/protocols/mac-telnet-console.ts`) | Pure codec + injectable-sink session state machine with byte-counter retransmit + empty-ACK keepalive (a `tick(now)` driven by the console reader); **MD5 + MTWEI** (dependency-free BigInt EC-SRP port of `mtwei.c`); interactive-**console reader** (terminal-probe answering, license clear, prompt sync, CR/LF screen emulation, `:parse` gate) wired into an `execute` adapter; scripted-peer + real-byte unit tests and real-L2 CHR-7.23.1 integration (login, run, write, validate) via quickchr `socket-connect`. |
 
 **Verified:** the header layout (22 bytes, direction-swapped session-key/client-
 type), control-block magic `56 34 12 ff`, big-endian length, little-endian
