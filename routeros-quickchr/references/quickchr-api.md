@@ -25,7 +25,7 @@ completed when the promise resolves (background/library use). Common `StartOptio
 | `channel` | one of `"stable"`, `"long-term"`, `"testing"`, `"development"` |
 | `version` | pinned RouterOS, e.g. `"7.23.1"` (mutually informative with `channel`) |
 | `arch` | `"x86"` or `"arm64"` (default: host arch) |
-| `secureLogin` | `true` → managed `quickchr` user with a stored password; `false` → open admin. Alias: `noAuth` |
+| `secureLogin` | `true` → managed `quickchr` user with a stored password; `false` → open admin. Inverse alias: `noAuth` (`noAuth: true` ≙ `secureLogin: false`). Prefer `secureLogin` in new configs. |
 | `cpu`, `mem` | vCPUs / MiB RAM |
 | `background` | run detached (the library default for automation) |
 | `networks` | `NetworkSpecifier[]` — extra NICs (see networking) |
