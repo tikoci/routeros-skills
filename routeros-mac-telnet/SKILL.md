@@ -53,7 +53,7 @@ use an 18-byte variant; see *Packet Types*.)
 
 Client → server layout:
 
-```
+```text
 Offset  Len  Field
 0       1    version  = 0x01 (always 1)
 1       1    packet type (see table below)
@@ -66,7 +66,7 @@ Offset  Len  Field
 
 Server → client layout is identical **except** the two middle fields swap:
 
-```
+```text
 14      2    client type   = 00 15                    ← server direction
 16      2    session key   (uint16, BIG-endian)       ← server direction
 ```
@@ -127,7 +127,7 @@ endless retransmits, or one that double-prints terminal output.
 A DATA payload is zero or more **control blocks**, optionally followed/mixed with
 raw terminal data. Each control block:
 
-```
+```text
 Offset  Len  Field
 0       4    magic  = 56 34 12 FF
 4       1    control type (see table)
@@ -174,7 +174,7 @@ the header (session key, counter) is big-endian.
 
 A successful client session, in order:
 
-```
+```text
 1. client → SESSIONSTART                     (counter 0, header only)
 2. server → ACK
 3. client → DATA: BEGINAUTH [+ MTWEI login block]   (see auth below)
@@ -210,7 +210,7 @@ way to detect the mode (do not rely on RouterOS version strings).
 
 Simple and library-free:
 
-```
+```text
 PASSWORD value = 0x00 ‖ MD5( 0x00 ‖ password ‖ salt )      // 17 bytes total
 ```
 

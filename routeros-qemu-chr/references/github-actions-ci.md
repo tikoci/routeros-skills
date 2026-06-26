@@ -112,6 +112,7 @@ Convert VDI to QCOW2 (native QEMU format, supports snapshots):
 ```
 
 **Notes:**
+
 - Use `exec` in the `sh -c` wrapper so `$!` captures the QEMU PID, not the shell's
 - Port 9180→80 for REST API, 9122→22 for SSH/SCP (extra packages upload)
 - 256 MB RAM is sufficient for schema generation
@@ -248,6 +249,7 @@ conflicts. The `git checkout -- .` / `git clean -fd` are required because `bun i
 ## Daily Auto-Detection Workflow
 
 The `auto.yaml` pattern:
+
 1. Daily cron checks all 4 channels (`stable`, `testing`, `development`, `long-term`)
 2. For each unique version across channels, checks 3 artifacts independently:
    - `docs/{version}/schema.raml` — base schema

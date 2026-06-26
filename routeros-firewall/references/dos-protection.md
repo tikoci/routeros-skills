@@ -14,6 +14,7 @@ RouterOS-specific DoS protection matchers. Referenced from `routeros-firewall` S
 ```
 
 **`psd=weight,delay,low-port-weight,high-port-weight` tuple:**
+
 - `weight` — total score threshold that triggers the rule (21 in example)
 - `delay` — max time between probe packets to count as one scan (3s)
 - `low-port-weight` — score added per probe of a port < 1024 (3 pts in example)
@@ -50,6 +51,7 @@ TCP tarpit — completes the handshake but stalls the connection indefinitely:
 ```
 
 **`connection-limit=X,Y` tuple:**
+
 - `X` — maximum simultaneous connections
 - `Y` — netmask prefix bits (32 = per individual IP, 24 = per /24 subnet)
 

@@ -78,6 +78,7 @@ function isPreRelease(version: string): boolean {
 ```
 
 Pre-release versions:
+
 - Use `download.mikrotik.com` as the primary source, same as stable releases
 - `cdn.mikrotik.com` is a backup mirror/cache and may lag slightly for very new releases
 - May have incomplete features or known bugs
@@ -87,7 +88,7 @@ Pre-release versions:
 
 RouterOS publishes current versions per channel:
 
-```
+```text
 https://upgrade.mikrotik.com/routeros/NEWESTa7.<channel>
 ```
 

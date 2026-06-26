@@ -21,6 +21,7 @@ curl -u admin: -X PUT http://HOST:PORT/rest/ip/firewall/filter \
 ```
 
 **Workflow for safe rule insertion:**
+
 1. `GET /rest/ip/firewall/filter?chain=input&.proplist=.id,action,comment` — find the drop-all rule's `.id`
 2. `PUT /rest/ip/firewall/filter` with `"place-before":"*THAT_ID"` — insert before it
 3. `GET /rest/ip/firewall/filter` — verify ordering
@@ -46,6 +47,7 @@ See `rest-api-patterns.md` for general verb mapping details.
 ## 1. `/ip/firewall/filter` — Firewall Filter Rules
 
 Three built-in chains (cannot be deleted):
+
 - **input** — packets destined to the router itself
 - **forward** — packets passing through the router
 - **output** — packets originating from the router
@@ -209,6 +211,7 @@ Returns empty body on success (HTTP 204).
 ## 2. `/ip/firewall/nat` — NAT Rules
 
 Two common built-in chains:
+
 - **srcnat** — source NAT (postrouting) — modifies source address/port of outgoing packets
 - **dstnat** — destination NAT (prerouting) — modifies destination address/port of incoming packets
 
@@ -265,6 +268,7 @@ curl -u admin: -X PUT http://HOST:PORT/rest/ip/firewall/nat \
 ## 3. `/ip/firewall/mangle` — Packet Marking
 
 Five built-in chains (matching packet flow stages):
+
 - **prerouting** — as packets arrive on an interface
 - **input** — before delivery to a local process
 - **forward** — packets being routed through
@@ -432,27 +436,35 @@ curl -u admin: -X PUT http://HOST:PORT/rest/ip/firewall/mangle \
 ## Gotchas
 
 ### 1. PUT Appends — Use `place-before`
+
 (See top of this file. Cannot be overstated.)
 
 ### 2. No `move` via REST
+
 RouterOS CLI has `move` to reorder rules. **There is no REST equivalent.** To reorder, you must delete and re-add with `place-before`. This makes rule ordering fragile — plan your insertion order carefully.
 
 ### 3. Boolean Values Are Strings
+
 All boolean fields are string `"true"` / `"false"`, not JSON booleans. Send and compare as strings.
 
 ### 4. `protocol` Required for Port Matchers
+
 `dst-port` and `src-port` require `protocol` to be set (`tcp` or `udp`). Omitting `protocol` when setting ports produces an error.
 
 ### 5. Connection State Is Comma-Separated
+
 `connection-state` accepts comma-separated values: `"established,related"` — not an array.
 
 ### 6. Dynamic Rules
+
 Default config rules and FastTrack rules appear as `"dynamic":"true"`. These cannot be deleted or modified via REST. Filter them out with `?dynamic=false` when listing user-created rules.
 
 ### 7. `reject-with` Only for `action=reject`
+
 Values: `icmp-no-route` (default), `icmp-admin-prohibited`, `icmp-port-unreachable`, `tcp-reset`, etc.
 
 ### 8. Address Lists Are Separate
+
 `/ip/firewall/address-list` is a separate endpoint for managing address lists referenced by `src-address-list` / `dst-address-list` matchers:
 
 ```bash
@@ -482,6 +494,7 @@ curl -u admin: http://HOST:PORT/rest/ip/firewall/address-list
 ---
 
 > **Source:**
+>
 > - Rosetta: pages 47579162 (REST API), 48660574 (Filter), 3211299 (NAT), 48660587 (Mangle), 250708064 (Common Firewall Matchers and Actions), 328513 (Building Advanced Firewall); property lookups for `chain`, `action`, `place-before` (not in property DB — documented in REST API page PUT section and CLI behavior)
 > - Reference: `rest-api-patterns.md` — verb mapping (PUT=create, PATCH=set, GET=print)
 > - Note: Response shapes derived from docs and REST API page examples, not lab-verified. Rule ordering behavior is well-documented in MikroTik docs and confirmed by default config structure.

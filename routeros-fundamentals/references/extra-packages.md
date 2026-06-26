@@ -59,7 +59,7 @@ For packages not built into the image (e.g., third-party `.npk` files):
 
 Extra packages are bundled in a single zip per architecture:
 
-```
+```text
 https://download.mikrotik.com/routeros/{version}/all_packages-{arch}-{version}.zip
 ```
 
@@ -71,6 +71,7 @@ Architectures: `x86`, `arm64`, `arm`, `mipsbe`, `mmips`, `smips`, `ppc`, `tile`
 
 Installing extra packages **extends the command tree** — new paths, commands, and arguments
 become visible via `/console/inspect`. This is why schema generation runs in two variants:
+
 - **Base**: only built-in RouterOS commands
 - **Extra**: all packages installed — captures the full command tree
 

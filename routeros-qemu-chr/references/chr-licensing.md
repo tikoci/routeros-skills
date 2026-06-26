@@ -15,12 +15,14 @@
 Every CHR instance starts with a free license. No registration, no activation — just boot and use.
 
 **The 1 Mbps limit** applies to interface throughput, not API/management traffic. This means:
+
 - REST API calls, SSH, WinBox, WebFig — unaffected by the speed limit
 - Packet sniffer TZSP streaming — works fine for debugging (TZSP packets are small)
 - Actual data forwarding between interfaces — capped at 1 Mbps
 - If users report "slow" traffic through a CHR, the free license limit is the most likely cause
 
 **1 Mbps is sufficient for:**
+
 - Development and API testing
 - Protocol debugging with `/tool/sniffer` or mangle `sniff-tzsp`
 - CI/CD integration tests
@@ -41,6 +43,7 @@ A free 60-day trial provides **P-Unlimited speeds** (no throughput cap).
 ### Trial Expiry Behavior
 
 After 60 days:
+
 - The CHR **continues to work** — it does NOT stop or become unusable
 - Speed reverts to the free 1 Mbps limit
 - The license shows as expired but the VM keeps running
@@ -66,6 +69,7 @@ After 60 days:
 ```
 
 Via REST API:
+
 ```sh
 curl -u admin: http://<router-ip>/rest/system/license
 ```

@@ -43,6 +43,7 @@ these exist. Real idioms: `:if ($var = "foo") do={ ... }`, `:put $var`,
 `[/system/resource/get board-name]`.
 
 Future expansion / corpus-mining targets (not all missing from the initial skill):
+
 - Variable scoping (`:local`, `:global`) and why assigning to an undeclared
   variable fails
 - Control flow (`:if`, `:foreach`, `:while`, `:do { } on-error={ }`)
@@ -66,6 +67,7 @@ These are LSP test data parsed and syntax-checked by the LSP. This is the best
 available grounded corpus of valid RouterOS scripting patterns.
 
 Structure:
+
 - `test-data/forum/amm0/` — 276 topics, 630 snippets (amm0 authorship)
 - `test-data/forum/rextended/` — additional high-quality scripts
 - `test-data/complex/piano.rsc` — large real-world script
@@ -86,6 +88,7 @@ scripts. Each pattern should be expressed as a minimal self-contained example:
    in the skill's `references/scripting-idioms.md`.
 
 **Key idioms to extract from lsp-routeros-ts corpus:**
+
 - Function definition + call pattern (`:global fn do={ ... }; $fn arg`)
 - Named parameter passing via `<%%` spread from an array/dict
 - `:foreach` over `[find ...]` results and over literal arrays
@@ -107,6 +110,7 @@ single biggest area where LLM training data is wrong, because (a) it's recent
 and (b) there's a parallel legacy system most training data describes.
 
 Key things the model needs told:
+
 - `/interface/wifi` (new) vs. `/interface/wireless` (legacy) — both exist, both
   valid, do not mix
 - Package names: `wifi-qcom`, `wifi-qcom-ac`, `wifi` — which chipset takes
@@ -124,6 +128,7 @@ rosetta's device lookup.
 ### `routeros-routing-v7`
 
 Routing was reorganized for v7. Key changes LLMs often miss:
+
 - Routing tables are first-class objects: `/routing/table/add name=... fib`
 - `/routing/rule` routes between tables (policy routing)
 - BGP, OSPF, RIP moved under `/routing/bgp`, `/routing/ospf`, `/routing/rip`
@@ -143,6 +148,7 @@ at `/routing/bgp/*` and `/ip/route`, rosetta MCP.
 
 Firewall is superficially similar to iptables but the model will default to
 iptables assumptions in subtle ways:
+
 - Chain ordering inside filter/nat/mangle (rules are position-ordered, not
   priority-based)
 - `action=passthrough` vs `accept`/`drop`/`jump` semantics
@@ -166,6 +172,7 @@ and where LLMs most often give answers that "look right" but don't work on
 the actual chip offload.
 
 Key concepts:
+
 - `/interface/bridge` with `vlan-filtering=yes` changes the model entirely
 - `pvid=` on bridge ports (untagged ingress tagging)
 - `/interface/bridge/vlan` table — tagged vs untagged membership per VID
@@ -184,7 +191,7 @@ Two real scripts exist that are the authoritative implementation reference for
 this skill:
 
 1. **`$mkvlan` / `$rmvlan` / `$catvlan`** — MikroTik forum post by amm0:  
-   https://forum.mikrotik.com/t/example-of-automating-vlan-creation-removal-inspecting-using-mkvlan-friends/181480  
+   <https://forum.mikrotik.com/t/example-of-automating-vlan-creation-removal-inspecting-using-mkvlan-friends/181480>  
    Also in lsp-routeros-ts corpus:  
    `test-data/forum/amm0/topic-181480-*/post-0001-snippet-01.rsc`
 
@@ -196,7 +203,7 @@ this skill:
    - Removal by `[find comment=$tag]` across all subsystems — the single correct way to do paired create/remove scripting in RouterOS
 
 2. **`$lsbridge`** — L2 bridge topology viewer:  
-   https://tikoci.github.io/scripts/lsbridge.rsc  
+   <https://tikoci.github.io/scripts/lsbridge.rsc>  
    (source URL, may require GH Pages access for raw content)
 
    What it embodies:
@@ -238,6 +245,7 @@ Certificates touch IPsec, HTTPS (WebFig/REST), WireGuard (indirectly), SSTP,
 OpenVPN. The model often mixes OpenSSL semantics with RouterOS's.
 
 Key:
+
 - `/certificate/add` vs `/certificate/import` (different intents)
 - PEM vs DER detection, passphrase handling
 - SCEP, Let's Encrypt (`/certificate/enable-ssl-certificate-trust`)
@@ -295,6 +303,7 @@ VRRP (Virtual Router Redundancy Protocol) on RouterOS. LLMs often suggest Linux
 keepalived or HSRP syntax instead of RouterOS's native VRRP implementation.
 
 Key:
+
 - `/interface/vrrp/add` — creates VRRP virtual interface
 - `vrid=` + `priority=` + `preemption-mode=`
 - VRRP interface used as gateway in DHCP server networks and routing
@@ -425,7 +434,7 @@ persona scaffolding, trivial limitations like "does not connect to live
 devices". Their template metrics don't map to grounding quality.
 
 **One genuinely useful signal:** their auto-generated `output_examples`
-describe _what a correct answer should contain_ (not just what the LLM should
+describe *what a correct answer should contain* (not just what the LLM should
 know). This is a grounding discipline gap. See "Output contracts" below.
 
 ### Skill output contracts (correct-answer specimens)
@@ -437,12 +446,13 @@ their specific format isn't.
 
 An "output contract" for a skill would be a pair like:
 
-```
+```text
 Q: "Create a VETH interface and bridge for a container with IP 172.17.0.2"
 Expected: <actual RouterOS CLI block, not prose>
 ```
 
 Adding 1-2 of these to a `references/` file per skill would:
+
 - Improve grounding (LLM can pattern-match against a known-good example)
 - Surface any content gaps in the skill (if you can't write the correct
   answer, the skill isn't grounded enough)

@@ -10,6 +10,7 @@ RouterOS has a built-in packet sniffer (`/tool/sniffer`) and firewall mangle act
 ## Why This Matters for Agents
 
 When debugging any network protocol issue on RouterOS, agents should know they can:
+
 1. **Stream live packets** from the router to the host machine via TZSP — no hardware needed if using a CHR VM
 2. **Save pcap/pcapng files** on the router's flash and download them for analysis
 3. **Use firewall mangle rules** for surgical, per-flow packet mirroring without touching the sniffer config
@@ -66,6 +67,7 @@ set file-name=capture.pcap filter-interface=ether1
 ```
 
 File + streaming can run simultaneously:
+
 ```routeros
 /tool/sniffer
 set file-name=capture.pcap streaming-enabled=yes streaming-server=<RECEIVER-IP>:37008
@@ -132,6 +134,7 @@ add action=sniff-tzsp chain=forward protocol=udp dst-port=53 \
 ```
 
 Properties for `sniff-tzsp`:
+
 - `sniff-target` (IP) — destination IP for the TZSP UDP packets
 - `sniff-target-port` (port, default 37008) — destination UDP port
 - `sniff-id` — optional identifier tag
@@ -153,7 +156,7 @@ Properties for `sniff-tzsp`:
 
 TZSP is a simple UDP encapsulation — the router wraps the original Ethernet frame in a TZSP header and sends it as a UDP datagram:
 
-```
+```text
 UDP (port 37008) → TZSP header (4 bytes) → tags (variable) → TAG_END → original Ethernet frame
 ```
 
@@ -224,13 +227,16 @@ set streaming-enabled=no streaming-server=0.0.0.0 file-name=""
 ## Additional Resources
 
 **Reference files:**
+
 - For TZSP receiver setup (Wireshark, tshark, tcpdump): see [TZSP receivers reference](./references/tzsp-receivers.md)
 
 **Related skills:**
+
 - For QEMU CHR setup and boot patterns: see `routeros-qemu-chr` skill
 - For CHR licensing (free tier, 60-day trial, speed limits): see `routeros-qemu-chr` skill
 - For RouterOS CLI/REST basics: see `routeros-fundamentals` skill
 - For the `/console/inspect` command tree: see `routeros-command-tree` skill
 
 **MCP tools:**
+
 - For RouterOS docs lookup: use the `rosetta` MCP server tools (`routeros_search`, `routeros_get_page`)
