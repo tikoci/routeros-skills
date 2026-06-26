@@ -318,8 +318,8 @@ over MAC-Telnet rather than just relaying to a human's terminal:
   `Do you want to see the software license? [Y/n]:` and blocks until answered —
   exactly the fresh/unconfigured gear MAC-Telnet exists for, so a robust client
   must detect and answer it (`n`). Later logins skip it.
-- **Prompt, echo, and output shape.** The prompt is `[user@identity] >` (root) or
-  `[user@identity] /path>` (submenu) — each with a trailing space — redrawn with CR + space-padding + CR (not
+- **Prompt, echo, and output shape.** The prompt has two forms: `[user@identity] >` (root) and
+  `[user@identity] /path>` (submenu), each with a trailing space; it is redrawn with CR + space-padding + CR (not
   ANSI erase). Keystrokes are echoed and the input line is redrawn. Command
   responses contain **no ANSI** — only CR, LF, spaces, and text — so a simple CR/LF
   terminal emulation (CR → column 0 with overwrite, LF → new line) reconstructs the
