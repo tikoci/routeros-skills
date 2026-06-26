@@ -53,7 +53,7 @@ entry points: `QuickCHR.list()`, `QuickCHR.get(name)`, `QuickCHR.stop(name)`.
 | `subprocessEnv()` | env vars for a child process (see below) |
 | `descriptor()` | structured `{ urls, auth, ports, status, version, … }` |
 | `snapshot(...)` | qcow2 savevm/loadvm/list/delete |
-| `qga(cmd, args?)` | QEMU Guest Agent (x86 + **KVM only**) |
+| `qga(cmd, args?)` | QEMU Guest Agent (x86 on **Linux with KVM only**; excludes macOS/HVF and Windows) |
 | `stop()` / `remove()` / `destroy()` | lifecycle teardown |
 
 **Properties:** `name`, `ports`, `restUrl`, `sshPort`, `portBase`,
