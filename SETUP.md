@@ -9,8 +9,14 @@ This document describes how the skill directories are organized locally. It is *
 | `~/GitHub/routeros-skills/` | **Source of truth** for all `routeros-*` skills. This is the tikoci/routeros-skills Git repo. |
 | `~/.copilot/skills/routeros-*` | Symlinks → `~/GitHub/routeros-skills/routeros-*` |
 | `~/.claude/skills/routeros-*` | Symlinks → `~/GitHub/routeros-skills/routeros-*` |
+| `~/.agents/skills/routeros-*` | Symlinks → `~/GitHub/routeros-skills/routeros-*` for Codex |
 | `~/.copilot/skills/<non-routeros>` | Real dirs or symlinks to `~/.claude/skills/` — local-only, not in this repo |
 | `~/.claude/skills/<non-routeros>` | Real dirs — local-only, not in this repo |
+| `~/.agents/skills/<non-routeros>` | Real dirs or symlinks — local-only, not in this repo |
+
+Codex reads user-authored skills from `~/.agents/skills`. `~/.codex/skills`
+contains Codex-managed/system skills and is not the right target for these
+repo-owned `routeros-*` symlinks.
 
 ## Rule: what belongs in this repo
 
@@ -21,17 +27,9 @@ This document describes how the skill directories are organized locally. It is *
 ```sh
 git clone https://github.com/tikoci/routeros-skills.git ~/GitHub/routeros-skills
 
-mkdir -p ~/.copilot/skills ~/.claude/skills
-
-# Symlink all routeros-* skills for Copilot
-for skill in ~/GitHub/routeros-skills/routeros-*/; do
-  ln -sf "$skill" ~/.copilot/skills/"$(basename $skill)"
-done
-
-# Symlink all routeros-* skills for Claude
-for skill in ~/GitHub/routeros-skills/routeros-*/; do
-  ln -sf "$skill" ~/.claude/skills/"$(basename $skill)"
-done
+cd ~/GitHub/routeros-skills
+make link   # symlink every routeros-* into Copilot, Claude, and Codex dirs
+make check  # verify every repo skill is a symlink in all three dirs
 ```
 
 ## Updating
@@ -64,14 +62,15 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for what each check does and the spelling
 skill=routeros-<name>
 ln -s ~/GitHub/routeros-skills/$skill ~/.copilot/skills/$skill
 ln -s ~/GitHub/routeros-skills/$skill ~/.claude/skills/$skill
+ln -s ~/GitHub/routeros-skills/$skill ~/.agents/skills/$skill
 ```
 
-   Or, idempotently link **all** skills into both dirs (preferred — avoids the
+   Or, idempotently link **all** skills into all target dirs (preferred — avoids the
    "committed but never symlinked" drift):
 
 ```sh
-make link    # symlink every routeros-* into ~/.copilot/skills and ~/.claude/skills
-make check   # verify every repo skill is linked into both dirs (non-zero exit if not)
+make link    # symlink every routeros-* into Copilot, Claude, and Codex dirs
+make check   # verify every repo skill is linked into all target dirs (non-zero exit if not)
 ```
 
    Note: a symlinked skill is only picked up on a **fresh** assistant session.
@@ -80,7 +79,9 @@ make check   # verify every repo skill is linked into both dirs (non-zero exit i
 
 ## Current symlink state (reference)
 
-After setup, `ls -la ~/.copilot/skills/` should show all `routeros-*` entries as symlinks pointing to `~/GitHub/routeros-skills/routeros-*`, for example:
+After setup, `ls -la ~/.copilot/skills/`, `ls -la ~/.claude/skills/`, and
+`ls -la ~/.agents/skills/` should show all `routeros-*` entries as symlinks
+pointing to `~/GitHub/routeros-skills/routeros-*`, for example:
 
 ```text
 lrwxr-xr-x  routeros-fundamentals -> /Users/<you>/GitHub/routeros-skills/routeros-fundamentals
