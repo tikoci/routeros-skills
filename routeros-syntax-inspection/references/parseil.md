@@ -20,13 +20,17 @@ collapse to the placeholder `(code)`):
 Over REST, avoid string-escape collisions by uploading first:
 
 ```text
-POST /rest/file/add     {"name":"probe.rsc","contents":"...script..."}
-POST /rest/execute      {"script":":put [:parse [/file/get probe.rsc contents]]","as-string":"true"}
-POST /rest/file/remove  {"numbers":"probe.rsc"}
+# use a per-run unique NAME (e.g. parse-<nonce>.rsc) so concurrent probes and
+# any pre-existing file can't collide; /file/add fails on a name that exists
+POST /rest/file/add     {"name":"parse-<nonce>.rsc","contents":"...script..."}
+POST /rest/execute      {"script":":put [:parse [/file/get parse-<nonce>.rsc contents]]","as-string":"true"}
+POST /rest/file/remove  {"numbers":"parse-<nonce>.rsc"}
 ```
 
 Note this recipe touches `/file` and `/rest/execute` — inspection-flavored
-but not purely read-only. Limits: `/rest/file/add` returns 413 above the
+but not purely read-only. Remove the temp file on **both** the success and
+error paths (an interrupted probe otherwise leaves it behind and the next
+`add` of the same name fails). Limits: `/rest/file/add` returns 413 above the
 upload cap (~126 KiB observed); `:parse` itself has **no 32 KB cap** and no
 latency cliff (56 KB parsed cleanly; ≤10 ms typical for small scripts).
 
@@ -91,4 +95,4 @@ Version-tag any stored IL.
 | Blocks, scopes, functions | `:parse` |
 | Canonical value forms | `:parse` |
 | Scripts > 32 KB | `:parse` (no cap) |
-| Cheap validity pre-check | `:parse` (~10 ms, no 28 KB cliff) |
+| Cheap structural pre-check (unknown commands late-bind, so not a full validity check) | `:parse` (~10 ms, no 28 KB cliff) |

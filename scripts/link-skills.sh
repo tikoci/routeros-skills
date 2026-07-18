@@ -27,7 +27,12 @@ same_target() {
 }
 
 skill_names() {
-  find "$repo" -mindepth 1 -maxdepth 1 -type d -name 'routeros-*' -exec basename {} \; | sort
+  # POSIX glob (portable across BSD/macOS + GNU); trailing slash matches dirs only.
+  for dir in "$repo"/routeros-*/; do
+    [ -d "$dir" ] || continue   # no-match: the literal glob survives, -d skips it
+    name=${dir%/}
+    echo "${name##*/}"
+  done | sort
 }
 
 link_one() {
@@ -71,23 +76,24 @@ check_one() {
     return 1
   fi
 
+  # Check -L before -e: a broken symlink (target missing) is a WRONG link, not
+  # MISSING — -e follows the link and would hide it, losing the readlink target.
+  if [ -L "$dst" ]; then
+    actual=$(readlink "$dst")
+    if ! same_target "$actual" "$src"; then
+      echo "WRONG:    $dst -> $actual (expected $src)" >&2
+      return 1
+    fi
+    return 0
+  fi
+
   if [ ! -e "$dst" ]; then
     echo "MISSING:  $dst" >&2
     return 1
   fi
 
-  if [ ! -L "$dst" ]; then
-    echo "NOT LINK: $dst" >&2
-    return 1
-  fi
-
-  actual=$(readlink "$dst")
-  if ! same_target "$actual" "$src"; then
-    echo "WRONG:    $dst -> $actual (expected $src)" >&2
-    return 1
-  fi
-
-  return 0
+  echo "NOT LINK: $dst" >&2
+  return 1
 }
 
 case "$cmd" in

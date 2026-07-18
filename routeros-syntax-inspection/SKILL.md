@@ -58,9 +58,12 @@ share nothing — treat them as four APIs behind one endpoint.
 
 ## Version baseline and safety
 
-- **Baseline: RouterOS 7.20.8** (the first v7 long-term release). REST itself
-  exists since 7.1beta4 (HTTPS-only at first [^2]); behavior below 7.20.8 is
-  best-effort, and RouterOS v6 has no REST API at all.
+- **Baseline: RouterOS 7.20.8** — a long-term-channel release, used here as the
+  recommended floor: the parseIL and crash-path behavior below was captured on
+  it [^1][^3]. REST itself exists since 7.1beta4 (HTTPS-only at first [^2]);
+  behavior below 7.20.8 is best-effort (7.9.2 was measured but harsher — see
+  [references/highlight.md](references/highlight.md)), and RouterOS v6 has no
+  REST API at all.
 - **Always set a per-request timeout** (a few seconds). Old versions can hang
   the whole REST server on specific inspect calls; a hung server also makes
   *subsequent* unrelated probes appear broken.
@@ -70,7 +73,7 @@ share nothing — treat them as four APIs behind one endpoint.
 |---|---|---|
 | `request=syntax`/`completion` at bare path `do` deadlocks the REST server | ≤ 7.20.8 (fixed by 7.21.4) [^3] | Skip scripting-keyword paths (`where`, `do`, `else`, `rule`, `command`, `on-error`) on old/unknown versions; it is a conservative skip policy, not a timeless six-path crash rule |
 | `request=syntax` with `input`, or command-level `syntax`, stalls ~60 s | observed on 7.9.2 | Query `syntax` by `path` only; feature-detect command-level lookups with a short timeout |
-| `input` beyond 32,767 bytes rejected | all | Truncate before sending and record the truncation — never imply the unchecked tail passed |
+| `input` beyond 32,767 bytes rejected | all | Route oversized input to `:parse` (no cap) or reject it — never highlight a truncated copy and present it as validating the whole script |
 | Highlight latency cliff near 28 KB | observed 7.23.x | Prefer a `:parse` pre-check for big scripts (no such cliff, no 32 KB cap) |
 
 - **Distinguish `[]`, timeout, and transport failure.** An empty array is a
