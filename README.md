@@ -15,6 +15,7 @@ Custom instruction skills for [GitHub Copilot](https://docs.github.com/en/copilo
 | **routeros-hotspot** | RouterOS hotspot captive portal for wired/wireless access control — hotspot chains, profiles, walled garden, DHCP option 114 (RFC 8910), RADIUS integration. |
 | **routeros-app-yaml** | RouterOS `/app` YAML format for container applications (7.21+ builtin, 7.22+ custom YAML). |
 | **routeros-command-tree** | `/console/inspect` API — command tree introspection, schema generation, CLI-to-REST mapping. |
+| **routeros-syntax-inspection** | `/console/inspect` syntax surfaces (`highlight`/`completion`/`syntax`) + `:parse` IL — validating commands, reading token streams, enum discovery, script "explain"/lint; necessary-not-sufficient vs runtime. |
 | **routeros-qemu-chr** | MikroTik CHR (Cloud Hosted Router) with QEMU — boot, VirtIO, acceleration, CI/CD patterns. |
 | **routeros-quickchr** | Ground RouterOS config/scripts/API code against a real router with quickchr (`@tikoci/quickchr`) — boot a disposable CHR, apply config, read it back; networking recipes, integration-test harness patterns. |
 | **routeros-netinstall** | `netinstall-cli` for automated RouterOS device flashing — etherboot, BOOTP/TFTP, modescript. |
