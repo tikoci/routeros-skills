@@ -21,6 +21,21 @@ every agent that loads these skills, so we gate quality in CI.
 [CodeRabbit]: https://coderabbit.ai/
 [GitHub Copilot]: https://github.com/features/copilot
 
+## Grounding: don't record what you haven't verified
+
+A skill ships to every agent on every project — a wrong "fact" here propagates far. So
+the bar for what gets written down is higher than "it seemed true once":
+
+- **A single CI failure (or one log line) is not grounding — it's a lead.** Reproduce the
+  behavior locally before describing it as how RouterOS, QEMU, or a tool "works."
+- **Don't record a suspected platform/tool limitation you haven't reproduced.** Claims
+  like "snapshots don't work on arm64" or "X is unsupported on Y" must be *demonstrated*
+  (a local run, a `/console/inspect` query, an anchor test, a `mikrotik.com` docs URL) —
+  a plausible mechanism remembered from training data is not evidence.
+- **Less detail beats shaky detail.** If you can't ground a claim, omit it rather than
+  state a guess as fact. This is the footnote-grounding discipline the review bots
+  enforce; help them by not writing the guess in the first place.
+
 ## Running the checks locally
 
 Prerequisites: [Bun](https://bun.sh). Optional: [lychee](https://lychee.cli.rs/)
