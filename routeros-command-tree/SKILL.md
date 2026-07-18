@@ -69,8 +69,8 @@ Requires basic authentication. Available on all RouterOS 7.x versions.
 |---|---|---|
 | `child` | List children of a path | Array of `{type: "child", name, "node-type"}` |
 | `syntax` | Get help text for a node | Array of `{type: "syntax", text}` |
-| `highlight` | Syntax highlighting data | Tokenized output (rarely used) |
-| `completion` | Tab-completion suggestions | Completion candidates |
+| `highlight` | Syntax highlighting data | Per-byte token classes — see the `routeros-syntax-inspection` skill |
+| `completion` | Tab-completion suggestions | Completion candidates — see `routeros-syntax-inspection` for validity checking |
 
 ### Listing Children
 
@@ -159,22 +159,29 @@ async function walkTree(path = [], tree = {}) {
 }
 ```
 
-### Dangerous Paths — Must Skip
+### Dangerous Paths — Conservative Skip Policy
 
-These path segments **crash the RouterOS REST server** when their `arg` nodes are queried
-for syntax via `/console/inspect`. Always skip syntax lookups for args inside subtrees
-containing any of these names:
+Old RouterOS versions can **deadlock the REST server** when scripting-keyword paths are
+queried for syntax/completion via `/console/inspect`. Crawlers conservatively skip
+syntax lookups inside subtrees containing any of these names:
 
 ```text
 where, do, else, rule, command, on-error
 ```
 
-These are RouterOS scripting constructs. Specifically, **`fetchSyntax()` on `arg` node-types**
-within these subtrees terminates the HTTP server process. Enumerating children (`child` request)
-is safe even inside these paths — only the syntax/description lookup for arguments crashes.
+These are RouterOS scripting constructs. Treat the six-path list as a **conservative
+crawler skip policy, not a timeless crash invariant**: live probing in
+[tikoci/restraml](https://github.com/tikoci/restraml) (MikroTik support case SUP-127641)
+isolated the confirmed deadlock to bare `do` with `request=syntax`/`completion` on
+RouterOS ≤7.20.8 — the other five paths return `[]` instantly there — and found it
+**fixed by 7.21.4**. (The original six-path folklore came from sequential probing: once
+`do` hangs the server, every path tested after it appears to crash too.) Enumerating
+children (`child` request) is safe on all tested versions, as are nested paths like
+`["do","command"]`.
 
-The conservative approach (used in the example above) skips the entire arg when any ancestor
-matches a dangerous path. The actual `rest2raml.js` implementation matches this pattern.
+The conservative approach (used in the example above) skips the entire arg when any
+ancestor matches a dangerous path, and pairs every request with a short timeout on old
+or unknown versions. The actual `rest2raml.js` implementation matches this pattern.
 
 ```typescript
 const DANGEROUS_PATHS = ["where", "do", "else", "rule", "command", "on-error"];

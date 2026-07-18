@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/tikoci/routeros-skills/actions/workflows/ci.yml/badge.svg)](https://github.com/tikoci/routeros-skills/actions/workflows/ci.yml)
 
-Custom instruction skills for [GitHub Copilot](https://docs.github.com/en/copilot/customizing-copilot/adding-custom-instructions-for-github-copilot) and Claude Code (and similar AI coding assistants) that teach them about [MikroTik RouterOS](https://mikrotik.com/) v7.
+Custom instruction skills for [GitHub Copilot](https://docs.github.com/en/copilot/customizing-copilot/adding-custom-instructions-for-github-copilot), Claude Code, Codex, and similar AI coding assistants that teach them about [MikroTik RouterOS](https://mikrotik.com/) v7.
 
 ## Skills
 
@@ -15,6 +15,7 @@ Custom instruction skills for [GitHub Copilot](https://docs.github.com/en/copilo
 | **routeros-hotspot** | RouterOS hotspot captive portal for wired/wireless access control — hotspot chains, profiles, walled garden, DHCP option 114 (RFC 8910), RADIUS integration. |
 | **routeros-app-yaml** | RouterOS `/app` YAML format for container applications (7.21+ builtin, 7.22+ custom YAML). |
 | **routeros-command-tree** | `/console/inspect` API — command tree introspection, schema generation, CLI-to-REST mapping. |
+| **routeros-syntax-inspection** | `/console/inspect` syntax surfaces (`highlight`/`completion`/`syntax`) + `:parse` IL — validating commands, reading token streams, enum discovery, script "explain"/lint; necessary-not-sufficient vs runtime. |
 | **routeros-qemu-chr** | MikroTik CHR (Cloud Hosted Router) with QEMU — boot, VirtIO, acceleration, CI/CD patterns. |
 | **routeros-quickchr** | Ground RouterOS config/scripts/API code against a real router with quickchr (`@tikoci/quickchr`) — boot a disposable CHR, apply config, read it back; networking recipes, integration-test harness patterns. |
 | **routeros-netinstall** | `netinstall-cli` for automated RouterOS device flashing — etherboot, BOOTP/TFTP, modescript. |
@@ -24,31 +25,26 @@ Custom instruction skills for [GitHub Copilot](https://docs.github.com/en/copilo
 
 ## Install
 
-Clone this repo and symlink the skill folders into `~/.copilot/skills/` (and/or `~/.claude/skills/`):
+Clone this repo and symlink the skill folders into your assistant skill directories:
 
 ```sh
 git clone https://github.com/tikoci/routeros-skills.git ~/GitHub/routeros-skills
 
-# Symlink all routeros-* skills at once (Copilot)
-for skill in ~/GitHub/routeros-skills/routeros-*/; do
-  ln -s "$skill" ~/.copilot/skills/"$(basename $skill)"
-done
-
-# Same for Claude
-for skill in ~/GitHub/routeros-skills/routeros-*/; do
-  ln -s "$skill" ~/.claude/skills/"$(basename $skill)"
-done
+cd ~/GitHub/routeros-skills
+make link   # Copilot, Claude, and Codex
+make check
 ```
 
 Each skill is a folder containing a `SKILL.md` file and optionally a `references/` subfolder. VS Code Copilot and Claude Code automatically discover skills in their respective `~/.*/skills/` directories.
+Codex discovers user-authored skills in `~/.agents/skills`.
 
 > **Tip:** Start with **routeros-fundamentals** — it covers the core concepts that other skills reference.
 
 ## Repository layout
 
-This repo is the **single source of truth** for all `routeros-*` skills. Locally, `~/.copilot/skills/routeros-*` and `~/.claude/skills/routeros-*` are symlinks into this repo — editing either location is the same as editing here.
+This repo is the **single source of truth** for all `routeros-*` skills. Locally, `~/.copilot/skills/routeros-*`, `~/.claude/skills/routeros-*`, and `~/.agents/skills/routeros-*` are symlinks into this repo — editing any of those locations is the same as editing here.
 
-Non-`routeros-*` skills (e.g. `tikoci-*`, `screenshot`, `sql-as-rag`) are personal/project-scoped and live only in the local `~/.*/skills/` directories, **not** in this repo. See [SETUP.md](SETUP.md) for the full local setup guide.
+Non-`routeros-*` skills (e.g. `tikoci-*`, `screenshot`, `sql-as-rag`) are personal/project-scoped and live only in the local user-level skill directories, **not** in this repo. See [SETUP.md](SETUP.md) for the full local setup guide.
 
 **The Skill Set is the `routeros-*/` folders only.** Everything else at the repo root is the **CI/QA and tooling layer** that validates and ships those skills — it is *not* part of the skill content and is not symlinked into `~/.*/skills/`:
 
