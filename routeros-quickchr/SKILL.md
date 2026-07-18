@@ -43,7 +43,10 @@ await chr.remove();   // tear down
 `rest()` does a REST call and returns parsed JSON. Worked, runnable version:
 [`examples/grounding/`](https://github.com/tikoci/quickchr/tree/main/examples/grounding).
 Minimal boot-and-read smoke test:
-[`examples/vienk/`](https://github.com/tikoci/quickchr/tree/main/examples/vienk).
+[`examples/quickstart/`](https://github.com/tikoci/quickchr/tree/main/examples/quickstart).
+All examples are runnable `bun run` scripts (`grounding/` is the one `bun:test`); the
+full set + coverage map is in
+[`examples/COVERAGE.md`](https://github.com/tikoci/quickchr/tree/main/examples/COVERAGE.md).
 
 > **Tip — re-run safety.** Give each run a unique machine name and assert on
 > values carrying a per-run nonce, so a stale machine from an interrupted run can't
