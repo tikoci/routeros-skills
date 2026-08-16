@@ -105,7 +105,15 @@ as the `ret` string — the same envelope a successful call returns:
 | `{"script":":put 1","as-string":""}` | `{"ret":"1"}` | `200` |
 | `{"script":"/ip/service/set www-ssl certificate=nope","as-string":""}` | `{"ret":"input does not match any value of certificate (/ip/service/set (certificate); line 1)"}` | `200` |
 
-The same operation via the resource endpoint reports it as an error:
+The same operation via the resource endpoint reports it as an error. Look the
+`.id` up rather than hardcoding it — internal IDs are per-router and change when
+a record is removed and re-added:
+
+```http
+GET /rest/ip/service?name=www-ssl&.proplist=.id,name
+
+200 [{".id":"*6","name":"www-ssl"}]
+```
 
 ```http
 PATCH /rest/ip/service/*6
@@ -118,12 +126,16 @@ So an `!response.ok` check does not catch this class of failure on the execute
 path. Where an equivalent resource operation exists it may give a clearer error
 contract, but confirm it for the operation at hand rather than trusting the
 status alone — a 200 from a resource endpoint is not proof of effect either (see
-the self-disable no-op in [Users REST reference](./routeros-users-rest.md)). On
-the execute path the `ret` text is the only failure signal available, and there
-is no documented general rule for telling a rejection from legitimate output.
+the self-disable no-op in [Users REST reference](./routeros-users-rest.md)).
 
-Verified on RouterOS 7.23.3 (x86 CHR), synchronous `as-string` form. The async
-job-ID form of `/rest/execute` was not tested.
+In the case tested here the `ret` text was the only thing separating rejection
+from success, since the status and envelope were identical. Treat that as one
+grounded case rather than a contract for the whole execute path: transport
+failures, timeouts, empty results, and the asynchronous job-ID form were not
+exercised, and there is no documented general rule for telling a rejection from
+legitimate output.
+
+Verified on RouterOS 7.23.3 (x86 CHR), synchronous `as-string` form only.
 
 ## Authentication Patterns
 
