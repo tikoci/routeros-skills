@@ -92,6 +92,39 @@ if (!response.ok) {
 }
 ```
 
+**Scope:** this is the resource-endpoint contract. `/rest/execute` reports command
+failures differently — see below.
+
+### `/rest/execute` can return HTTP 200 for a rejected command
+
+A command RouterOS rejects can still come back **HTTP 200**, with the error text
+as the `ret` string — the same envelope a successful call returns:
+
+| Request body (`POST /rest/execute`) | Response | Status |
+|---|---|---|
+| `{"script":":put 1","as-string":""}` | `{"ret":"1"}` | `200` |
+| `{"script":"/ip/service/set www-ssl certificate=nope","as-string":""}` | `{"ret":"input does not match any value of certificate (/ip/service/set (certificate); line 1)"}` | `200` |
+
+The same operation via the resource endpoint reports it as an error:
+
+```http
+PATCH /rest/ip/service/*6
+{"certificate":"nope"}
+
+400 {"detail":"input does not match any value of certificate","error":400,"message":"Bad Request"}
+```
+
+So an `!response.ok` check does not catch this class of failure on the execute
+path. Where an equivalent resource operation exists it may give a clearer error
+contract, but confirm it for the operation at hand rather than trusting the
+status alone — a 200 from a resource endpoint is not proof of effect either (see
+the self-disable no-op in [Users REST reference](./routeros-users-rest.md)). On
+the execute path the `ret` text is the only failure signal available, and there
+is no documented general rule for telling a rejection from legitimate output.
+
+Verified on RouterOS 7.23.3 (x86 CHR), synchronous `as-string` form. The async
+job-ID form of `/rest/execute` was not tested.
+
 ## Authentication Patterns
 
 ```typescript
