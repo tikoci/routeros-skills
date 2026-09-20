@@ -209,8 +209,17 @@ usable there even though REST accepts it.
 
 ## When a command is rejected
 
-centrs runs a `:parse` preflight, so a malformed command is refused before it reaches
-the device. The current error text is thin, and the failure mode is worth knowing
+Validation is **two stages**, and which one rejected you is the whole diagnosis:
+
+1. **Offline** — the same analyzer `explain` uses runs first, with no connection. A
+   syntax fault is refused here with the offending byte span, and its remediation tells
+   you to run `centrs explain` to see it in context. No round trip happens.
+2. **Device** — `:parse` plus `/console/inspect` on the router, for the semantic half
+   offline analysis cannot decide.
+
+`--validate=false` disables both. A clean offline pass is necessary, never sufficient.
+
+The device stage is where the error text is thin, and the failure mode is worth knowing
 because it costs agents real time:
 
 ```console
@@ -226,7 +235,9 @@ whose device-mode feature is off
 has no quoting problem is an infinite loop. When you see it:
 
 1. Run `centrs explain '<the same command>'`. If it passes offline, the input is
-   well-formed and the problem is the device, not the string.
+   well-formed and the problem is the device, not the string — and since stage 1 already
+   ran the same analyzer, a rejection you *received* from a router is by definition one
+   offline analysis let through. Re-quoting cannot help.
 2. Check the device — `centrs retrieve <router> /system/package --json`, then
    `centrs retrieve <router> /system/device-mode --json`. A missing `container`,
    `zerotier`, or `wireless` package is the usual answer.
