@@ -28,6 +28,7 @@ calea
 CAPPORT
 catvlan
 CCR
+CDB
 CDP
 centrs
 changeme
