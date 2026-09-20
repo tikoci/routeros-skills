@@ -98,7 +98,9 @@ centrs execute --group edge --yes '/system/ntp/client/set enabled=yes'
 centrs retrieve --all /system/resource --json
 ```
 
-Selectors: `--group <name>`, `--all`, `--where <attr>=<value>`, `--near`, `--bbox`.
+Fan-out selectors: `--group <name>`, `--all`, `--where <attr>=<value>`, `--near`,
+`--bbox`. `--default` is a target selector too, but it picks the single reserved
+`__default__` record rather than fanning out.
 
 ## The command map
 
@@ -114,7 +116,7 @@ and `discover` are the ones most callers never find.
 | `transfer <router> upload\|download\|list\|remove\|mkdir\|copy` | Device files | shipped (REST, native API, SFTP) |
 | `terminal <router>` | Interactive console | shipped (SSH, MAC-Telnet) |
 | `discover` | MNDP neighbor discovery, `--save` into the CDB | shipped |
-| `devices` | The CDB device registry — the only command that writes it | shipped |
+| `devices` | The CDB device registry, and the atomic write layer every CDB mutation routes through — including `discover --save` | shipped |
 | `settings` | centrs's own preferences (`centrs.env`) | shipped |
 | `mcp` | Scoped stdio MCP server, CDB-gated | shipped |
 | `btest` | MikroTik bandwidth test, client or server | shipped |
@@ -127,7 +129,8 @@ writes ride `execute`.
 
 ## Read the envelope, not the text
 
-Every call returns one shape, whatever the transport:
+Every call returns one shape, whatever the transport (the one exception is
+`api --raw`, which deliberately strips the envelope and emits bare RouterOS JSON):
 
 ```jsonc
 {
@@ -154,10 +157,22 @@ parser *appears* to work while silently discarding `warnings`, `tips`, and all o
 Two consequences worth internalizing:
 
 - `meta.operation.objectCount` is the reliable row count. `data` itself is
-  shape-unstable today: a list menu returning one row comes back as a bare object and
-  N rows as an array
-  ([centrs#360](https://github.com/tikoci/centrs/issues/360)). Until that is settled,
-  normalize with `Array.isArray(d) ? d : d ? [d] : []` and take the count from `meta`.
+  shape-unstable today: zero rows come back as an **empty object**, one row as a bare
+  object, and N rows as an array
+  ([centrs#360](https://github.com/tikoci/centrs/issues/360)). All three need handling,
+  and the empty object is the one that bites — it is truthy, so the obvious
+  `d ? [d] : []` invents a row that does not exist, exactly during the failover or
+  empty-menu read you were measuring. Take the count from `meta`, and normalize with
+  something that excludes it:
+
+  ```js
+  const rows = Array.isArray(d)
+    ? d
+    : d && typeof d === "object" && Object.keys(d).length > 0
+      ? [d]
+      : [];
+  ```
+
 - `tips` and `warnings` are separate channels on purpose. A tip is explicitly *not* a
   problem; do not treat a non-empty `tips` array as a failure.
 
@@ -171,9 +186,11 @@ $ centrs execute lab '/ip/address/add address=192.0.2.1/24 interface=ether2'
 Fix: Pass `--yes` in non-interactive automation, or answer `yes` at the TTY prompt after reviewing the command.
 ```
 
-So: **any non-interactive write needs `--yes`** (`execute --yes`, `api --yes`). Never
-disable validation to make a write succeed — validation is the product, and
-`--no-validate` should be a deliberate, explained choice, not a workaround.
+So: **a non-interactive `execute` or `api` write needs `--yes`**, as does a mutating
+`transfer` fan-out across several routers. Overwriting an existing file is a *separate*
+gate — `transfer --force` / `--overwrite`, not `--yes`. Never disable validation to make
+a write succeed: validation is the product, and `--no-validate` should be a deliberate,
+explained choice, not a workaround.
 
 ## Files
 
@@ -210,9 +227,9 @@ has no quoting problem is an infinite loop. When you see it:
 
 1. Run `centrs explain '<the same command>'`. If it passes offline, the input is
    well-formed and the problem is the device, not the string.
-2. Check the device: `centrs retrieve <router> /system/package --json` and
-   `/system/device-mode`. A missing `container`, `zerotier`, or `wireless` package is
-   the usual answer.
+2. Check the device — `centrs retrieve <router> /system/package --json`, then
+   `centrs retrieve <router> /system/device-mode --json`. A missing `container`,
+   `zerotier`, or `wireless` package is the usual answer.
 3. Only then suspect the syntax — and use `explain`'s diagnostics rather than guessing.
 
 Re-run with `--verbose` to get the error `context`, which carries the device's own
