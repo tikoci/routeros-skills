@@ -17,9 +17,10 @@ Two **separate project directories** on purpose — a second `bun add` in one
 project would just move the same dependency and overwrite
 `node_modules/.bin/quickchr`, leaving no 0.4.7 to compare against. Each run
 below invokes its release by path (`../lab47/node_modules/.bin/quickchr`,
-`./node_modules/.bin/quickchr`), never a `quickchr` found on `PATH` — the
-host has a `bun link`ed working tree on `PATH`, which is exactly how the
-previous pass mislabelled its version.
+`./node_modules/.bin/quickchr`), never a `quickchr` found on `PATH`. A
+development checkout linked onto `PATH` (`bun link`) shadows the published
+binary and reports its own in-tree version — which is exactly how the
+previous pass mislabelled what it had tested.
 
 This matters: an earlier pass of this log was recorded against a
 `bun link`ed working tree while labelled `0.4.7`. The named-socket
@@ -58,11 +59,11 @@ quickchr remove q48-a  # → "q48-a removed."
 ```
 
 Ports come in per-machine blocks of ten from 9100, with no flags and no
-collisions. The host's four pre-existing machines held 9100/9110/9120/9130,
-and the three lab machines created next were handed 9140, 9150 and 9160
-(`http` first, then `https ssh api api-ssl winbox` within the block).
-`quickchr add --help`: "`--port-base <port>` Starting port number
-(default: auto-allocated from 9100)".
+collisions: each new machine takes the next free block, `http` first, then
+`https ssh api api-ssl winbox` within it. With the lower blocks already in
+use here, the three lab machines created next were handed 9140, 9150 and
+9160 in creation order. `quickchr add --help`: "`--port-base <port>`
+Starting port number (default: auto-allocated from 9100)".
 
 Restart of an existing machine is faster than first boot: `start --bg`
 11s on a second boot vs 22s first boot. Issue #21's "40–80s to
@@ -292,7 +293,10 @@ centrs execute --quickchr q48-dm --yes '/system/device-mode/update container=yes
 ```
 
 RouterOS is waiting for a power cycle it cannot perform on itself. The
-timeout is the symptom, not a transport fault.
+timeout is the symptom, not a transport fault. Note the bound: what is
+observed is that the call **did not complete within the 10s client
+timeout** and left `container` unchanged. Whether it would ever return is
+not established here — the field lab's ~5 min wait was not reproduced.
 
 **The flag is silently ignored on an already-booted machine.**
 

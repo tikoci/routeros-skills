@@ -17,10 +17,11 @@ Behavior below is pinned to **quickchr 0.4.8**. Several of these are 0.4.8
 changes, called out inline; on 0.4.7 and earlier the answer differs.[^pin]
 
 One limit to keep in view: a CHR booted this way runs the **free**
-license (`quickchr get <name>` shows `Level: free`), which MikroTik
-rate-limits to **1 Mbps per interface**. Config, API and CLI grounding
-are unaffected; throughput or queue numbers measured here are the
-license talking, not the feature.[^license]
+license (`quickchr get <name>` shows `Level: free`), which MikroTik caps
+at **1 Mbps upload per interface** — every other RouterOS feature is
+unrestricted. Config, API and CLI grounding are unaffected; a throughput
+or queue number measured here is the license talking, not the
+feature.[^license]
 
 ## Lifecycle: `add` is not `start`
 
@@ -210,10 +211,12 @@ needs no credential configuration from you.[^ground-inspect]
 Two traps, and agents hit them in this order.
 
 **The guest-side route does not work.** `/system/device-mode/update
-container=yes` over REST or API never returns — RouterOS is waiting for
-a power cycle it cannot perform on itself — and the feature stays
-`false`. Observed live: the call timed out, `container` unchanged. Do
-not reach for this, and do not read the timeout as a transport
+container=yes` over REST or API does not complete — RouterOS is waiting
+for a power cycle it cannot perform on itself — and the feature stays
+`false`. Observed live: the call did not return within the 10s client
+timeout and `container` was unchanged afterwards. (Whether it would
+*ever* return is not established; a field lab reported waiting ~5 min.)
+Do not reach for this, and do not read the timeout as a transport
 problem.[^dm-trap]
 
 **The flags are honored only on a machine's first boot.** quickchr
@@ -329,10 +332,15 @@ boot-only.[^device-mode]
     port number (default: auto-allocated from 9100)"; successive
     machines observed at 9140/9150/9160 in
     `references/cli-grounding.md`.
-[^license]: `quickchr get <name>` reports `License Level: free` on a
-    default machine. The 1 Mbps free-CHR cap is MikroTik's licensing,
-    not a quickchr behavior — see the **routeros-quickchr** skill's
-    gotchas, where the CHR licensing tiers live.
+[^license]: MikroTik, [CHR: Licensing → CHR License
+    Levels](https://manual.mikrotik.com/docs/getting-started/routeros-licensing/chr/chr-licensing#chr-license-levels):
+    *"The Free license level allows CHR to run indefinitely with a 1 Mbps
+    upload limit per interface. All other RouterOS features are available
+    without restrictions."* Paid tiers raise the cap (P1 1 Gbit, P10
+    10 Gbit, P-Unlimited), and a 60-day trial of a paid tier is free with
+    a MikroTik account. This is MikroTik licensing, not a quickchr
+    behavior; `quickchr get <name>` reports `License Level: free` on a
+    default machine.
 [^device-mode]: quickchr MANUAL.md "Order of operations"
     (`_provisionInstance`); `--device-mode-enable` in
     `src/cli/flags.ts` (accepted by both `add` and `start`, though the
