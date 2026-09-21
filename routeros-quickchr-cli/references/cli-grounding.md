@@ -57,6 +57,13 @@ quickchr stop q48-a    # instant
 quickchr remove q48-a  # → "q48-a removed."
 ```
 
+Ports come in per-machine blocks of ten from 9100, with no flags and no
+collisions. The host's four pre-existing machines held 9100/9110/9120/9130,
+and the three lab machines created next were handed 9140, 9150 and 9160
+(`http` first, then `https ssh api api-ssl winbox` within the block).
+`quickchr add --help`: "`--port-base <port>` Starting port number
+(default: auto-allocated from 9100)".
+
 Restart of an existing machine is faster than first boot: `start --bg`
 11s on a second boot vs 22s first boot. Issue #21's "40–80s to
 REST-ready" band came from a TCG software-emulation lab; the field lab
@@ -246,21 +253,101 @@ There is no way to warm the cache without booting").
 
 ## Device-mode
 
-`centrs retrieve --quickchr q48-x /system/device-mode` on a default
-machine reads `mode: advanced`, `container: false`, `partitions: false`.
-`--device-mode-enable` is accepted by `add`/`start` as a CSV list
-(`src/cli/flags.ts`), though the condensed `add --help` lists only
-`--device-mode <m>`.
+A default machine reads `mode: advanced`, `container: false`,
+`partitions: false`. Three runs, in the order an agent hits them.
+
+**Guest-side update does not apply, and does not return.** On a running
+machine:
+
+```sh
+centrs execute --quickchr q48-dm --yes '/system/device-mode/update container=yes'
+# → [transport/timeout] The RouterOS API command to api://127.0.0.1:9143
+#   timed out after 10000ms.
+# container afterwards: still "false"
+```
+
+RouterOS is waiting for a power cycle it cannot perform on itself. The
+timeout is the symptom, not a transport fault.
+
+**The flag is silently ignored on an already-booted machine.**
+
+```sh
+quickchr add --name q48-dm … ; quickchr start q48-dm --bg   # 22s, container=false
+quickchr stop q48-dm
+quickchr start q48-dm --bg --device-mode-enable container   # 20s, NO provisioning output
+# container afterwards: still "false"
+```
+
+No warning, no error, no extra boot time — the flag parses and is
+dropped. The gate is in `QuickCHR.start()` (`src/lib/quickchr.ts`):
+provisioning options are passed to `_launchExisting()` only under
+`if (!existing.lastStartedAt)`, and `undefined` is passed on every
+later start.
+
+**It applies on a first boot — including one where `add` had no such
+flag.** A machine added plain but never started:
+
+```sh
+quickchr add --name q48-dm3 --version 7.24.4 --arch x86 --add-network user
+quickchr start q48-dm3 --bg --device-mode-enable container
+# → Applying device-mode (mode=rose container=yes)...
+#     Device-mode power-cycled via QEMU monitor quit
+#     Waiting for CHR to reboot after device-mode power-cycle...
+#     Device-mode verified: mode=rose container=yes
+# elapsed: 46s (vs 22s without provisioning); container afterwards: "true"
+```
+
+So the boundary is **first boot**, not `add`. Setting it at `add` time
+behaves identically (`add` prints
+`Device-mode: auto  (applied on first start)`, then the same 45s start).
+Enabling `container` also moved `mode` from `advanced` to `rose`.
+
+There is **no CLI command** to change device-mode afterwards — `get`
+only displays it. The library has `instance.setDeviceMode()`
+(`src/lib/quickchr.ts`), which is not exposed on the CLI, so the CLI
+answer for a booted machine is `remove` + `add` + `start`.
+
+## Endpoints and credentials
+
+```sh
+quickchr get q48-dm3        # → License (level/software ID), Device Mode, Admin Users
+quickchr inspect q48-dm3 --json
+```
+
+`inspect --json` is the machine descriptor: `status`, `pid`,
+`createdAt`, **`lastStartedAt`** (the field that decides whether
+device-mode flags will apply), `networks`, `customForwards`, and a
+`services` block per service. Each service carries its resolved URL and
+ready-to-use auth — this CHR is `admin` with an empty password:
+
+```json
+"rest-api": { "available": true, "host": "127.0.0.1", "port": 9150,
+              "url": "http://127.0.0.1:9150/rest",
+              "auth": { "username": "admin", "password": "",
+                        "basic": "admin:", "header": "Basic <encoded>" } }
+```
+
+Verified as a copy-paste recipe against a live machine:
+
+```sh
+url=$(quickchr inspect lab-a --json | jq -r '.services["rest-api"].url')
+curl -s -u admin: "$url/system/resource" | jq '{version, "board-name"}'
+# → { "version": "7.24.4 (stable)",
+#     "board-name": "CHR QEMU Standard PC (i440FX + PIIX, 1996)" }
+```
+
+`--device-mode-enable` is accepted by both `add` and `start` as a CSV
+list (`src/cli/flags.ts`), though the condensed `add --help` lists only
+`--device-mode <m>`. Provisioning also requires a user-mode NIC — the
+`NETWORK_UNAVAILABLE` guard in `QuickCHR.start()` refuses it otherwise.
 
 ## What was *not* re-verified in this run
 
-- **A device-mode value change through `--device-mode-enable`.** The
-  mechanism is a source reading (`_provisionInstance` kills QEMU and
-  restarts it — MANUAL.md "Order of operations"); the guest-side hang
-  (`/system/device-mode/update container=yes` timing out on 7.24.3 and
-  7.24.4, ~5 min wait for a power cycle) and the
-  `--device-mode-enable container` fix come from the field lab, which
-  reached `mode=rose container=yes` that way. Default state read live.
+- **The field lab's ~5 min guest-side hang.** The guest-side attempt was
+  reproduced here, but bounded at 60s (it failed the API call at 10s and
+  left `container` unchanged), so the full wait the field lab described
+  was not re-observed. Everything else about device-mode in §Device-mode
+  above is from live runs on 0.4.8.
 - **`socket:listen:`/`socket:connect:` ordering.** The raw pair's
   listener-first requirement is DESIGN.md's account plus
   `parseSocketSpecifier()`; this run used `socket::<name>` throughout,

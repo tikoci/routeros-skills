@@ -1,6 +1,6 @@
 ---
 name: routeros-quickchr-cli
-description: "Stand up a real MikroTik CHR router from the shell with quickchr CLI and drive it with centrs — add/start/stop/remove lifecycle, --bg detach truth, named-socket L2 links, mcast hazards. Use when: booting a disposable CHR to answer a question or check a claim; grounding generated RouterOS config against live RouterOS; running commands/REST against a CHR from shell scripts. For TypeScript harnesses importing QuickCHR, use routeros-quickchr instead."
+description: "Answer a RouterOS question by asking RouterOS. quickchr boots a real, disposable MikroTik CHR router on the local machine under QEMU — no hardware, no cloud, gone when you remove it — and centrs drives it. Covers the shell path end to end: the add/start/stop/remove lifecycle and what --bg actually does, getting REST endpoints and credentials out of a machine, L2 links between two VMs, and the provisioning steps (device-mode) that only work before a machine's first boot. Use when: checking a claim or config against real RouterOS instead of guessing; needing a throwaway router for REST/CLI/API iteration; giving a shell script or CI job a router to talk to. For TypeScript harnesses that import the QuickCHR class, use routeros-quickchr instead."
 ---
 
 # CHR from the shell: quickchr CLI + centrs
@@ -15,6 +15,12 @@ commands (e.g. in a `forum.mikrotik.com` reply). If you are writing a
 
 Behavior below is pinned to **quickchr 0.4.8**. Several of these are 0.4.8
 changes, called out inline; on 0.4.7 and earlier the answer differs.[^pin]
+
+One limit to keep in view: a CHR booted this way runs the **free**
+license (`quickchr get <name>` shows `Level: free`), which MikroTik
+rate-limits to **1 Mbps per interface**. Config, API and CLI grounding
+are unaffected; throughput or queue numbers measured here are the
+license talking, not the feature.[^license]
 
 ## Lifecycle: `add` is not `start`
 
@@ -34,9 +40,21 @@ quickchr remove lab-a
   HVF). Under TCG software emulation expect minutes, not seconds — a
   sandboxed field lab saw ~4 min boots and a real `BOOT_TIMEOUT` at
   480s. Size harness timeouts from the slow end.[^ground-timings]
-- `exec <name> <command…>` runs one RouterOS command over REST
-  (`--via auto|rest|ssh|console|qga`). `stop` is instant; `remove`
-  deletes the machine. `list` shows state and PIDs.[^ground-exec]
+- `exec <name> <command…>` runs one RouterOS command over REST.
+  `--via` is `auto|rest|qga` here, and **`qga` needs KVM** — so it is
+  unavailable under macOS HVF and under TCG; stay on REST. (The
+  library's `ExecTransport` type also lists `ssh` and `console`; those
+  are not CLI surface.) `stop` is instant; `remove` deletes the
+  machine. `list` shows state and PIDs.[^ground-exec]
+- **Version selection**: `--version 7.24.4` pins; `--channel
+  stable|long-term|testing|development` resolves the newest of a
+  channel. Bare `quickchr --version` prints what each channel currently
+  resolves to.[^ground-channel]
+- **Ports are auto-allocated** from 9100 in per-machine blocks of ten
+  (9140, 9150, 9160 …), so parallel machines do not collide and you
+  need no port bookkeeping. `--port-base` overrides;
+  `--forward name:host:guest/proto` adds extras, ranges
+  included.[^ground-ports]
 - **Pre-warm without booting**: `quickchr cache add --version 7.24.4
   --arch x86` resolves and downloads one image, no QEMU and no machine
   required. `cache key` prints `dir=/version=/arch=` for CI. (Both new
@@ -140,17 +158,71 @@ pipe with no validation** — whatever you type is what RouterOS is asked
 to run, and its output is screen-scraped text where centrs returns
 typed JSON.[^ground-tips]
 
-## Device-mode needs a cold cycle
+Need the raw endpoint instead — curl, or some other tool?
+`quickchr inspect <name> --json` carries the resolved URL **and
+ready-to-use credentials**. CHR here is `admin` with an *empty*
+password, and inspect hands you the Basic header already encoded:
 
-Set device-mode **at create time** — `--device-mode <m>` for the mode
-itself, `--device-mode-enable <feature>` (e.g. `container`) for
-individual features. quickchr's provisioning applies it by killing
-QEMU and restarting it, which a guest-side change cannot do: running
-`/system/device-mode/update container=yes` from inside RouterOS
-**hangs** (it waits ~5 min for a power cycle that never comes) and the
-feature stays `false`. Change it through `add` flags and cycle with
-`quickchr stop` / `quickchr start`.[^device-mode] Provisioning flags
-need RouterOS 7.20.8+; older 7.x is boot-only.
+```json
+"rest-api": { "url": "http://127.0.0.1:9150/rest", "port": 9150,
+              "auth": { "username": "admin", "password": "", "basic": "admin:" } }
+```
+
+(`auth` also carries a pre-encoded `header` if you would rather not
+build the Basic value yourself.) Straight to curl:
+
+```sh
+url=$(quickchr inspect lab-a --json | jq -r '.services["rest-api"].url')
+curl -s -u admin: "$url/system/resource" | jq .
+```
+
+That is the same door centrs uses — `--quickchr` resolves through
+`quickchr inspect`, never by reading `machine.json` — which is why it
+needs no credential configuration from you.[^ground-inspect]
+
+## Device-mode: the window closes at first boot
+
+Two traps, and agents hit them in this order.
+
+**The guest-side route does not work.** `/system/device-mode/update
+container=yes` over REST or API never returns — RouterOS is waiting for
+a power cycle it cannot perform on itself — and the feature stays
+`false`. Observed live: the call timed out, `container` unchanged. Do
+not reach for this, and do not read the timeout as a transport
+problem.[^dm-trap]
+
+**The flags are honored only on a machine's first boot.** quickchr
+applies device-mode by provisioning — boot the guest, set the mode,
+power-cycle QEMU via the monitor, re-read to confirm (≈45s vs ≈22s
+without). That runs only while the machine has never started. Once
+`lastStartedAt` is set, `--device-mode-enable` is parsed, accepted and
+**silently ignored**: no warning, no extra boot time, no
+change.[^dm-window]
+
+| machine state | `start --device-mode-enable container` |
+|---|---|
+| added, never started | applies — "Device-mode verified: mode=rose container=yes" |
+| started at least once | silently ignored — stays `container: false` |
+
+So `add --device-mode-enable <feature>` when you can; if you only
+realize you need it *after* creating the machine, you can still pass it
+to the **first** `start`. Once it has booted, the CLI has no way to
+change device-mode — `remove` + `add --device-mode-enable …` + `start`
+is the only CLI path. (The library exposes
+`instance.setDeviceMode()`, which power-cycles for you — see
+**routeros-quickchr**.)
+
+Which side of the line a machine is on, and what it currently has:
+
+```sh
+quickchr inspect <name> --json | jq -r '.lastStartedAt // "never started"'
+quickchr get <name>    # live Device Mode / License / Admin Users
+```
+
+Enabling `container` moves the mode itself too (`advanced` → `rose`).
+Provisioning needs RouterOS **7.20.8+** *and* a user-mode NIC — with
+only socket NICs it fails `NETWORK_UNAVAILABLE`; older 7.x is
+boot-only.[^device-mode]
 
 ## Grounding behind this skill
 
@@ -205,8 +277,29 @@ need RouterOS 7.20.8+; older 7.x is boot-only.
 [^ground-tips]: `quickchr exec --help` and bare `quickchr exec` on
     0.4.8, quoted in `references/cli-grounding.md` §Driving with
     centrs; CHANGELOG 0.4.8 "Added" (tips).
+[^dm-trap]: `references/cli-grounding.md` §Device-mode — the guest-side
+    `/system/device-mode/update container=yes` timing out with
+    `container` unchanged, reproduced on 0.4.8 / CHR 7.24.4.
+[^dm-window]: Same section: the never-started machine applied and
+    verified the change, the already-booted one silently did not. The
+    gate is `!existing.lastStartedAt` in `QuickCHR.start()`
+    (`src/lib/quickchr.ts`), which passes provisioning options to
+    `_launchExisting()` on a first boot and `undefined` afterwards.
+[^ground-inspect]: `references/cli-grounding.md` §Endpoints and
+    credentials (`quickchr inspect --json`, `quickchr get`).
+[^ground-channel]: `quickchr add --help` (`--version`, `--channel`);
+    `quickchr --version` prints the resolved stable/long-term versions.
+[^ground-ports]: `quickchr add --help` — "`--port-base <port>` Starting
+    port number (default: auto-allocated from 9100)"; successive
+    machines observed at 9140/9150/9160 in
+    `references/cli-grounding.md`.
+[^license]: `quickchr get <name>` reports `License Level: free` on a
+    default machine. The 1 Mbps free-CHR cap is MikroTik's licensing,
+    not a quickchr behavior — see the **routeros-quickchr** skill's
+    gotchas, where the CHR licensing tiers live.
 [^device-mode]: quickchr MANUAL.md "Order of operations"
     (`_provisionInstance`); `--device-mode-enable` in
-    `src/cli/flags.ts`; default `mode: advanced` read live. The
-    guest-side hang and the `--device-mode-enable container` fix are
-    the field lab's, not re-run here.
+    `src/cli/flags.ts` (accepted by both `add` and `start`, though the
+    condensed `add --help` lists only `--device-mode <m>`); the
+    user-mode-NIC requirement is the `NETWORK_UNAVAILABLE` guard in
+    `QuickCHR.start()`.
