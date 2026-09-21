@@ -111,6 +111,31 @@ Still open in #159: `start` waits for REST-readiness regardless (no
 poll pattern in the skill — now for "give me my shell back", not for
 "keep the VM alive".
 
+## Bounded readiness poll
+
+The skill's detach-and-poll snippet, run verbatim on this host:
+
+```sh
+nohup quickchr start lab-a --bg >lab-a.start.log 2>&1 &
+
+ready() { centrs retrieve --quickchr lab-a /system/resource >/dev/null 2>&1; }
+for _ in $(seq 60); do ready && break; sleep 5; done   # 60 x 5s = 5 min
+ready || { quickchr list; tail -20 lab-a.start.log; exit 1; }
+```
+
+Success path: shell returned immediately, loop broke at **21s**, and
+`centrs retrieve` then reported `"version": "7.24.4 (stable)"`.
+
+Failure path, forced against a machine name that does not exist (bound
+shortened to 3 x 2s): the loop ran out, the `ready ||` branch printed
+`quickchr list` and the log tail, and the script **exited 1**.
+
+That second half is the point of the bound. An unbounded
+`until ready; do sleep 5; done` never exits when `start` fails outright
+— `MISSING_QEMU`, `SPAWN_FAILED`, `BOOT_TIMEOUT` are all terminal, and
+the poll cannot distinguish "still booting" from "never will". In CI
+that is a job that hangs to the runner limit with no diagnostic.
+
 ## First NIC is ether1 (DHCP), socket NIC is ether2
 
 Machines created with `--add-network user` first show a dynamic

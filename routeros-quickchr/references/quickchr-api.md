@@ -24,12 +24,12 @@ completed when the promise resolves (background/library use). Common `StartOptio
 |---|---|
 | `name` | machine name (must not start with `-`); auto-generated from version+arch if omitted |
 | `channel` | one of `"stable"`, `"long-term"`, `"testing"`, `"development"` (default `stable`) |
-| `version` | pinned RouterOS, e.g. `"7.23.1"` (may be used with `channel`; if both are set, they should be consistent; a channel name passed as `version` is accepted with a warning) |
+| `version` | pinned RouterOS, e.g. `"7.23.1"`. **Mutually exclusive with `channel`** — `start()` takes `version` when set and never looks at `channel`, so an inconsistent pair is resolved silently in `version`'s favour, not rejected. A channel name passed as `version` is accepted with a warning. |
 | `arch` | `"x86"` or `"arm64"` or `"auto"` (default: host arch; `"auto"` is an explicit synonym for the default) |
 | `cpu` | vCPUs (default `1`) |
 | `mem` | MiB RAM (default `512`; `1024` for cross-arch TCG) |
 | `background` | `true` (default, detached) / `false` (foreground, serial on stdio) |
-| `secureLogin` | `true` → managed `quickchr` user with a stored password; `false` → open admin. Inverse alias: `noAuth` (`noAuth: true` ≙ `secureLogin: false`; `secureLogin` wins if both set). Prefer `secureLogin`. Default `true`. |
+| `secureLogin` | `true` → managed `quickchr` user with a stored password; `false`/omitted → open admin. Inverse alias: `noAuth` (`noAuth: true` ≙ `secureLogin: false`; `secureLogin` wins if both set). Prefer `secureLogin`. **Must be explicitly `true` to take effect** — provisioning tests `secureLogin === true`, so omitting it leaves `admin` password-less (observed: `inspect --json` reports `"password": ""`). Some doc comments in `types.ts` still say it defaults to true; the code does not. |
 | `user` | `{ name, password }` custom user (provisioning, ≥ 7.20.8) |
 | `disableAdmin` | disable default admin after boot (provisioning, ≥ 7.20.8) |
 | `packages` | `string[]` extra packages to install (provisioning, ≥ 7.20.8) |

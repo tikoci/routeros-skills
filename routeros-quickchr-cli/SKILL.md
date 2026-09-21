@@ -41,8 +41,11 @@ quickchr remove lab-a
   sandboxed field lab saw ~4 min boots and a real `BOOT_TIMEOUT` at
   480s. Size harness timeouts from the slow end.[^ground-timings]
 - `exec <name> <command…>` runs one RouterOS command over REST.
-  `--via` is `auto|rest|qga` here, and **`qga` needs KVM** — so it is
-  unavailable under macOS HVF and under TCG; stay on REST. (The
+  `--via` is `auto|rest|qga` here, and **`qga` is narrower than it
+  looks**: RouterOS only starts its guest agent for an **x86** CHR
+  under **Linux KVM**. Under macOS HVF or TCG the port is presented but
+  the guest never opens it, and ARM64 CHR has no QGA at all — both time
+  out. Stay on REST unless you are on Linux/KVM with an x86 guest. (The
   library's `ExecTransport` type also lists `ssh` and `console`; those
   are not CLI surface.) `stop` is instant; `remove` deletes the
   machine. `list` shows state and PIDs.[^ground-exec]
@@ -73,8 +76,18 @@ readiness yourself:[^bg]
 
 ```sh
 nohup quickchr start lab-a --bg >lab-a.start.log 2>&1 &
-until centrs retrieve --quickchr lab-a /system/resource >/dev/null 2>&1; do sleep 5; done
+
+ready() { centrs retrieve --quickchr lab-a /system/resource >/dev/null 2>&1; }
+for _ in $(seq 60); do ready && break; sleep 5; done   # 60 x 5s = 5 min
+ready || { quickchr list; tail -20 lab-a.start.log; exit 1; }
 ```
+
+**Bound the wait.** `start` can fail outright — `MISSING_QEMU`,
+`SPAWN_FAILED`, `BOOT_TIMEOUT` — and an unbounded `until` loop then
+polls forever, which in CI is a hung job with no diagnostic. Size the
+bound off the slow end (TCG minutes, not HVF seconds) and on timeout
+print `quickchr list` plus the start log rather than just
+exiting.[^ground-poll]
 
 **A killed `start` does not stop the VM.** On 0.4.8 QEMU is spawned
 `detached` (its own session), so even a harness that SIGKILLs the whole
@@ -120,9 +133,9 @@ pair, filesystem-confined, two machines) on macOS/Linux and
 socket. `--mode mcast` is UDP multicast `230.0.0.1` — the only N-way
 transport, and the only one that fails silently.[^ground-sock]
 
-Three hazards share one signature (interfaces up, addresses assigned,
-100% loss, nothing logged), and quickchr prints all three as a warning
-when you create an `mcast` link:[^mcast]
+quickchr prints all three hazards below as a warning when you create an
+`mcast` link. **Two of them fail silently** — same signature each time:
+interfaces up, addresses assigned, 100% loss, nothing logged:[^mcast]
 
 - **No macOS delivery** — QEMU's multicast socket omits
   `SO_REUSEPORT`, which BSD/macOS require before two sockets on one
@@ -130,10 +143,15 @@ when you create an `mcast` link:[^mcast]
 - **Refused where unconnected UDP sends are blocked** —
   seccomp-filtered sandboxes and some Linux CI return `EPERM` on
   `sendto()` while the group join succeeds (tikoci/quickchr#169).
+
+The third is the opposite failure — traffic flows where it should not:
+
 - **Not confined to your machine** — quickchr passes no `localaddr=`,
-  so the group rides the host's default multicast interface; another
-  host on your LAN using the same group joins your segment. Give an
-  N-way link a group of its own, or stay on `dgram` for two machines.
+  so the group rides the host's default multicast interface. Another
+  host on your LAN using the same group **joins your segment**, and the
+  link keeps working, so nothing looks wrong. That is an isolation
+  failure, not a loss one. Give an N-way link a group of its own, or
+  stay on `dgram` for two machines.
 
 ## Driving the router: `centrs --quickchr`
 
@@ -290,6 +308,10 @@ boot-only.[^device-mode]
     silence as the documented behavior.
 [^ground-inspect]: `references/cli-grounding.md` §Endpoints and
     credentials (`quickchr inspect --json`, `quickchr get`).
+[^ground-poll]: Failure codes from quickchr's `ErrorCode` union
+    (`src/lib/types.ts`); the bound-and-diagnose shape is this skill's
+    recommendation, verified as a script in
+    `references/cli-grounding.md` §Bounded readiness poll.
 [^ground-channel]: `quickchr add --help` (`--version`, `--channel`);
     `quickchr --version` prints the resolved stable/long-term versions.
 [^ground-ports]: `quickchr add --help` — "`--port-base <port>` Starting

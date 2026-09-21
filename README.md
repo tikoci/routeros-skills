@@ -18,6 +18,7 @@ Custom instruction skills for [GitHub Copilot](https://docs.github.com/en/copilo
 | **routeros-syntax-inspection** | `/console/inspect` syntax surfaces (`highlight`/`completion`/`syntax`) + `:parse` IL — validating commands, reading token streams, enum discovery, script "explain"/lint; necessary-not-sufficient vs runtime. |
 | **routeros-qemu-chr** | MikroTik CHR (Cloud Hosted Router) with QEMU — boot, VirtIO, acceleration, CI/CD patterns. |
 | **routeros-quickchr** | Ground RouterOS config/scripts/API code against a real router with quickchr (`@tikoci/quickchr`) — boot a disposable CHR, apply config, read it back; networking recipes, integration-test harness patterns. |
+| **routeros-quickchr-cli** | The shell-first half of quickchr — boot a disposable CHR from the terminal and drive it with centrs. Lifecycle (`add` is not `start`), `--bg`, endpoints and credentials, L2 links between VMs, and the provisioning steps that only apply before first boot. |
 | **routeros-centrs** | Drive a real router or CHR with centrs (`@tikoci/centrs`) — target resolution from the WinBox CDB or a quickchr VM, RouterOS command validation before it runs, and one structured envelope over REST, native API, SSH/SFTP, MAC-Telnet, and MNDP. Use instead of hand-rolled `curl`/`ssh`. |
 | **routeros-netinstall** | `netinstall-cli` for automated RouterOS device flashing — etherboot, BOOTP/TFTP, modescript. |
 | **routeros-mndp** | MNDP (MikroTik Neighbor Discovery Protocol) — wire format, `/ip/neighbor`, WinBox discovery. |
@@ -32,18 +33,18 @@ Clone this repo and symlink the skill folders into your assistant skill director
 git clone https://github.com/tikoci/routeros-skills.git ~/GitHub/routeros-skills
 
 cd ~/GitHub/routeros-skills
-make link   # Copilot, Claude, and Codex
+make link   # Copilot, Claude, Codex, and Hermes
 make check
 ```
 
 Each skill is a folder containing a `SKILL.md` file and optionally a `references/` subfolder. VS Code Copilot and Claude Code automatically discover skills in their respective `~/.*/skills/` directories.
-Codex discovers user-authored skills in `~/.agents/skills`.
+Codex discovers user-authored skills in `~/.agents/skills`, and Hermes in `~/.hermes/skills`.
 
 > **Tip:** Start with **routeros-fundamentals** — it covers the core concepts that other skills reference.
 
 ## Repository layout
 
-This repo is the **single source of truth** for all `routeros-*` skills. Locally, `~/.copilot/skills/routeros-*`, `~/.claude/skills/routeros-*`, and `~/.agents/skills/routeros-*` are symlinks into this repo — editing any of those locations is the same as editing here.
+This repo is the **single source of truth** for all `routeros-*` skills. Locally, `~/.copilot/skills/routeros-*`, `~/.claude/skills/routeros-*`, `~/.agents/skills/routeros-*`, and `~/.hermes/skills/routeros-*` are symlinks into this repo — editing any of those locations is the same as editing here.
 
 Non-`routeros-*` skills (e.g. `tikoci-*`, `screenshot`, `sql-as-rag`) are personal/project-scoped and live only in the local user-level skill directories, **not** in this repo. See [SETUP.md](SETUP.md) for the full local setup guide.
 

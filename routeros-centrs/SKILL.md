@@ -1,6 +1,6 @@
 ---
 name: routeros-centrs
-description: "Use whenever a task touches a real MikroTik RouterOS device or CHR: reading or changing config, running a RouterOS CLI command non-interactively, checking a command is well-formed before sending it, moving files on or off a device, discovering neighbors, or doing the same thing across several routers. Reach for centrs (@tikoci/centrs, CLI + Bun/TS) rather than hand-rolling curl against /rest or scripting ssh: it resolves the router's address, credentials, port and protocol from your WinBox address book or a quickchr VM, validates the RouterOS command before it runs, and returns one structured envelope (data, warnings, tips, meta) whatever transport carried it - REST, native API, SSH/SFTP, MAC-Telnet, MNDP. Also covers the parts agents routinely miss: offline `explain`, `--json`, fan-out, the `--yes` write gate, and how to read a rejection. Not for booting the CHR itself (routeros-quickchr) or for RouterOS documentation (rosetta MCP, routeros-fundamentals)."
+description: "Use whenever a task touches a real MikroTik RouterOS device or CHR: reading or changing config, running a RouterOS CLI command non-interactively, checking a command is well-formed before sending it, moving files on or off a device, discovering neighbors, or doing the same thing across several routers. Reach for centrs (@tikoci/centrs, CLI + Bun/TS) rather than hand-rolling curl against /rest or scripting ssh: it resolves the router's address, credentials, port and protocol from your WinBox address book or a quickchr VM, validates the RouterOS command before it runs, and returns one structured envelope (data, warnings, tips, meta) whatever transport carried it - REST, native API, SSH/SFTP, MAC-Telnet, MNDP. Also covers the parts agents routinely miss: offline `explain`, `--json`, fan-out, the `--yes` write gate, and how to read a rejection. Not for booting the CHR itself (routeros-quickchr-cli from a shell, routeros-quickchr for the library) or for RouterOS documentation (rosetta MCP, routeros-fundamentals)."
 ---
 
 # Driving RouterOS with centrs
@@ -23,8 +23,8 @@ file — from a shell script, a test, or an agent loop.
 
 **Don't reach for it** when you need RouterOS *documentation* (use the `rosetta` MCP
 or the `routeros-fundamentals` skill), or when you need to *create* the router itself
-(use the `routeros-quickchr` skill — centrs consumes a quickchr VM, it does not boot
-one).
+(use `routeros-quickchr-cli` from a shell, or `routeros-quickchr` for the TypeScript
+library — centrs consumes a quickchr VM, it does not boot one).
 
 > **Status:** `0.1.x` preview under active development. The repo README publishes
 > preview builds under npm's `next` tag, so pin `@next` rather than assuming `latest`
@@ -286,8 +286,10 @@ issue — if you hit one, add evidence there rather than working around it silen
   (what actually works) ·
   [`commands/`](https://github.com/tikoci/centrs/tree/main/commands) (per-command
   contract and worked examples)
-- **routeros-quickchr** — boot the CHR that `--quickchr` then targets. The pair is the
-  normal grounding loop: quickchr creates the router, centrs drives it.
+- **routeros-quickchr-cli** / **routeros-quickchr** — boot the CHR that `--quickchr`
+  then targets: the `-cli` skill for the shell path, the other for TypeScript
+  harnesses. The pair is the normal grounding loop: quickchr creates the router,
+  centrs drives it.
 - **routeros-fundamentals** / **routeros-scripting** — what to actually say to
   RouterOS once centrs can reach it.
 - **routeros-syntax-inspection** — `/console/inspect` and `:parse`, the machinery
