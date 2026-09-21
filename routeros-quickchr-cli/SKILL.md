@@ -196,8 +196,8 @@ applies device-mode by provisioning — boot the guest, set the mode,
 power-cycle QEMU via the monitor, re-read to confirm (≈45s vs ≈22s
 without). That runs only while the machine has never started. Once
 `lastStartedAt` is set, `--device-mode-enable` is parsed, accepted and
-**silently ignored**: no warning, no extra boot time, no
-change.[^dm-window]
+**silently ignored**: no warning, no extra boot time, no change
+(tikoci/quickchr#176 — open).[^dm-window]
 
 | machine state | `start --device-mode-enable container` |
 |---|---|
@@ -285,6 +285,9 @@ boot-only.[^device-mode]
     gate is `!existing.lastStartedAt` in `QuickCHR.start()`
     (`src/lib/quickchr.ts`), which passes provisioning options to
     `_launchExisting()` on a first boot and `undefined` afterwards.
+    Filed as tikoci/quickchr#176, which also asks which provisioning
+    steps should be allowed to run later; until it lands, treat the
+    silence as the documented behavior.
 [^ground-inspect]: `references/cli-grounding.md` §Endpoints and
     credentials (`quickchr inspect --json`, `quickchr get`).
 [^ground-channel]: `quickchr add --help` (`--version`, `--channel`);
