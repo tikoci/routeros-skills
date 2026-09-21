@@ -10,6 +10,7 @@ This document describes how the skill directories are organized locally. It is *
 | `~/.copilot/skills/routeros-*` | Symlinks → `~/GitHub/routeros-skills/routeros-*` |
 | `~/.claude/skills/routeros-*` | Symlinks → `~/GitHub/routeros-skills/routeros-*` |
 | `~/.agents/skills/routeros-*` | Symlinks → `~/GitHub/routeros-skills/routeros-*` for Codex |
+| `~/.hermes/skills/routeros-*` | Symlinks → `~/GitHub/routeros-skills/routeros-*` for Hermes |
 | `~/.copilot/skills/<non-routeros>` | Real dirs or symlinks to `~/.claude/skills/` — local-only, not in this repo |
 | `~/.claude/skills/<non-routeros>` | Real dirs — local-only, not in this repo |
 | `~/.agents/skills/<non-routeros>` | Real dirs or symlinks — local-only, not in this repo |
@@ -28,8 +29,8 @@ repo-owned `routeros-*` symlinks.
 git clone https://github.com/tikoci/routeros-skills.git ~/GitHub/routeros-skills
 
 cd ~/GitHub/routeros-skills
-make link   # symlink every routeros-* into Copilot, Claude, and Codex dirs
-make check  # verify every repo skill is a symlink in all three dirs
+make link   # symlink every routeros-* into Copilot, Claude, Codex, and Hermes dirs
+make check  # verify every repo skill is a symlink in all four dirs
 ```
 
 ## Updating
@@ -63,6 +64,7 @@ skill=routeros-<name>
 ln -s ~/GitHub/routeros-skills/$skill ~/.copilot/skills/$skill
 ln -s ~/GitHub/routeros-skills/$skill ~/.claude/skills/$skill
 ln -s ~/GitHub/routeros-skills/$skill ~/.agents/skills/$skill
+ln -s ~/GitHub/routeros-skills/$skill ~/.hermes/skills/$skill
 ```
 
    Or, idempotently link **all** skills into all target dirs (preferred — avoids the
@@ -73,14 +75,14 @@ make link    # symlink every routeros-* into Copilot, Claude, and Codex dirs
 make check   # verify every repo skill is linked into all target dirs (non-zero exit if not)
 ```
 
-   Note: a symlinked skill is only picked up on a **fresh** assistant session.
+   Note: a symlinked skill is only picked up on a **fresh** assistant session — quit and restart Hermes to see any new skills.
 
 1. Commit and push to GitHub.
 
 ## Current symlink state (reference)
 
-After setup, `ls -la ~/.copilot/skills/`, `ls -la ~/.claude/skills/`, and
-`ls -la ~/.agents/skills/` should show all `routeros-*` entries as symlinks
+After setup, `ls -la ~/.copilot/skills/`, `ls -la ~/.claude/skills/`,
+`ls -la ~/.agents/skills/`, and `ls -la ~/.hermes/skills/` should show all `routeros-*` entries as symlinks
 pointing to `~/GitHub/routeros-skills/routeros-*`, for example:
 
 ```text

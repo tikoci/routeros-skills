@@ -18,6 +18,7 @@ targets="
 $HOME/.copilot/skills
 $HOME/.claude/skills
 $HOME/.agents/skills
+$HOME/.hermes/skills
 "
 
 same_target() {
