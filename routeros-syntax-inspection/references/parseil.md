@@ -38,9 +38,9 @@ POST /rest/file/remove  {"numbers":"parse-<nonce>.rsc"}
 Note this recipe touches `/file` and `/execute` — inspection-flavored
 but not purely read-only. Remove the temp file on **both** the success and
 error paths (an interrupted probe otherwise leaves it behind and the next
-`add` of the same name fails). Limits: `/file/add` returns 413 above the
-upload cap (~126 KiB observed); `:parse` itself has **no 32 KB cap** and no
-latency cliff (56 KB parsed cleanly; ≤10 ms typical for small scripts).
+`add` of the same name fails). Limits: `POST /rest/file/add` returns HTTP 413
+above the upload cap (~126 KiB observed); `:parse` itself has **no 32 KB cap**
+and no latency cliff (56 KB parsed cleanly; ≤10 ms typical for small scripts).
 
 ## Grammar essentials
 

@@ -60,12 +60,12 @@ Native API — the same four modes as `=request=` / `=path=` words:
   =path=ip,address
 ```
 
-**`path` takes comma-joined menu tokens, never a slash command.** Only
-`system,license` walks the menu: `system/license` and `/system/license` return
-nothing on both transports, and a JSON array body
-(`{"path":["ip","address"]}`) silently returns the **root** listing — a wrong
-answer that looks like a successful one. Measured on 7.23.7; the comma form
-was independently confirmed on 7.23.1 [^5].
+**`path` takes comma-joined menu tokens, never a slash command.** Only the
+comma form walks the menu: `system,license` returns that menu's nodes, while
+`system/license` and `/system/license` return nothing on both transports, and
+a JSON array body (`{"path":["system","license"]}`) silently returns the
+**root** listing — a wrong answer that looks like a successful one. Measured
+on 7.23.7; the comma form was independently confirmed on 7.23.1 [^5].
 
 Every successful response is a JSON array of flat all-string objects (REST) or
 one `!re` sentence per item (native), each with a `type` field naming the
