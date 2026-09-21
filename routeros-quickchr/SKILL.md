@@ -78,7 +78,7 @@ See also [`references/quickchr-api.md`](./references/quickchr-api.md) in this sk
 | Tear down | `instance.remove()` / `instance.stop()` / `instance.destroy()` |
 
 Shell-first agents (terminal, forum answers): the **routeros-quickchr-cli**
-skill owns the CLI lifecycle (`add`, `start --bg`, `networks`, `cache`)
+skill owns the CLI lifecycle (`add`, `start`, `networks`, `cache`)
 and the `centrs --quickchr` driving pattern — this skill does not repeat
 it. Library dependency patterns (npm / `file:` / `bun link`):
 [`examples/README.md`](https://github.com/tikoci/quickchr/blob/main/examples/README.md).

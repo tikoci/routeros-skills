@@ -28,7 +28,7 @@ completed when the promise resolves (background/library use). Common `StartOptio
 | `arch` | `"x86"` or `"arm64"` or `"auto"` (default: host arch; `"auto"` is an explicit synonym for the default) |
 | `cpu` | vCPUs (default `1`) |
 | `mem` | MiB RAM (default `512`; `1024` for cross-arch TCG) |
-| `background` | `true` (default, detached) / `false` (foreground, serial on stdio) |
+| `background` | `true` (default) — QEMU's stdio goes to a log file, **and since 0.4.8 it is spawned into its own session on POSIX** (`detached: true`), so a signal to the caller's process group no longer reaches it; Windows uses a detached child for the same reason. `false` = foreground, serial on stdio. Note this is *not* "return immediately": `start()` still resolves only when the guest is REST-ready. |
 | `secureLogin` | `true` → managed `quickchr` user with a stored password; `false`/omitted → open admin. Inverse alias: `noAuth` (`noAuth: true` ≙ `secureLogin: false`; `secureLogin` wins if both set). Prefer `secureLogin`. **Must be explicitly `true` to take effect** — provisioning tests `secureLogin === true`, so omitting it leaves `admin` password-less (observed: `inspect --json` reports `"password": ""`). Some doc comments in `types.ts` still say it defaults to true; the code does not. |
 | `user` | `{ name, password }` custom user (provisioning, ≥ 7.20.8) |
 | `disableAdmin` | disable default admin after boot (provisioning, ≥ 7.20.8) |

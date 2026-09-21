@@ -66,13 +66,20 @@ quickchr remove lab-a
 - **Never hand-edit `machine.json`** to change networks or options — it
   breaks boot. Everything is reachable through `add` flags.[^field]
 
-## `--bg` still blocks — background it yourself
+## `--bg` is a no-op — background it yourself
 
-`--bg` does *not* mean "return immediately". It only redirects QEMU's
-serial console to a log file; `start` waits for REST-readiness by
-contract either way. That half of tikoci/quickchr#159 is still open
-(no `--no-wait`), so to get your shell back, background it and poll
-readiness yourself:[^bg]
+**`--bg` changes nothing: background is already the default.** The CLI
+sets `background = !wantFg`, so the flag only fails to select the
+foreground mode you did not ask for; `--fg`/`--foreground` is the
+switch that does something. And `start` waits for REST-readiness by
+contract either way, so `--bg` does not hand your shell back. Both
+halves of what the name promises are things it does not do
+(tikoci/quickchr#159 — the `--no-wait` half and the naming decision are
+still open).[^bg]
+
+Examples here pass `--bg` only because it is harmless and widespread in
+existing scripts. To actually get the shell back, background it
+yourself and poll readiness:
 
 ```sh
 nohup quickchr start lab-a --bg >lab-a.start.log 2>&1 &
@@ -272,9 +279,13 @@ boot-only.[^device-mode]
     CHANGELOG 0.4.8 "Added" (`cache add`, `cache key`).
 [^field]: Field lab notes: `--add-network` at `add` time, never a
     hand-edited `machine.json`.
-[^bg]: tikoci/quickchr#159 — part 1 (`--no-wait`) and the `--bg`
-    naming decision remain open; part 2 (POSIX process group) shipped
-    in 0.4.8.
+[^bg]: `--bg` as a no-op: `src/cli/index.ts` — "Background default:
+    true. Explicitly foreground only with --fg / --foreground /
+    --no-background / --no-bg", and `quickchr start --help` renders
+    `--bg / --background   Run in background (default)`.
+    tikoci/quickchr#159 — part 1 (`--no-wait`) and the `--bg` naming
+    decision remain open; part 2 (POSIX process group) shipped in
+    0.4.8.
 [^ground-bg]: `references/cli-grounding.md` §Group-kill, which records
     the 0.4.7-vs-0.4.8 before/after.
 [^ground-nic]: `references/cli-grounding.md` §First NIC.
