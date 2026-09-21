@@ -16,9 +16,9 @@ Items: `{name, node-type: "dir"|"path"|"cmd"|"arg", type: "self"|"child"}`.
 - `type:"self"` describes the addressed node itself; `"child"` rows are its
   children. A name that is both a command and an argument returns both rows.
 - Root (`path:""`) lists every top-level menu and scripting command.
-- **A nonexistent path returns `[]`, not an error** — absence is the only
-  "not found" signal, on both transports (native answers with a bare `!done`
-  and no `!re`, not a `!trap`).
+- **A nonexistent path is an empty answer, not an error** — REST returns `[]`,
+  native a bare `!done` with no `!re` (never a `!trap`). Absence is the only
+  "not found" signal on either transport.
 - **Pass comma-joined tokens** (`ip,address`, native `=path=ip,address`).
   Slash forms return the same empty answer, and a JSON array body returns the
   root listing — see the request-shape section of the skill.

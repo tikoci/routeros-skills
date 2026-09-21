@@ -68,8 +68,10 @@ a JSON array body (`{"path":["system","license"]}`) silently returns the
 on 7.23.7; the comma form was independently confirmed on 7.23.1 [^5].
 
 Every successful response is a JSON array of flat all-string objects (REST) or
-one `!re` sentence per item (native), each with a `type` field naming the
-request type. Beyond that, the four response shapes share nothing — treat them
+one `!re` sentence per item (native). `highlight`, `completion` and `syntax`
+rows carry a `type` field naming the request type; `request=child` instead
+spends `type` on the row's role (`self`/`child`) and reports the node class in
+`node-type`. Beyond that, the four response shapes share nothing — treat them
 as four APIs behind one endpoint.
 
 ## Version baseline and safety
