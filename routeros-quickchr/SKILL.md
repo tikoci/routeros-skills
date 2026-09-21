@@ -40,7 +40,8 @@ await chr.remove();   // tear down
 ```
 
 `exec()` runs a CLI command (config writes, scripts) and returns `{ output, via }`;
-`rest()` does a REST call and returns parsed JSON. Worked, runnable version:
+`rest()` does a REST call and returns parsed JSON. Install from npm (`bun add @tikoci/quickchr`)
+or run the CLI without installing (`bunx @tikoci/quickchr <cmd>`). Worked, runnable version:
 [`examples/grounding/`](https://github.com/tikoci/quickchr/tree/main/examples/grounding).
 Minimal boot-and-read smoke test:
 [`examples/quickstart/`](https://github.com/tikoci/quickchr/tree/main/examples/quickstart).
@@ -66,7 +67,7 @@ See also [`references/quickchr-api.md`](./references/quickchr-api.md) in this sk
 | Pick RouterOS | `channel` (`stable`/`long-term`/`testing`/`development`) **or** `version` (`"7.23.1"`) |
 | Architecture | `arch:` — `"x86"` or `"arm64"` |
 | Managed login vs open admin | `secureLogin: true` (managed user, real password) / `false` |
-| Run a CLI command | `instance.exec(cmd, opts?)` |
+| Run a CLI command | `instance.exec(cmd, opts?)` — `opts.via` is `auto`/`rest`/`ssh`/`console`/`qga` |
 | REST call | `instance.rest(path, init?)` |
 | Move files | `instance.upload(local, remote?)` / `instance.download(remote, local)` |
 | Add a package | `instance.installPackage(name)` (downloads + reboots; returns installed names) |
