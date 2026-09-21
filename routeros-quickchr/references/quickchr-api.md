@@ -71,8 +71,11 @@ entry points: `QuickCHR.list()`, `QuickCHR.get(name)`, `QuickCHR.stop(name)`.
 | `stop()` / `remove()` / `destroy()` | lifecycle teardown |
 
 **Properties:** `name`, `state`, `ports`, `restUrl`, `sshPort`, `portBase`,
-`captureInterface` (`"lo0"` on macOS, `"any"` on Linux), `tzspGatewayIp`
-(`"10.0.2.2"` — the host as seen from the guest).
+`captureInterface` (`"lo0"` on macOS, `"any"` on Linux), `hostGatewayIp`
+(`"10.0.2.2"` — the host as seen from the guest). Since 0.4.8 the old name
+`tzspGatewayIp` is a deprecated alias carrying the identical value; it is due
+for removal no earlier than 0.5.0, and the value was never TZSP-specific — it
+carries any guest→host UDP.
 
 ### `exec` details (what you otherwise need `types.ts` for)
 

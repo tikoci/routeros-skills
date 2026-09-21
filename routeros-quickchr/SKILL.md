@@ -97,7 +97,7 @@ forward) and is all most grounding needs. Reach past it only for these shapes
 | Reach a guest service on many/dynamic ports (e.g. btest data ports) | host → guest | `hostfwd` **range** (`--forward name:9200-9210:2000-2010/udp`) |
 | Receive UDP the **guest sends** (syslog, NetFlow, TZSP, a server replying) | guest → host | guest sends to gateway `10.0.2.2:<port>`; host binds an **unconnected** socket — **no forward** |
 | Receive guest **L2 frames / broadcasts** (MNDP, MAC-Telnet, raw Ethernet) | guest ↔ host | `socket-connect` L2 NIC (host runs a TCP server) |
-| L2 link between two VMs | VM ↔ VM | `socket::<name>` named socket (default `dgram` unix pair; `--mode mcast` is UDP multicast — see gotchas) or explicit `socket:listen:`/`socket:connect:` pair (listener starts first) |
+| L2 link between two VMs | VM ↔ VM | `socket::<name>` named socket (default `dgram` unix pair, **either machine may start first**; `--mode mcast` is UDP multicast — see gotchas) or an explicit `socket:listen:`/`socket:connect:` pair (listener starts first) |
 | Real LAN presence / DHCP from the host | full L3 | `shared` or `bridged:<iface>` |
 
 Two non-obvious points worth keeping:
@@ -106,7 +106,7 @@ Two non-obvious points worth keeping:
   inside the VM. A datagram the guest sends to `10.0.2.2:<port>` reaches a host
   socket bound on loopback — but **leave that host socket unconnected** (`recvfrom`):
   SLIRP relays it from a rewritten source (`127.0.0.1:<ephemeral>`), so a
-  `connect()`-ed socket filters it out. `instance.tzspGatewayIp` (`10.0.2.2`) and
+  `connect()`-ed socket filters it out. `instance.hostGatewayIp` (`10.0.2.2`) and
   `instance.captureInterface` (`lo0`/`any`) expose the constants. Runnable:
   [`examples/udp-gateway/`](https://github.com/tikoci/quickchr/tree/main/examples/udp-gateway).
 - **`user` terminates Layer 2.** For MNDP/MAC-Telnet/broadcasts, add a

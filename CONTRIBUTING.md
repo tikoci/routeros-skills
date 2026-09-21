@@ -89,5 +89,6 @@ When cspell flags a word, decide which it is:
 
 2. `name` **must** equal the directory name, and the body should start with an H1.
 3. Run `make lint` and fix anything it reports.
-4. See [SETUP.md](SETUP.md) for symlinking the new skill into your local
-   `~/.claude/skills` and `~/.copilot/skills` (`make link`).
+4. See [SETUP.md](SETUP.md) for symlinking the new skill into all four local
+   target dirs — `~/.copilot/skills`, `~/.claude/skills`, `~/.agents/skills`
+   (Codex) and `~/.hermes/skills` (`make link`).

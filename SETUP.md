@@ -71,8 +71,9 @@ ln -s ~/GitHub/routeros-skills/$skill ~/.hermes/skills/$skill
    "committed but never symlinked" drift):
 
 ```sh
-make link    # symlink every routeros-* into Copilot, Claude, and Codex dirs
-make check   # verify every repo skill is linked into all target dirs (non-zero exit if not)
+make link    # symlink every routeros-* into ~/.copilot/skills, ~/.claude/skills,
+             #   ~/.agents/skills (Codex), and ~/.hermes/skills
+make check   # verify every repo skill is linked into all four dirs (non-zero exit if not)
 ```
 
    Note: a symlinked skill is only picked up on a **fresh** assistant session — quit and restart Hermes to see any new skills.
