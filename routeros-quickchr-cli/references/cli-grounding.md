@@ -9,9 +9,17 @@ Both quickchr releases were installed **from npm**, not from a working
 tree, and invoked by path so the version under test is unambiguous:
 
 ```sh
-bun add @tikoci/quickchr@0.4.8   # ./node_modules/.bin/quickchr → 0.4.8
-bun add @tikoci/quickchr@0.4.7   # control, for the group-kill before/after
+mkdir lab48 && cd lab48 && bun add @tikoci/quickchr@0.4.8   # ./node_modules/.bin/quickchr
+mkdir lab47 && cd lab47 && bun add @tikoci/quickchr@0.4.7   # control, group-kill before/after
 ```
+
+Two **separate project directories** on purpose — a second `bun add` in one
+project would just move the same dependency and overwrite
+`node_modules/.bin/quickchr`, leaving no 0.4.7 to compare against. Each run
+below invokes its release by path (`../lab47/node_modules/.bin/quickchr`,
+`./node_modules/.bin/quickchr`), never a `quickchr` found on `PATH` — the
+host has a `bun link`ed working tree on `PATH`, which is exactly how the
+previous pass mislabelled its version.
 
 This matters: an earlier pass of this log was recorded against a
 `bun link`ed working tree while labelled `0.4.7`. The named-socket
@@ -117,8 +125,10 @@ host port-forwards depend on it:
 quickchr networks sockets create q48-seg
 # → "Created named socket: q48-seg (dgram)"
 #   "Transport: unix datagram ~/.local/share/quickchr/networks/q48-seg.{0,1}.sock"
-quickchr add --name q48-x … --add-network user --add-network 'socket::q48-seg'
-quickchr add --name q48-y … --add-network user --add-network 'socket::q48-seg'
+quickchr add --name q48-x --version 7.24.4 --arch x86 \
+  --add-network user --add-network 'socket::q48-seg'
+quickchr add --name q48-y --version 7.24.4 --arch x86 \
+  --add-network user --add-network 'socket::q48-seg'
 ```
 
 Started **q48-y first, then q48-x** — deliberately not in any
@@ -144,7 +154,8 @@ where `mcast` would have shown 100% loss and logged nothing.
 ## Third machine refused
 
 ```sh
-quickchr add --name q48-z … --add-network 'socket::q48-seg'   # succeeds
+quickchr add --name q48-z --version 7.24.4 --arch x86 \
+  --add-network user --add-network 'socket::q48-seg'   # succeeds
 quickchr start q48-z
 # → Error [NETWORK_UNAVAILABLE]: Named socket "q48-seg" is a dgram link and
 #   carries 2 machines; q48-y and q48-x already hold both ends. Stop one of
@@ -206,8 +217,13 @@ and `quickchr exec --help` ends with:
 See also — centrs (@tikoci/centrs) validates a RouterOS-shaped command
 before running it, and has per-verb help. 'quickchr exec' does not: it is a
 raw /rest/execute pipe, and whatever you type is what RouterOS is asked to run.
-…
+
+  centrs retrieve --quickchr <name> /system/resource    Read state
+  centrs execute  --quickchr <name> <command>           Run a read/write command
+  centrs explain  <command>                             Analyze without running it
+
 centrs resolves the machine through 'quickchr inspect' — it never reads machine.json.
+Install: bun add -g @tikoci/centrs
 ```
 
 `QUICKCHR_NO_TIPS=1` suppressed the tip (stderr 0 bytes).
@@ -217,7 +233,7 @@ centrs resolves the machine through 'quickchr inspect' — it never reads machin
 ```sh
 quickchr cache --help   # → "quickchr cache <add|key|list|prune|clear>"
 quickchr cache key --version 7.24.4 --arch x86
-# → dir=/Users/amm0/.local/share/quickchr/cache
+# → dir=~/.local/share/quickchr/cache        (absolute in real output)
 #   version=7.24.4
 #   arch=x86
 quickchr cache add --version 7.24.4 --arch x86
