@@ -71,6 +71,7 @@ elif
 envlist
 envlists
 epan
+eperm
 etherboot
 evl
 fasttrack
@@ -122,6 +123,7 @@ LLM
 LLM's
 loadvm
 localname
+localaddr
 lrwxr
 lsbridge
 lsp
@@ -251,9 +253,14 @@ SCEP
 SCP
 SEO
 seqno
+seccomp
+seg
+sendto
+setsid
 SESSIONSTART
 setsockopt
 shm
+skillab
 Skillstore
 SKU
 SLIRP
@@ -301,6 +308,7 @@ ulimits
 unconfigured
 undefines
 unprovisioned
+unref
 URLBASE
 userland
 usermanager

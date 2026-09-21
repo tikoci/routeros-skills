@@ -77,17 +77,12 @@ See also [`references/quickchr-api.md`](./references/quickchr-api.md) in this sk
 | Snapshots | `instance.snapshot(...)` |
 | Tear down | `instance.remove()` / `instance.stop()` / `instance.destroy()` |
 
-The same two knobs exist on the CLI and the library:
-
-| CLI | Library (`StartOptions`) |
-|---|---|
-| `--forward <spec>` (repeatable) | `extraPorts: PortMapping[]` |
-| `--add-network <spec>` (repeatable) | `networks: NetworkSpecifier[]` |
-
-CLI without installing: `bunx @tikoci/quickchr <cmd>` (e.g. `add`, `start`, `exec`,
-`list`, `inspect`, `env`, `networks`, `logs`). Library dependency patterns (npm /
-`file:` / `bun link`):
+Shell-first agents (terminal, forum answers): the **routeros-quickchr-cli**
+skill owns the CLI lifecycle (`add`, `start --bg`, `networks`, `cache`)
+and the `centrs --quickchr` driving pattern — this skill does not repeat
+it. Library dependency patterns (npm / `file:` / `bun link`):
 [`examples/README.md`](https://github.com/tikoci/quickchr/blob/main/examples/README.md).
+CLI without installing: `bunx @tikoci/quickchr <cmd>`.
 
 ## Networking — which mechanism for which traffic
 
@@ -102,7 +97,7 @@ forward) and is all most grounding needs. Reach past it only for these shapes
 | Reach a guest service on many/dynamic ports (e.g. btest data ports) | host → guest | `hostfwd` **range** (`--forward name:9200-9210:2000-2010/udp`) |
 | Receive UDP the **guest sends** (syslog, NetFlow, TZSP, a server replying) | guest → host | guest sends to gateway `10.0.2.2:<port>`; host binds an **unconnected** socket — **no forward** |
 | Receive guest **L2 frames / broadcasts** (MNDP, MAC-Telnet, raw Ethernet) | guest ↔ host | `socket-connect` L2 NIC (host runs a TCP server) |
-| L2 link between two VMs | VM ↔ VM | `socket::<name>` named pair |
+| L2 link between two VMs | VM ↔ VM | `socket::<name>` named socket (default `dgram` unix pair; `--mode mcast` is UDP multicast — see gotchas) or explicit `socket:listen:`/`socket:connect:` pair (listener starts first) |
 | Real LAN presence / DHCP from the host | full L3 | `shared` or `bridged:<iface>` |
 
 Two non-obvious points worth keeping:
@@ -146,8 +141,14 @@ before using stored ports. Runnable:
   provisioning need RouterOS **7.20.8+**; older 7.x is boot-only.
 - **QGA (`--via=qga`) needs KVM** — RouterOS only starts the guest agent under a
   KVM hypervisor, so it's unavailable under HVF (macOS) and TCG. Use REST/exec.
-- **`socket-mcast` is broken on macOS** (QEMU sets only `SO_REUSEADDR`); use
-  `socket-connect` for point-to-point / host capture. Works on Linux.
+- **`socket-mcast` fails silently on macOS and in restricted Linux** (QEMU
+  sets only `SO_REUSEADDR`, which BSD/macOS reject for sharing — and
+  seccomp-filtered sandboxes refuse the `sendto()` while the group join
+  succeeds). It is also **not host-confined** (no `localaddr=`, so the
+  group rides the default multicast interface). Prefer `dgram` (the
+  default) or `socket:listen:`/`socket:connect:` for two machines; use
+  `mcast` only for N-way with a group of your own. Shell-first agents:
+  see the **routeros-quickchr-cli** skill for the CLI lifecycle.
 - **Cross-arch TCG x86-on-arm64 is not viable** (x86 I/O emulation is too slow);
   aarch64-on-x86 is fine. KVM/HVF require host/guest arch match.
 - **Free CHR is rate-limited to 1 Mbps** — fine for config/API grounding, not
