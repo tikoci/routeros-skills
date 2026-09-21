@@ -43,18 +43,34 @@ generation), see the **`routeros-command-tree`** skill — this skill covers the
 
 ## Request shape
 
-All four inspect surfaces share one endpoint (basic auth, any RouterOS 7.x):
+REST (basic auth, any RouterOS 7.x):
 
 ```text
 POST /rest/console/inspect
 {"request": "highlight" | "completion" | "syntax" | "child",
  "input": "<console input>",     // optional
- "path":  "ip,address,add"}      // optional comma-separated menu context
+ "path":  "ip,address,add"}      // optional comma-joined menu tokens
 ```
 
-Every successful response is a JSON array of flat all-string objects with a
-`type` field naming the request type. Beyond that, the four response shapes
-share nothing — treat them as four APIs behind one endpoint.
+Native API — the same four modes as `=request=` / `=path=` words:
+
+```text
+/console/inspect
+  =request=child
+  =path=ip,address
+```
+
+**`path` takes comma-joined menu tokens, never a slash command.** Only
+`system,license` walks the menu: `system/license` and `/system/license` return
+nothing on both transports, and a JSON array body
+(`{"path":["ip","address"]}`) silently returns the **root** listing — a wrong
+answer that looks like a successful one. Measured on 7.23.7; the comma form
+was independently confirmed on 7.23.1 [^5].
+
+Every successful response is a JSON array of flat all-string objects (REST) or
+one `!re` sentence per item (native), each with a `type` field naming the
+request type. Beyond that, the four response shapes share nothing — treat them
+as four APIs behind one endpoint.
 
 ## Version baseline and safety
 
@@ -185,3 +201,6 @@ response or derived, normalization applied, truncation, and outcome
     both 128 MB and 512 MB RAM; all six paths return instantly on 7.21.4+.
 [^4]: [tikoci/bench-routeros-tools](https://github.com/tikoci/bench-routeros-tools)
     `REPORT.md` — the `blackhole=yes` inspect-vs-runtime case.
+[^5]: [tikoci/centrs](https://github.com/tikoci/centrs)
+    `commands/api/AGENTS.md` — CHR 7.23.1 grounding spikes for the comma `path`
+    form and for `/execute` `as-string` on both transports.
