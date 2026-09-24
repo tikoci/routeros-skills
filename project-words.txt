@@ -120,6 +120,7 @@ keypair
 killpg
 KVM
 LDP
+LHG
 licences
 LLDP
 LLM
@@ -139,6 +140,7 @@ Mbps
 MBR
 mcast
 MCP
+mcs
 mgmt
 middelink
 Mikro
@@ -158,6 +160,7 @@ mountlists
 MPLS
 mtu
 MTWEI
+multipoint
 myapp
 mybridge
 myhost
@@ -202,6 +205,7 @@ pcq
 pflash
 pgid
 pgrep
+phy
 pihole
 PIIX
 pingpacket
@@ -223,6 +227,7 @@ Preshared
 pretraining
 PRL
 proplist
+psk
 PTR
 ptype
 putmessage
@@ -255,6 +260,7 @@ routerboot
 routeros
 RPKI
 rsc
+rssi
 rstatus
 rtt
 sandboxed
@@ -345,6 +351,7 @@ Winbox
 Wireshark
 Wize
 WLAN
+WPA
 writability
 Wws
 XEN
