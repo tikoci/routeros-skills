@@ -24,6 +24,7 @@ Custom instruction skills for [GitHub Copilot](https://docs.github.com/en/copilo
 | **routeros-mndp** | MNDP (MikroTik Neighbor Discovery Protocol) — wire format, `/ip/neighbor`, WinBox discovery. |
 | **routeros-mac-telnet** | MAC-Telnet (UDP 20561) — Layer-2 terminal by MAC address, 22-byte header, control blocks, MD5 + MTWEI (EC-SRP) auth. |
 | **routeros-sniffer** | RouterOS packet capture and TZSP streaming — `/tool/sniffer`, firewall sniff-tzsp, Wireshark integration. |
+| **routeros-w60g** | 60 GHz W60G links — `/interface/w60g`, AP/station-bridge, per-station bridge ports and carrying VLANs across them (`tagged=all`, not `dynamic`), `wireless` vs `wifi-qcom-ac` on the Cubes, bench loop risks. |
 
 ## Install
 

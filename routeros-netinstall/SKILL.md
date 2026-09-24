@@ -184,6 +184,26 @@ Devices must be in **etherboot** mode before Netinstall can see them. Common ent
 - serial console (`Ctrl+E`)
 - RouterOS setting `boot-device=try-ethernet-once-then-nand`
 
+### Arming etherboot remotely (no reset button)
+
+Observed 2026-09-24 on four Cube 60Pro-family devices, PoE-powered from a RouterOS switch.
+The Netinstall server was the RouterOS `netinstall` package, reached through a VLAN:
+
+1. Their device-mode had `routerboard=no` (an always-off feature). They were switched
+   to `routerboard=yes` before `boot-device` was changed. Whether `boot-device` is refused
+   without it was not tested. Run `:execute "/system/device-mode/update routerboard=yes"`
+   (the plain command blocks while it waits), then power-cycle the device from its PoE
+   switch: `/interface/ethernet/poe/power-cycle etherN duration=5s`. That counted as the
+   physical confirmation. The device came back in ~50 s with `routerboard=true`.
+2. On the device: `/system/routerboard/settings/set boot-device=try-ethernet-once-then-nand`
+   and `:execute ":delay 45s; /system/reboot"`. **Then** move its switch port into the
+   Netinstall VLAN. Moving the port first cuts the path you need to send the reboot.
+3. A RouterOS **v6** device (no REST) was armed from the neighboring v7 switch: give the
+   switch a temporary address in the device's subnet, then
+   `/system/ssh-exec address=<ip> user=admin password="" command="…"` with the same two
+   settings. Run it inside `:execute { … }` with `output-to-file=` to see the result; called
+   directly through the API it timed out. It went from 6.49.3 straight to v7.
+
 Netinstall uses BOOTP/DHCP ports, so avoid other DHCP sources on the same segment. The docs also call out two common failure cases:
 
 - some USB Ethernet adapters create an extra link flap and the device is missed
