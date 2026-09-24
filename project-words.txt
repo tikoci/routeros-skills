@@ -19,6 +19,7 @@ BFD
 blackhole
 BLE
 BOOTX
+BPDUs
 browsable
 btest
 Bufferbloat
@@ -74,6 +75,7 @@ epan
 eperm
 etherboot
 evl
+failback
 fasttrack
 fasttracked
 FDB
@@ -228,6 +230,8 @@ pretraining
 PRL
 proplist
 psk
+ptmp
+ptp
 PTR
 ptype
 putmessage
@@ -262,6 +266,7 @@ RPKI
 rsc
 rssi
 rstatus
+rstp
 rtt
 sandboxed
 savevm
