@@ -1,5 +1,36 @@
 # RouterOS Scripting Language
 
+## Contents
+
+- Overview
+- Variable Declaration
+- Data Types
+- String Operations
+- Control Flow
+- Functions
+- Common Built-in Commands
+- Working with Router Config
+- Scheduler (Cron Equivalent)
+- File Operations
+- Error Handling
+- Comments
+- `:execute` vs `:do`
+- `:parse` — Dynamic Code
+- Array Operations
+- `:serialize` / `:deserialize` (JSON)
+- `/system/script` — Script Repository
+- Script Permissions (Policies)
+- Critical Scripting Pitfalls
+  - Print Buffer IDs Are Not Script IDs
+  - `print as-value` Returns an Array of Maps
+  - Globals Must Be Declared Where Read
+  - Empty Arrays and Array Concatenation
+  - Quote IP Prefixes in `find` / `where`
+  - Monitor Commands and Hyphenated Properties
+  - File Creation and Append Are Indirect
+  - Script Policies Affect Execution
+- Important Gotchas
+
 ## Overview
 
 RouterOS has its own scripting language (`.rsc` files) used for automation. It is NOT bash,

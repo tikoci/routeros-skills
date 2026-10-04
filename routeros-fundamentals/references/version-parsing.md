@@ -1,5 +1,15 @@
 # RouterOS Version Parsing & Comparison
 
+## Contents
+
+- Version Format
+- Parsing Logic
+- Sorting / Comparison
+- Pre-Release Detection
+- Version Channels
+- Download URL Selection
+- Checking If a Version Is "Built"
+
 ## Version Format
 
 RouterOS versions follow the pattern: `MAJOR.MINOR[.PATCH][QUALIFIER]`

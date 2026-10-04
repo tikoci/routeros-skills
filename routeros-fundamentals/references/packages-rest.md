@@ -1,5 +1,23 @@
 # RouterOS `/system/package` REST API Reference
 
+## Contents
+
+- Package Object Shape
+- Package States
+- Built-In Optional Packages (CHR 7.22.1)
+- Package Visibility
+- Endpoints
+  - GET /rest/system/package
+  - GET /rest/system/package/update
+  - POST /rest/system/package/update/check-for-updates
+  - POST /rest/system/package/enable
+  - POST /rest/system/package/disable
+  - POST /rest/system/package/apply-changes
+- Scheduled Field Values
+- Critical: apply-changes vs reboot
+- Device-Mode Dependency
+- Recommended Pattern for quickchr
+
 Lab-verified against CHR 7.22.1 (x86_64). All responses confirmed via curl.
 
 ## Package Object Shape

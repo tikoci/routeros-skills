@@ -1,5 +1,17 @@
 # RouterOS REST API Patterns
 
+## Contents
+
+- Verb Mapping
+- Common Endpoints
+- Filtering and Query Parameters
+- POST Commands (Actions)
+- Error Handling
+  - `/rest/execute` can return HTTP 200 for a rejected command
+- Authentication Patterns
+- /console/inspect — Command Tree Introspection
+- Known Version Differences
+
 ## Verb Mapping
 
 RouterOS REST maps HTTP verbs differently from typical REST APIs:

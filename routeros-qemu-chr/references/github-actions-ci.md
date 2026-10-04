@@ -1,5 +1,22 @@
 # RouterOS CHR in GitHub Actions CI
 
+## Contents
+
+- Overview
+- Runner Prerequisites
+  - Installing QEMU
+  - Enabling KVM
+- CHR Image Download Pattern
+- Disk Conversion
+- QEMU Launch
+- Boot Wait Loop
+- Extra Packages Installation
+- Concurrent Build Push — Retry Pattern
+- Cleanup
+- Environment Variables
+- Debugging CI Failures
+- Daily Auto-Detection Workflow
+
 ## Overview
 
 Running RouterOS CHR on GitHub Actions runners is the primary CI pattern for projects that need

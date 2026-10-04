@@ -1,5 +1,15 @@
 # `request=highlight` — the per-byte token stream
 
+## Contents
+
+- Wire format
+- Token vocabulary (19 classes observed)
+  - Structure
+  - Variables
+  - State and error
+- The error model — one byte, then silence
+- Statefulness and drift
+
 The console's own tokenizer, exposed verbatim. This is the lexical view of a
 script: which class every byte belongs to. Full evidence (corpus counts,
 timing, drift tables):

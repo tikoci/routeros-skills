@@ -1,5 +1,14 @@
 # `:parse` IL — the structural view
 
+## Contents
+
+- Readout recipe
+- Grammar essentials
+- Canonicalizations (useful for "RouterOS will see this as…")
+- Errors
+- Drift
+- Choosing highlight vs `:parse`
+
 `:parse` lowers a script to the textual intermediate language ("parseIL") the
 RouterOS engine executes. It is the structural complement to highlight's flat
 token stream: blocks, expressions, scopes, evaluation order. Full grammar and
