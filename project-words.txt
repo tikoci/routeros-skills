@@ -11,6 +11,7 @@ addrs
 aiskillstore
 alogin
 amm
+apptraffic
 ATA
 backgrounding
 BASICAUTH
@@ -35,6 +36,7 @@ changeme
 chardev
 chipset
 cli
+cmr
 coderabbit
 connectivitycheck
 conntrack
