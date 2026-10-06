@@ -1,5 +1,43 @@
 # RouterOS `/user` REST API Reference
 
+## Contents
+
+- User Object Shape
+- Endpoints
+  - GET /rest/user — List All Users
+  - GET /rest/user/*ID — Single User
+  - PUT /rest/user — Create User
+  - POST /rest/user/add — Alternative Create
+  - PATCH /rest/user/*ID — Update User
+  - DELETE /rest/user/*ID — Remove User
+  - POST /rest/user/disable — Disable by Number/Name
+  - POST /rest/user/enable — Re-enable
+- Password Change
+  - Change Own Password — POST /rest/password
+  - Set Another User's Password — PATCH
+  - POST /rest/user/expire-password
+- Admin Account Behavior
+  - Default State (Fresh CHR)
+  - The `expired` Flag — REST Is Unaffected
+  - quickchr Pattern
+- User Groups — /rest/user/group
+  - GET /rest/user/group — List Groups
+  - Default Groups (cannot be deleted)
+  - Group Policy List
+  - PUT /rest/user/group — Create Custom Group
+- SSH Keys — /rest/user/ssh-keys
+  - GET /rest/user/ssh-keys — List Public Keys
+  - Adding SSH Keys — Two Methods
+  - DELETE /rest/user/ssh-keys/*ID — Remove Key
+  - Supported Key Types
+  - SSH Key Behavior Warnings
+  - quickchr SSH Key Provisioning Pattern
+- Active Users — /rest/user/active
+  - GET /rest/user/active — List Active Sessions
+  - POST /rest/user/active/request-logout — Kill Session
+- User Settings — /rest/user/settings
+- Gotchas
+
 Reference for `/user`, `/user/group`, and `/user/ssh-keys` REST endpoints. Response shapes from docs and quickchr `provision.ts` patterns. Curl examples assume CHR on `127.0.0.1:9100` with default `admin:` credentials.
 
 **(from docs, not lab-verified)** unless otherwise noted.

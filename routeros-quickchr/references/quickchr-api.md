@@ -1,5 +1,16 @@
 # quickchr API reference (for automation)
 
+## Contents
+
+- Trigger terms
+- `QuickCHR.start(opts)` → `ChrInstance`
+- `ChrInstance`
+  - `exec` details (what you otherwise need `types.ts` for)
+  - Connection surface for child processes
+- Port layout
+- Error codes
+- CLI ↔ library parity
+
 A fuller map of the `@tikoci/quickchr` library surface than the SKILL body. This is
 a navigational summary — the **authoritative, versioned** source is the quickchr
 [`MANUAL.md`](https://github.com/tikoci/quickchr/blob/main/MANUAL.md) and the JSDoc

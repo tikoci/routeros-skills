@@ -1,5 +1,27 @@
 # RouterOS Async Commands via REST API
 
+## Contents
+
+- Three Modes for Monitor/Streaming Commands
+  - 1\. `duration="Xs"` — Timed run, section array response
+  - 2\. `once=""` — Single sample, immediate return
+  - 3\. No parameter — blocks indefinitely
+- `as-string` for `/rest/execute`
+- Response Shape by Command
+  - `/interface/monitor-traffic` with `duration="3s"`
+  - `/interface/ethernet/monitor` with `once=""`
+  - `/system/package/update/check-for-updates`
+  - `/system/license/renew`
+- Commands Using This Pattern
+  - Exception: `/system/device-mode/update`
+- General Rule
+- Recommended Patterns
+  - One-shot status check
+  - Timed monitoring
+  - Commands that run their own course (check-for-updates, license/renew)
+  - Error detection in section arrays
+  - Safety net
+
 Lab-tested reference from CHR 7.22.1 (x86_64).
 
 ## Three Modes for Monitor/Streaming Commands

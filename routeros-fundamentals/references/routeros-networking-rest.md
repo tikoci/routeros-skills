@@ -1,5 +1,16 @@
 # RouterOS Networking REST API Reference
 
+## Contents
+
+- REST Verb Mapping (Quick Reminder)
+- 1\. `/ip/address` — IP Address Management
+- 2\. `/ip/route` — Static Routes
+- 3\. `/ip/dhcp-client` — DHCP Client
+- 4\. `/ip/dhcp-server` — DHCP Server Setup
+- 5\. `/ip/dns` — DNS Configuration
+- 6\. `/interface` — Interface Listing
+- Common Patterns for Agents
+
 Response shapes derived from official docs (page IDs below). Not lab-verified on CHR unless stated.
 
 ## REST Verb Mapping (Quick Reminder)

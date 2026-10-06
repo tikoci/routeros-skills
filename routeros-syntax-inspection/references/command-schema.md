@@ -1,5 +1,12 @@
 # `child`, `syntax`, `completion` — schema and candidates
 
+## Contents
+
+- `request=child` — node enumeration
+- `request=syntax` — structured help
+- `request=completion` — candidates, enums, validity signal
+  - Validity checking (the sentinel decision rule)
+
 The three non-highlight request types of `/console/inspect`. Grounded on a
 37-context probe catalog captured verbatim on RouterOS 7.9.2, 7.23.2, and
 7.24rc2:

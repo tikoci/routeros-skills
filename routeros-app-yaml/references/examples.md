@@ -1,5 +1,13 @@
 # RouterOS /app YAML — Reference Examples
 
+## Contents
+
+- Minimal /app
+- Full-Featured /app (All Properties)
+- Store File (app-store-urls)
+- Port Format Examples
+- Placeholder Usage
+
 ## Minimal /app
 
 ```yaml

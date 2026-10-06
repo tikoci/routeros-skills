@@ -1,5 +1,20 @@
 # CLI grounding log — quickchr 0.4.8, CHR 7.24.4 x86, HVF
 
+## Contents
+
+- Lifecycle timings (warm cache, HVF)
+- Group-kill: 0.4.7 loses the VM, 0.4.8 does not
+- Bounded readiness poll
+- First NIC is ether1 (DHCP), socket NIC is ether2
+- Named-socket link: either order, ping passes on macOS
+- Third machine refused
+- Socket create output (transport is printed)
+- Driving with centrs
+- Cache
+- Device-mode
+- Endpoints and credentials
+- What was *not* re-verified in this run
+
 Live runs behind the claims in `routeros-quickchr-cli/SKILL.md`, so a
 reviewer can re-run any of them. Environment: macOS Intel x64 host,
 QEMU 11.1.1 with HVF, warm image cache (`chr-7.24.4.img` present — no
