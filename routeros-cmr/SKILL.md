@@ -1,6 +1,6 @@
 ---
 name: routeros-cmr
-description: "Configure or debug MikroTik CMR on RouterOS 7.26beta1+: the optional cmr controller package, built-in /cmr/client, routed controller-addresses or neighbor discovery, TCP/54321, independent pairing requirements, labels, fleet scripts, alerts and HTTP webhooks, topology, upgrade rules, package directories and backup/export limitations. Use for a CMR controller or client, waiting-for-pairing, CMR alert or upgrade rules, fleet run-script, or the /cmr menus. Use routeros-quickchr for a disposable CMR lab and routeros-centrs for validated device operations. CMR monitors RouterOS clients; it is not a general SNMP/ping replacement for The Dude."
+description: "Configure or debug MikroTik CMR on RouterOS 7.26beta1: the optional cmr controller package, built-in /cmr/client, routed controller-addresses or neighbor discovery, TCP/54321, independent pairing requirements, labels, fleet scripts, alerts and HTTP webhooks, topology, upgrade rules, package directories and backup/export limitations. Use for a CMR controller or client, waiting-for-pairing, CMR alert or upgrade rules, fleet run-script, or the /cmr menus. Use routeros-quickchr for a disposable CMR lab and routeros-centrs for validated device operations. CMR monitors RouterOS clients; it is not a general SNMP/ping replacement for The Dude."
 ---
 
 # RouterOS CMR
@@ -104,8 +104,10 @@ RouterOS credentials; a former draft's claim that it required "server credential
 for server-side `pair` was an interpretation of older wording.[^lab][^docs]
 
 Use real client credentials and explicit controller approval for the normal
-flow. `none` allows any reachable controller to manage that client. The example
-uses generated quickchr logins and does not put passwords into its reports.[^lab][^docs]
+flow. Client-side `none` accepts pairing without client approval; the
+controller's independent `password` or `confirm` requirement must still be
+satisfied before management begins. The example uses generated quickchr logins
+and does not put passwords into its reports.[^lab][^docs]
 
 Changing an already paired client from `none` to `password` made it pending in
 the prior hardware session. Global `/cmr pairing-requirement`, wrong-password
@@ -233,7 +235,7 @@ do not turn a configured rule into a claim that those hardware paths work.[^docs
 [report]: https://github.com/tikoci/quickchr/blob/main/examples/cmr/REPORT.md
 
 [^lab]: quickchr [CMR example][example], [beta evidence and support drafts][report],
-    RouterOS 7.26beta1, x86 CHR, Intel macOS/HVF, 2026-10-05 local date.
+    RouterOS 7.26beta1, x86 CHR, 2026-10-05 local date.
     Executable core checks: `cmr.ts`; additional pairing/export/backup probes:
     `tool/probes.ts`. No later release was tested.
 [^docs]: MikroTik [CMR manual](https://manual.mikrotik.com/docs/management-tools/cmr/)
