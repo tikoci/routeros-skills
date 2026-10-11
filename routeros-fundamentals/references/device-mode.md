@@ -14,6 +14,12 @@ Device-mode gates access to potentially risky features. Changing the mode requir
 # - Power cycle the device
 ```
 
+A power cycle from the PoE switch that feeds the device counts:
+`/interface/ethernet/poe/power-cycle etherN duration=5s` on the switch. This confirmed
+`routerboard=yes` on four PoE-powered Cube 60Pro-family devices (7.20-7.21, 2026-09-24), so a
+remote change needs no one on site. Run the `update` inside `:execute` over an API, since the
+command blocks until confirmation.
+
 **Mode script bypass (7.22+):** During netinstall, a mode script (`-sm`) can set device-mode on first boot, automatically triggering a reboot — removing the manual power-cycle requirement for provisioning. See the `routeros-netinstall` skill.
 
 ## Modes and Factory Defaults

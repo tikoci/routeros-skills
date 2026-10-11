@@ -20,6 +20,7 @@ BFD
 blackhole
 BLE
 BOOTX
+BPDUs
 browsable
 btest
 Bufferbloat
@@ -76,6 +77,7 @@ epan
 eperm
 etherboot
 evl
+failback
 fasttrack
 fasttracked
 FDB
@@ -122,6 +124,7 @@ keypair
 killpg
 KVM
 LDP
+LHG
 licences
 LLDP
 LLM
@@ -141,6 +144,7 @@ Mbps
 MBR
 mcast
 MCP
+mcs
 mgmt
 middelink
 Mikro
@@ -160,6 +164,7 @@ mountlists
 MPLS
 mtu
 MTWEI
+multipoint
 myapp
 mybridge
 myhost
@@ -204,6 +209,7 @@ pcq
 pflash
 pgid
 pgrep
+phy
 pihole
 PIIX
 pingpacket
@@ -225,6 +231,9 @@ Preshared
 pretraining
 PRL
 proplist
+psk
+ptmp
+ptp
 PTR
 ptype
 putmessage
@@ -257,7 +266,9 @@ routerboot
 routeros
 RPKI
 rsc
+rssi
 rstatus
+rstp
 rtt
 sandboxed
 savevm
@@ -347,6 +358,7 @@ Winbox
 Wireshark
 Wize
 WLAN
+WPA
 writability
 Wws
 XEN
