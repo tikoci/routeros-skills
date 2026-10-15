@@ -150,9 +150,10 @@ build.[^policy]
 | `read,test,api,rest-api` | `not enough permissions (9)` | `run-script` wrote to the controller's own row; `/cmr/device/reboot` rebooted a client |
 
 `run-script` needed only `read` + `api` on the caller, and `/cmr/device/reboot`
-only `read` + `test` + `api`; these are the command policies. The probe ran over
-REST, which also needs `rest-api` to log in: `read,rest-api` alone was refused
-`run-script` with `not allowed (9)`. Neither command checked `write` or
+only `read` + `test` + `api`. The probe ran over REST, which needs `rest-api`
+to log in. `api` is not part of that login on 7.26beta1: `read,rest-api` logged
+in and was refused by `run-script` itself (`std failure: not allowed (9)`, not
+an authentication failure), and adding `api` let it run. Neither command checked `write` or
 `reboot`. The script ran
 on each selected client with `read,write,test,reboot`, and that includes the
 controller's own device row, so the same login could also write to the
@@ -163,9 +164,9 @@ someone (or an agent) who may change every paired device, and treat
 writes in any tool's read-only mode. `upgrade`, `pair` and `trigger` were not
 tested with a restricted login.
 
-A login with just `read` plus its API login policy (`api` for the native API,
-`rest-api` for REST), and even `!sensitive,!policy`, can read its own `/user`
-row and `/user/group`. So a tool can check which policies the caller lacks
+A login with `read` + `api` (plus `rest-api` over REST), even with
+`!sensitive,!policy`, can read its own `/user` row and `/user/group` over both
+APIs; a REST login without `api` was not tried for this read. So a tool can check which policies the caller lacks
 before it sends a fleet command.[^policy]
 
 ### Watching a long fleet script
