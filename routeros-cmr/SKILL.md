@@ -136,6 +136,40 @@ Plain labels are OR; `+label` requires a label and `-label` excludes it. Combine
 label predicates were not exercised by this lab. Maps and dashboards are shown
 in WinBox 4/WebFig; GUI rendering was not verified here.[^docs]
 
+### The controller login is not the limit
+
+CMR does not check the caller's policy against what a fleet command does on the
+clients. A controller "reader" login is **not read-only** once the `cmr` package
+is installed:[^policy]
+
+| Controller login group | Direct write or reboot | Through CMR |
+| --- | --- | --- |
+| `read,api,rest-api` | `not enough permissions (9)` | `run-script` wrote to and rebooted clients |
+| `read,test,api,rest-api` | `not enough permissions (9)` | `/cmr/device/reboot` rebooted a client too |
+
+`run-script` needed only `read` + `api` on the caller, and `/cmr/device/reboot`
+only `read` + `test` + `api`. Neither checked `write` or `reboot`. The script ran
+on each selected client with `read,write,test,reboot`, and that includes the
+controller's own device row, so the same login could also write to the
+controller itself. CMR's own ceiling still held: `/user/add` in a script failed
+with `not enough permissions (9)`.[^policy] Give a controller login only to
+someone (or an agent) who may change every paired device, and treat
+`/cmr/device/{run-script,reboot,upgrade,pair}` and `/cmr/upgrade/trigger` as
+writes in any tool's read-only mode. `upgrade`, `pair` and `trigger` were not
+tested with a restricted login.
+
+A login with just `read` + `api` can read its own `/user` row and
+`/user/group`, so a tool can check which policies the caller lacks before it
+sends a fleet command.[^policy]
+
+### Watching a long fleet script
+
+`run-script` returns a client's output only when that client's script ends:
+lines printed four seconds apart came back together, and no `/cmr` menu records
+a running script.[^field] To watch a long job, watch what it changes on a client
+that can be reached directly (for example `/ip/address print follow` while the
+script adds addresses).[^field]
+
 ## Alerts and HTTP webhooks
 
 ```routeros
@@ -241,6 +275,13 @@ do not turn a configured rule into a claim that those hardware paths work.[^docs
 [^docs]: MikroTik [CMR manual](https://manual.mikrotik.com/docs/management-tools/cmr/)
     and [`/cmr` CLI reference](https://manual.mikrotik.com/docs/cli-reference/cmr/),
     read 2026-10-05. A docs-only citation is not runtime validation.
+[^policy]: centrs [#456](https://github.com/tikoci/centrs/issues/456): a two-CHR
+    7.26beta1 x86 lab over REST (2026-10-13), plus the same `run-script` write
+    on 7.26beta1 hardware (arm64 controller, mipsbe/mmips clients). The own
+    `/user` + `/user/group` read was checked over REST and the native API on the
+    same lab (2026-10-15).
+[^field]: centrs [#457](https://github.com/tikoci/centrs/issues/457) item 8, a
+    field run on 7.26beta1 hardware (2026-10-13). Not re-tested on CHR.
 [^prior]: Earlier 2026-10-05 observation on 7.26beta1: an arm64 controller,
     a mipsbe client and a routed x86 CHR. These specific claims were not re-tested
     by the four-CHR lab; kept as explicitly limited prior observations.
