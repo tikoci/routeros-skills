@@ -138,17 +138,22 @@ in WinBox 4/WebFig; GUI rendering was not verified here.[^docs]
 
 ### The controller login is not the limit
 
-CMR does not check the caller's policy against what a fleet command does on the
-clients. A controller "reader" login is **not read-only** once the `cmr` package
-is installed:[^policy]
+On 7.26beta1, CMR does not check the caller's policy against what a fleet
+command does on the clients. A controller "reader" login is **not read-only**
+once the `cmr` package is installed. MikroTik confirmed this and says 7.26beta2
+will not allow it for a `read` group; that is not yet checked on a beta2
+build.[^policy]
 
 | Controller login group | Direct write or reboot | Through CMR |
 | --- | --- | --- |
-| `read,api,rest-api` | `not enough permissions (9)` | `run-script` wrote to and rebooted clients |
-| `read,test,api,rest-api` | `not enough permissions (9)` | `/cmr/device/reboot` rebooted a client too |
+| `read,api,rest-api` | `not enough permissions (9)` | `run-script` wrote to a client and rebooted it |
+| `read,test,api,rest-api` | `not enough permissions (9)` | `run-script` wrote to the controller's own row; `/cmr/device/reboot` rebooted a client |
 
 `run-script` needed only `read` + `api` on the caller, and `/cmr/device/reboot`
-only `read` + `test` + `api`. Neither checked `write` or `reboot`. The script ran
+only `read` + `test` + `api`; these are the command policies. The probe ran over
+REST, which also needs `rest-api` to log in: `read,rest-api` alone was refused
+`run-script` with `not allowed (9)`. Neither command checked `write` or
+`reboot`. The script ran
 on each selected client with `read,write,test,reboot`, and that includes the
 controller's own device row, so the same login could also write to the
 controller itself. CMR's own ceiling still held: `/user/add` in a script failed
@@ -158,9 +163,10 @@ someone (or an agent) who may change every paired device, and treat
 writes in any tool's read-only mode. `upgrade`, `pair` and `trigger` were not
 tested with a restricted login.
 
-A login with just `read` + `api` can read its own `/user` row and
-`/user/group`, so a tool can check which policies the caller lacks before it
-sends a fleet command.[^policy]
+A login with just `read` plus its API login policy (`api` for the native API,
+`rest-api` for REST), and even `!sensitive,!policy`, can read its own `/user`
+row and `/user/group`. So a tool can check which policies the caller lacks
+before it sends a fleet command.[^policy]
 
 ### Watching a long fleet script
 
@@ -279,7 +285,10 @@ do not turn a configured rule into a claim that those hardware paths work.[^docs
     7.26beta1 x86 lab over REST (2026-10-13), plus the same `run-script` write
     on 7.26beta1 hardware (arm64 controller, mipsbe/mmips clients). The own
     `/user` + `/user/group` read was checked over REST and the native API on the
-    same lab (2026-10-15).
+    same lab (2026-10-15). The `run-script` write is re-run by centrs'
+    `execute --cmr` integration test (example CMR15). MikroTik's acknowledgement
+    and the beta2 fix: [forum post](https://forum.mikrotik.com/t/7-26beta-development-is-released/273582/139)
+    (2026-10-15).
 [^field]: centrs [#457](https://github.com/tikoci/centrs/issues/457) item 8, a
     field run on 7.26beta1 hardware (2026-10-13). Not re-tested on CHR.
 [^prior]: Earlier 2026-10-05 observation on 7.26beta1: an arm64 controller,
