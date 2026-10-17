@@ -52,9 +52,11 @@ and router. `#Terminal` gives a CLI, not a read-only review page.
 `#SkinDesigner` edits WebFig skins: JSON files at `skins/<name>.json` where
 `0` hides a menu entry (except `order`), `{tab: "name"}` renames a tab, and
 per-item fields carry rename/note/limit/read-only/hide flags. Skins attach to
-a user **group** (`/user/group set <group> skin=<skin>`, verified live), not to
+a user **group** (`/user/group set <group> skin=<skin>`; group property read live), not to
 an individual user. A skin only reshapes menus; it never grants or removes
-rights — enforcement stays with group policies and the CLI.
+rights — enforcement stays with group policies. See the
+[skin source inspection](validation.md#source-inspection) for the checked schema
+and its untested rendering limits.
 
 ## CMR
 
@@ -614,8 +616,9 @@ installed for these checks, but no controller was enabled or fleet paired.
 - `#System:SwOS` — SwOS
   - `#System:SwOS.SwOS` — SwOS
   - `#System:SwOS.Upgrade` — Upgrade **(action; not a review view)**
-- `#System:UPS` — UPS (x86 CHR serves `ups.jg` in base; ARM64 7.24.5 serves
-  none even with the `ups` package installed, though `/system/ups` then works)
+- `#System:UPS` — UPS (x86 CHR advertises `ups.jg` in base; ARM64 7.24.5
+  did not advertise it even with `ups` installed, though `/system/ups` then works;
+  ARM64 fragment rendering was not tested)
   - `#System:UPS.UPS` — UPS
 - `#System:Users` — Users
   - `#System:Users.Users` — Users

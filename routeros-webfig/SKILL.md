@@ -76,8 +76,8 @@ back to Interfaces. Use the UI's names rather than guessing from `/cmr`.
 For other views, use the
 [fragment catalog and discovery guidance](references/webfig-url-scheme.md).
 Menu availability depends on RouterOS version, installed packages, hardware
-(including CHR architecture: ARM64 7.24.5 serves no `#System:UPS` menu even
-with the `ups` package installed), user policy and skins. Copy the URL from
+(including CHR architecture: ARM64 7.24.5 did not advertise `ups.jg` in its
+menu manifest even with the `ups` package installed), user policy and skins. Copy the URL from
 the target UI when possible.[^router]
 
 ### Object links and fallback
@@ -97,10 +97,12 @@ some `doit` containers dispatch an operation when opened.[^router]
 
 ### Skins
 
-If the human wants a simplified RouterOS UI, that is a WebFig **skin**,
-edited in `#SkinDesigner` and stored as `skins/<name>.json` on the router.
-Assign it to a user group (`/user/group set <group> skin=<skin>` via centrs),
-which also applies in WinBox. A skin only hides, renames or limits menu items;
+For a simplified WebFig UI, use a **skin**, edited in `#SkinDesigner` when
+the user's permissions expose the designer and stored as `skins/<name>.json`
+on the router. Assign it to a user group
+(`/user/group set <group> skin=<skin>` via centrs). MikroTik also documents
+WinBox use of the group skin; WinBox was not tested here.
+A skin can hide or rename entries, add notes, and apply UI limits or read-only fields;
 it is not a security boundary — a user whose group policies allow an action
 can still reach it through the CLI or another tool.[^skin]
 

@@ -7,6 +7,7 @@
 - [Source inspection](#source-inspection)
 - [Reproduce](#reproduce)
 - [Service toggle check](#service-toggle-check)
+- [ARM64 manifest check](#arm64-manifest-check)
 - [Limits](#limits)
 
 ## Scope and provenance
@@ -22,22 +23,15 @@ as structural reference, with explicit caveats and known action types marked.
 The draft's independent Python crypto implementation was not repeated and is
 not claimed as this validation's result.
 
-A same-day ARM64 cross-check compared a disposable quickchr ARM64 CHR on 7.24.5
-against a matching x86 CHR, at base and with all packages installed. Note a
-quickchr behavior found while doing this: boolean provisioning flags passed to
-`add` (such as `--install-all-packages`) are silently dropped by a later plain
-`start <name>` — the CLI's `flagBool` yields `false` for an absent flag, which
-defeats the `?? existing` fallback in `QuickCHR.start`. Passing the flag to
-`start` instead provisions correctly. The base-to-base comparison therefore
-used single-`routeros`-bundle CHRs on both architectures; a third ARM64 machine took
-all 18 extra packages (including `ups`) via `start --install-all-packages`.
+A same-day cross-check compared base ARM64 and x86 CHRs on 7.24.5, then
+checked a third ARM64 CHR with all packages installed. The base comparison
+used single-`routeros`-bundle CHRs on both architectures. The full ARM64 run
+passed `--install-all-packages` to its first `start` and confirmed all 18 extra
+packages (including `ups`) through `/system/package`. In this run, passing
+the flag only to `add` had left the subsequent plain `start` with only the
+base package; the recorded package inventory, rather than the requested flags,
+defines each comparison.
 See [Observed behavior](#observed-behavior).
-
-An unauthenticated `/webfig/list` read from a LAN 7.26beta1 router corroborates
-package-driven menus (separate `oflow`, `wlan6`, `userman5`, `netinstaller`,
-`storage`, `zerotier`, `cmr`, `container`, `dude`, `gps` and `iot` resources)
-and likewise serves no `ups.jg`. No authenticated or write action was taken on
-that router.
 
 Served bundle identifiers and SHA-256 digests:
 
@@ -68,7 +62,7 @@ Served bundle identifiers and SHA-256 digests:
 | `/system/ups`, x86 base vs ARM64 base | Present but empty on x86; `validation/unknown-path` rejection on ARM64 (offline `explain` passes, so the path is well-formed but device-absent) |
 | `/system/package`, ARM64 with `start --install-all-packages` | 19 packages: base `routeros` plus all 18 extras, `ups` enabled |
 | `/system/ups`, ARM64 with `ups` package | Present but empty — the CLI path is not arch-excluded |
-| `/webfig/list`, ARM64 with all packages | Still no `ups.jg`; `#System:UPS` has no ARM64 WebFig menu on 7.24.5 |
+| `/webfig/list`, ARM64 with all packages | Still no `ups.jg`; individual UPS fragment rendering was not tested |
 | Independent WebFig toggle, fresh 7.26beta1 CHR | `/ip/service/webserver` exposed `webfig-plain`; setting it to `no` made `/webfig/` return 403 while REST `/system/resource` still succeeded |
 | Named `.jg` request without a live WebFig login | 406; authenticated browser's menu-resource loads were 200 |
 | `/jsproxy` browser traffic, both versions | `Content-Type: msg`; 40-byte handshake responses |
@@ -101,15 +95,17 @@ out despite a rendered UI. Switching that check to rendered DOM/title verified
 the newer UI without modifying RouterOS code. Do not build integrations around
 these internal globals.
 
-On 7.26beta1 (bundle SHA-256 as recorded in Scope above, also served by a LAN
-7.26beta1 router), inspected `loadSkin`, `saveSkin`, `normalizeSkin`,
+On 7.26beta1 (bundle SHA-256 as recorded in Scope above), inspected
+`loadSkin`, `saveSkin`, `normalizeSkin`,
 `compactSkin`/`compactSkinProps` and the SkinDesigner `DesignerPane`. Skins
 are JSON at `skins/<name>.json`; `0` hides an entry (except `order`),
 `{_hide:1}` is the normalized hidden marker, `{tab}` renames or hides a tab,
-and saving round-trips pretty-printed JSON through an encrypted
-`/jsproxy/put`. The designer preselects the current `sysres.skin` from the
+and `saveSkin()` posts pretty-printed JSON to `/jsproxy/put` with the target
+path encrypted in the query. The function passes the JSON body directly to
+`request()`; this is not evidence that the upload body itself is encrypted
+by WebFig's private channel. The designer preselects the current `sysres.skin` from the
 group baseline list. This grounds the skin schema, not SkinDesigner
-browser rendering, which was not tested.
+browser rendering or WinBox skin behavior, which were not tested.
 
 Corrected two proposal claims directly contradicted by the served source:
 `container.map.createPane()` consumes object suffixes, and `keyExchange()` reads
@@ -196,6 +192,27 @@ Remove this additional disposable router after the check:
 quickchr stop webfig-service-check
 quickchr remove webfig-service-check
 ```
+
+## ARM64 manifest check
+
+Repeat the disposable 7.24.5 lifecycle above with `--arch arm64` for the
+base comparison. For a separate full-package ARM64 machine, pass
+`--install-all-packages` to its first `quickchr start <name> --bg`.
+Read `/system/note`, `/system/resource`, `/system/package` and `/system/ups`
+through `centrs retrieve --quickchr <name> <path> --json`; inspect the actual
+package inventory rather than assuming provisioning from the requested flags.
+Fetch `/webfig/list` at each machine's printed host HTTP origin and compare
+resources by `name`, `crc` and `size`. Stop and remove each disposable machine
+after collecting its results.
+
+The preserved HTTP response bodies independently compared during review have
+these SHA-256 digests. ARM64 base and full manifests are identical; x86 has
+one additional resource, `ups.jg`. All shared resources match by CRC and size.
+
+| 7.24.5 manifest | Resources | SHA-256 |
+|---|---|---|
+| ARM64 base and all packages | 11 | `9f91d42e7328f29b345ab0ffa1b747cb5383f6de35471699d7c8212c9f287650` |
+| x86 base | 12 | `8eb408340f8346dc7fe0ad937a4cf4eac256e5ede9c4d866323a79623ed11201` |
 
 ## Limits
 
