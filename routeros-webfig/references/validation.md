@@ -6,6 +6,7 @@
 - [Observed behavior](#observed-behavior)
 - [Source inspection](#source-inspection)
 - [Reproduce](#reproduce)
+- [Service toggle check](#service-toggle-check)
 - [Limits](#limits)
 
 ## Scope and provenance
@@ -125,6 +126,44 @@ quickchr stop webfig-check
 quickchr remove webfig-check
 quickchr stop webfig-cmr-check
 quickchr remove webfig-cmr-check
+```
+
+## Service toggle check
+
+The separate 7.26beta1 toggle check used a fresh CHR without extra packages:
+
+```sh
+quickchr add --name webfig-service-check --version 7.26beta1 --arch x86 --add-network user
+quickchr start webfig-service-check --bg
+centrs retrieve --quickchr webfig-service-check /system/note --json
+centrs retrieve --quickchr webfig-service-check /ip/service/webserver --json
+centrs execute --quickchr webfig-service-check --yes \
+  '/ip/service/webserver/set webfig-plain=no' --json
+centrs retrieve --quickchr webfig-service-check /ip/service/webserver --json
+centrs retrieve --quickchr webfig-service-check /system/resource --json
+```
+
+The first settings read reported `webfig-plain=true` and `rest-plain=true`.
+The write returned `ok: true`. The second settings read reported
+`webfig-plain=false` while `rest-plain=true`. The final centrs read (a REST
+GET of `/rest/system/resource`) still returned `ok: true` and
+`version: "7.26beta1"`.
+
+The host HTTP port printed by this particular start was 9230. Replace it with
+the port from your own start output before running the UI request:
+
+```sh
+WEBFIG_LAB_ORIGIN='http://127.0.0.1:9230'
+curl --max-time 10 -sS -o /dev/null -w '%{http_code}\n' "$WEBFIG_LAB_ORIGIN/webfig/"
+```
+
+That GET returned **403**, establishing that REST stayed available while WebFig
+was disabled. The test did not change `www` itself or `rest-plain`.
+Remove this additional disposable router after the check:
+
+```sh
+quickchr stop webfig-service-check
+quickchr remove webfig-service-check
 ```
 
 ## Limits
