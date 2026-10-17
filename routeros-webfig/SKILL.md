@@ -95,6 +95,15 @@ selected tab, not just the URL or HTTP 200. Do not bulk-open generated fragments
 the menu definitions include action containers as well as tables and forms, and
 some `doit` containers dispatch an operation when opened.[^router]
 
+### Skins
+
+If the human wants a simplified RouterOS UI, that is a WebFig **skin**,
+edited in `#SkinDesigner` and stored as `skins/<name>.json` on the router.
+Assign it to a user group (`/user/group set <group> skin=<skin>` via centrs),
+which also applies in WinBox. A skin only hides, renames or limits menu items;
+it is not a security boundary — a user whose group policies allow an action
+can still reach it through the CLI or another tool.[^skin]
+
 ## Login and human handoff
 
 Send a plain URL with no password or token. On the tested 7.24.5 login flow:
@@ -165,3 +174,8 @@ real UI, not a replacement configuration API.[^embedding]
 [^storage]: [HTML Web Storage standard](https://html.spec.whatwg.org/multipage/webstorage.html)
     and [Apple WKWebsiteDataStore](https://developer.apple.com/documentation/webkit/wkwebsitedatastore),
     plus [observed WebFig token behavior](references/validation.md).
+[^skin]: [MikroTik WebFig skins](https://help.mikrotik.com/docs/spaces/ROS/pages/328131/WebFig)
+    ("Design Skin … is not a security tool"; group assignment via
+    `/user/group set`), served-bundle `loadSkin`/`saveSkin`/`normalizeSkin`
+    schema ([validation](references/validation.md)), and live `/user/group`
+    `skin` property read on CHR 7.24.5.

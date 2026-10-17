@@ -49,6 +49,12 @@ components have container-specific semantics; they are not universally ignored.
 Special applets found in the HTML/JS are `#Quick_Set`, `#WebFig`, `#Terminal`,
 `#SkinDesigner` and `#About`. Availability and default applet depend on the user
 and router. `#Terminal` gives a CLI, not a read-only review page.
+`#SkinDesigner` edits WebFig skins: JSON files at `skins/<name>.json` where
+`0` hides a menu entry (except `order`), `{tab: "name"}` renames a tab, and
+per-item fields carry rename/note/limit/read-only/hide flags. Skins attach to
+a user **group** (`/user/group set <group> skin=<skin>`, verified live), not to
+an individual user. A skin only reshapes menus; it never grants or removes
+rights — enforcement stays with group policies and the CLI.
 
 ## CMR
 

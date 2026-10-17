@@ -33,6 +33,12 @@ used single-`routeros`-bundle CHRs on both architectures; a third ARM64 machine 
 all 18 extra packages (including `ups`) via `start --install-all-packages`.
 See [Observed behavior](#observed-behavior).
 
+An unauthenticated `/webfig/list` read from a LAN 7.26beta1 router corroborates
+package-driven menus (separate `oflow`, `wlan6`, `userman5`, `netinstaller`,
+`storage`, `zerotier`, `cmr`, `container`, `dude`, `gps` and `iot` resources)
+and likewise serves no `ups.jg`. No authenticated or write action was taken on
+that router.
+
 Served bundle identifiers and SHA-256 digests:
 
 | Version | Resource | SHA-256 |
@@ -94,6 +100,16 @@ not page globals. An initial harness using 7.24.5's `currentCont` global timed
 out despite a rendered UI. Switching that check to rendered DOM/title verified
 the newer UI without modifying RouterOS code. Do not build integrations around
 these internal globals.
+
+On 7.26beta1 (bundle SHA-256 as recorded in Scope above, also served by a LAN
+7.26beta1 router), inspected `loadSkin`, `saveSkin`, `normalizeSkin`,
+`compactSkin`/`compactSkinProps` and the SkinDesigner `DesignerPane`. Skins
+are JSON at `skins/<name>.json`; `0` hides an entry (except `order`),
+`{_hide:1}` is the normalized hidden marker, `{tab}` renames or hides a tab,
+and saving round-trips pretty-printed JSON through an encrypted
+`/jsproxy/put`. The designer preselects the current `sysres.skin` from the
+group baseline list. This grounds the skin schema, not SkinDesigner
+browser rendering, which was not tested.
 
 Corrected two proposal claims directly contradicted by the served source:
 `container.map.createPane()` consumes object suffixes, and `keyExchange()` reads

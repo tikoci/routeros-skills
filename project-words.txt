@@ -193,6 +193,7 @@ netdev
 netdevs
 netinstall
 netinstalled
+netinstaller
 netmap
 Netwatch
 newpass
@@ -210,6 +211,7 @@ npk
 ntohs
 NVME
 OCI
+oflow
 openflow
 opkg
 Opti
@@ -308,6 +310,7 @@ SLIRP
 smips
 smp
 snmp
+sysres
 socat
 Socksify
 srcnat
@@ -357,6 +360,7 @@ unprovisioned
 unref
 URLBASE
 userland
+userman
 usermanager
 userscript
 userspace
