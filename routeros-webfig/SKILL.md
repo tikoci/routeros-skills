@@ -17,7 +17,8 @@ This skill covers navigation and session behavior.[^manual]
 
 ## Build a link
 
-Use the router's reachable web origin plus `/webfig/` and a fragment:
+Use a router web origin reachable from the human's browser or embedded view,
+plus `/webfig/` and a fragment:
 
 ```text
 https://router.example:8443/webfig/#IP:Firewall.Connections
@@ -29,7 +30,9 @@ Get the actual service and port from `/ip/service` through centrs. `www` serves
 HTTP (default 80); `www-ssl` serves HTTPS (default 443) and needs a valid
 certificate. A quickchr host-forward port belongs in the URL instead of the
 guest's service port. Prefer trusted HTTPS for deployed routers. A working REST
-endpoint proves that the corresponding web service is reachable. On releases
+endpoint proves that the corresponding web service is reachable from that
+client. Check the human's browser separately when the agent uses a tunnel or
+loopback address on another machine. On releases
 exposing `/ip/service/webserver`, `webfig-plain` and `webfig-secure` can disable
 WebFig independently of REST. Check `/webfig/` and its rendered view too.[^services]
 
@@ -118,8 +121,10 @@ A cross-origin iframe in an app's web dashboard is therefore blocked; a native
 top-level WebView is a different integration. Validate the actual target engine
 and RouterOS release before promising an embedded experience.[^embedding]
 
-Choose whether the WebView's website data persists. The token is scoped to the
-scheme/host/port and the browser's data store, so changing HTTP to HTTPS, changing
+Choose whether the WebView's website data persists. WebFig stores its token in
+`localStorage`, whose storage area is scoped to the scheme/host/port and the
+browser's data store. This describes browser storage isolation, not a server-side
+restriction on where the token can authenticate. Changing HTTP to HTTPS, changing
 the port, or opening another browser profile can require a new login. Reusing
 one data store and origin shares the login; independent data stores allow
 separate sessions. For example, WKWebView exposes this through
