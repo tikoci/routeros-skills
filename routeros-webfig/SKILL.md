@@ -12,7 +12,7 @@ work. Give them a link plus what to check, for example:
 > <https://router.example/webfig/#Bridge.VLANs>
 
 WebFig can edit configuration too; opening its UI does not make an agent's
-changes approved. Use **routeros-centrs** for machine configuration and read back.
+changes approved. Use **routeros-centrs** for machine configuration and verification.
 This skill covers navigation and session behavior.[^manual]
 
 ## Build a link
@@ -133,7 +133,7 @@ real UI, not a replacement configuration API.[^embedding]
 
 ## Related skills
 
-- **routeros-centrs** — validated machine operations and read back.
+- **routeros-centrs** — validated machine operations and state verification.
 - **routeros-cmr** — CMR package/version requirements and configuration.
 - **routeros-quickchr-cli** — disposable CHR for reproducing UI behavior.
 

@@ -70,9 +70,9 @@ conditions producing 410 were not measured.[^source][^live]
 
 ## Menu resources and embedding
 
-`/webfig/list` lists versioned `.jg` menu resources. Before any WebFig login on
-a fresh lab router, a named `.jg` request returned 406; after login it returned
-200 without a cookie. This limited observation does **not** prove an IP-only
+`/webfig/list` lists versioned `.jg` menu resources. Without a live WebFig login,
+a named `.jg` request returned 406; the authenticated browser loaded menu
+resources with 200 responses and no cookies. This limited observation does **not** prove an IP-only
 authorization model, isolation between users behind NAT, or the complete server
 session gate.[^live]
 
