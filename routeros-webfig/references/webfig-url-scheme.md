@@ -17,10 +17,9 @@
 ## Use the catalog
 
 This is a **structural catalog**, not a list of verified or safe navigation
-endpoints. It retains the 7.24.5 menu-name extraction from the
-[original proposal](https://gist.github.com/mobileskyfi/b5c1355699458a415879c521658edcb8).
-The [independent validation](validation.md) checked a subset in the browser and
-compared names with the authenticated app's menu metadata.
+endpoints. It retains a 7.24.5 menu-name extraction grounded by the
+[independent validation](validation.md), which checked a subset in the browser
+and compared names with the authenticated app's menu metadata.
 
 The definitions include tables, forms, hidden dialogs, actions and hardware
 variants. Some entries collide; package/hardware predicates, policy and skins
@@ -609,7 +608,8 @@ installed for these checks, but no controller was enabled or fleet paired.
 - `#System:SwOS` — SwOS
   - `#System:SwOS.SwOS` — SwOS
   - `#System:SwOS.Upgrade` — Upgrade **(action; not a review view)**
-- `#System:UPS` — UPS
+- `#System:UPS` — UPS (x86 CHR serves `ups.jg` in base; ARM64 7.24.5 serves
+  none even with the `ups` package installed, though `/system/ups` then works)
   - `#System:UPS.UPS` — UPS
 - `#System:Users` — Users
   - `#System:Users.Users` — Users

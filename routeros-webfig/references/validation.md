@@ -17,11 +17,21 @@ headless Google Chrome 155 profile. Router-reported versions were **7.24.5
 (stable)** and **7.26beta1**; only the latter had the optional `cmr` package.
 No existing hardware/router configuration was changed.
 
-Adapted from Muse's [proposed skill and references](https://gist.github.com/mobileskyfi/b5c1355699458a415879c521658edcb8)
-(gist snapshot retrieved 2026-10-17). The large 7.24.5 catalog is retained as
-structural reference, with explicit caveats and known action types marked.
-The original arm64 comparison and independent Python crypto implementation
-were not repeated; they are not claimed as this validation's results.
+Adapted from an external draft proposal. The large 7.24.5 catalog is retained
+as structural reference, with explicit caveats and known action types marked.
+The draft's independent Python crypto implementation was not repeated and is
+not claimed as this validation's result.
+
+A same-day ARM64 cross-check compared a disposable quickchr ARM64 CHR on 7.24.5
+against a matching x86 CHR, at base and with all packages installed. Note a
+quickchr behavior found while doing this: boolean provisioning flags passed to
+`add` (such as `--install-all-packages`) are silently dropped by a later plain
+`start <name>` — the CLI's `flagBool` yields `false` for an absent flag, which
+defeats the `?? existing` fallback in `QuickCHR.start`. Passing the flag to
+`start` instead provisions correctly. The base-to-base comparison therefore
+used single-`routeros`-bundle CHRs on both architectures; a third ARM64 machine took
+all 18 extra packages (including `ups`) via `start --install-all-packages`.
+See [Observed behavior](#observed-behavior).
 
 Served bundle identifiers and SHA-256 digests:
 
@@ -48,6 +58,11 @@ Served bundle identifiers and SHA-256 digests:
 | Default expired admin, 7.24.5 | Password login opened `#System:Password.Change_Now` instead of requested view |
 | `/` and `/webfig/` headers, 7.24.5 | `X-Frame-Options: sameorigin` |
 | `/webfig/list`, 7.24.5 | Manifest available without login |
+| `/webfig/list`, ARM64 vs x86 7.24.5 base | Identical except x86-only `ups.jg` (crc 1617938236); all other resources share crc/size |
+| `/system/ups`, x86 base vs ARM64 base | Present but empty on x86; `validation/unknown-path` rejection on ARM64 (offline `explain` passes, so the path is well-formed but device-absent) |
+| `/system/package`, ARM64 with `start --install-all-packages` | 19 packages: base `routeros` plus all 18 extras, `ups` enabled |
+| `/system/ups`, ARM64 with `ups` package | Present but empty — the CLI path is not arch-excluded |
+| `/webfig/list`, ARM64 with all packages | Still no `ups.jg`; `#System:UPS` has no ARM64 WebFig menu on 7.24.5 |
 | Independent WebFig toggle, fresh 7.26beta1 CHR | `/ip/service/webserver` exposed `webfig-plain`; setting it to `no` made `/webfig/` return 403 while REST `/system/resource` still succeeded |
 | Named `.jg` request without a live WebFig login | 406; authenticated browser's menu-resource loads were 200 |
 | `/jsproxy` browser traffic, both versions | `Content-Type: msg`; 40-byte handshake responses |
@@ -173,4 +188,7 @@ pages, custom skins, restricted-user matrix, server idle timeout, token expiry,
 token revocation or restart persistence was tested. Native embedding guidance
 combines observed WebFig requirements with browser origin/storage rules, and
 requires validation in the host app's actual engine. No blanket compatibility
-claim is made for other RouterOS versions or all catalog fragments.
+claim is made for other RouterOS versions or all catalog fragments. The ARM64
+cross-check covered the 7.24.5 menu manifest, `/system/package` and
+`/system/ups` only; ARM64 rendering of individual fragments was not
+browser-tested, and the `ups.jg` absence is manifest-level evidence.

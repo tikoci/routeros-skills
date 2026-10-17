@@ -75,8 +75,10 @@ back to Interfaces. Use the UI's names rather than guessing from `/cmr`.
 
 For other views, use the
 [fragment catalog and discovery guidance](references/webfig-url-scheme.md).
-Menu availability depends on RouterOS version, installed packages, hardware,
-user policy and skins. Copy the URL from the target UI when possible.[^router]
+Menu availability depends on RouterOS version, installed packages, hardware
+(including CHR architecture: ARM64 7.24.5 serves no `#System:UPS` menu even
+with the `ups` package installed), user policy and skins. Copy the URL from
+the target UI when possible.[^router]
 
 ### Object links and fallback
 
