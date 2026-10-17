@@ -29,8 +29,9 @@ Get the actual service and port from `/ip/service` through centrs. `www` serves
 HTTP (default 80); `www-ssl` serves HTTPS (default 443) and needs a valid
 certificate. A quickchr host-forward port belongs in the URL instead of the
 guest's service port. Prefer trusted HTTPS for deployed routers. A working REST
-endpoint alone does not prove WebFig is enabled: web server settings can disable
-the UI independently.[^services]
+endpoint proves that the corresponding web service is reachable. On releases
+exposing `/ip/service/webserver`, `webfig-plain` and `webfig-secure` can disable
+WebFig independently of REST. Check `/webfig/` and its rendered view too.[^services]
 
 The common grammar is `#`[`group`:`]`service`[`.`container`]. Names are
 case-sensitive. The served `normalize()` function replaces whitespace and dots

@@ -47,6 +47,7 @@ Served bundle identifiers and SHA-256 digests:
 | Default expired admin, 7.24.5 | Password login opened `#System:Password.Change_Now` instead of requested view |
 | `/` and `/webfig/` headers, 7.24.5 | `X-Frame-Options: sameorigin` |
 | `/webfig/list`, 7.24.5 | Manifest available without login |
+| Independent WebFig toggle, fresh 7.26beta1 CHR | `/ip/service/webserver` exposed `webfig-plain`; setting it to `no` made `/webfig/` return 403 while REST `/system/resource` still succeeded |
 | Named `.jg` request without a live WebFig login | 406; authenticated browser's menu-resource loads were 200 |
 | `/jsproxy` browser traffic, both versions | `Content-Type: msg`; 40-byte handshake responses |
 | CMR dashboard, 7.26beta1 + cmr | `#CMR_Dashboard.Dashboard` rendered Dashboard |
@@ -104,8 +105,16 @@ reload its generated object URL. Check only the token's presence/length and
 equality across reloads; do not publish the token. Open another tab and log out
 to check storage sharing.
 
-For CMR, create a separate machine with `--version 7.26beta1 --add-package cmr`.
-Repeat the login check and open the three CMR fragments listed above. Menu
+For CMR, create a separate machine:
+
+```sh
+quickchr add --name webfig-cmr-check --version 7.26beta1 --arch x86 \
+  --add-network user --add-package cmr
+quickchr start webfig-cmr-check --bg
+```
+
+Repeat the note/version reads and lab-user setup above with `--quickchr
+webfig-cmr-check`, then the login check and the three CMR fragments. Menu
 resources and the master script can be identified in browser network tools;
 inspect those exact versioned resources rather than assuming filenames.
 
@@ -114,6 +123,8 @@ Stop/remove only the disposable machines created for the check:
 ```sh
 quickchr stop webfig-check
 quickchr remove webfig-check
+quickchr stop webfig-cmr-check
+quickchr remove webfig-cmr-check
 ```
 
 ## Limits
