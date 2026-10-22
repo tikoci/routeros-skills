@@ -1,4 +1,4 @@
-# CLI grounding log — quickchr 0.4.8, CHR 7.24.4 x86, HVF
+# CLI grounding log — quickchr 0.4.8 and 0.5.0, CHR x86, HVF
 
 ## Contents
 
@@ -14,9 +14,13 @@
 - Device-mode
 - Endpoints and credentials
 - What was *not* re-verified in this run
+- quickchr 0.5.0 re-check
+- What the 0.5.0 re-check did *not* cover
 
 Live runs behind the claims in `routeros-quickchr-cli/SKILL.md`, so a
-reviewer can re-run any of them. Environment: macOS Intel x64 host,
+reviewer can re-run any of them. Every section up to "What was *not*
+re-verified in this run" is the 0.4.8 pass; the 0.5.0 pass is its own
+section at the end. Environment of the 0.4.8 pass: macOS Intel x64 host,
 QEMU 11.1.1 with HVF, warm image cache (`chr-7.24.4.img` present — no
 download involved), RouterOS CHR 7.24.4 x86.
 
@@ -85,7 +89,9 @@ Restart of an existing machine is faster than first boot: `start --bg`
 REST-ready" band came from a TCG software-emulation lab; the field lab
 (sandboxed, no hardware acceleration) saw ~4 min boots and one real
 `BOOT_TIMEOUT` at 480s — where the machine was auto-cleaned while its
-QEMU kept running. On HVF-class acceleration expect the low end above.
+QEMU kept running. That last detail is the field lab's report, not
+reproduced here: 0.4.8's `cleanupAfterBootFailure()` calls `stop()`
+before `remove()`. On HVF-class acceleration expect the low end above.
 
 ## Group-kill: 0.4.7 loses the VM, 0.4.8 does not
 
@@ -122,10 +128,11 @@ on macOS and reported *both* releases as "GONE". That was a tooling
 artifact, corrected by `quickchr list` + `ps -o pid,pgid,sess`; the
 table above is from the corrected run.
 
-Still open in #159: `start` waits for REST-readiness regardless (no
-`--no-wait`), and the `--bg` naming decision. Hence the `nohup … &` +
-poll pattern in the skill — now for "give me my shell back", not for
-"keep the VM alive".
+On 0.4.8, `start` waits for REST-readiness regardless (no
+`--no-wait`). Hence the `nohup … &` + poll pattern in the skill — for
+"give me my shell back", not for "keep the VM alive". 0.5.0 closed the
+rest of #159: `--no-wait` and a deprecated `--bg` (see §quickchr 0.5.0
+re-check).
 
 ## Bounded readiness poll
 
@@ -313,7 +320,8 @@ observed is that the call **did not complete within the 10s client
 timeout** and left `container` unchanged. Whether it would ever return is
 not established here — the field lab's ~5 min wait was not reproduced.
 
-**The flag is silently ignored on an already-booted machine.**
+**On 0.4.8, the flag is silently ignored on an already-booted machine.**
+(0.5.0 refuses it instead — see §quickchr 0.5.0 re-check.)
 
 ```sh
 quickchr add --name q48-dm … ; quickchr start q48-dm --bg   # 22s, container=false
@@ -346,8 +354,8 @@ behaves identically (`add` prints
 `Device-mode: auto  (applied on first start)`, then the same 45s start).
 Enabling `container` also moved `mode` from `advanced` to `rose`.
 
-There is **no CLI command** to change device-mode afterwards — `get`
-only displays it. The library has `instance.setDeviceMode()`
+On 0.4.8 there is **no CLI command** to change device-mode afterwards —
+`get` only displays it. The library has `instance.setDeviceMode()`
 (`src/lib/quickchr.ts`), which is not exposed on the CLI, so the CLI
 answer for a booted machine is `remove` + `add` + `start`.
 
@@ -359,7 +367,7 @@ quickchr inspect q48-dm3 --json
 ```
 
 `inspect --json` is the machine descriptor: `status`, `pid`,
-`createdAt`, **`lastStartedAt`** (the field that decides whether
+`createdAt`, **`lastStartedAt`** (on 0.4.8, the field that decides whether
 device-mode flags will apply), `networks`, `customForwards`, and a
 `services` block per service. Each service carries its resolved URL and
 ready-to-use auth — this CHR is `admin` with an empty password:
@@ -402,3 +410,164 @@ list (`src/cli/flags.ts`), though the condensed `add --help` lists only
   `defaultSocketMode()`; no Windows host here.
 - **TCG timings and `BOOT_TIMEOUT`.** From the field lab's sandbox, not
   reproduced on this HVF host.
+
+## quickchr 0.5.0 re-check
+
+`@tikoci/quickchr@0.5.0` (npm `next`; `latest` was still 0.4.8) and
+`@tikoci/centrs@0.1.8`, both installed from npm into one scratch
+project and invoked from its `node_modules/.bin`. Same macOS Intel
+host, HVF, CHR **7.24.5** x86 (image copied into the scratch cache) and
+6.49.23 x86 (downloaded). `QUICKCHR_DATA_DIR` pointed at a scratch
+directory, so no existing machine was visible or touched, and every
+`q50-*` machine was removed afterwards.
+
+One setup failure first. A deep `QUICKCHR_DATA_DIR` makes QEMU refuse
+the monitor socket, and `start` fails with `SPAWN_FAILED`:
+
+```text
+UNIX socket path '…/machines/q50-a/monitor.sock' is too long
+Path must be less than 104 bytes
+```
+
+That is the macOS `sun_path` limit, not a quickchr bug. A short data
+directory fixed it.
+
+**`--bg` warns, and `start` still waits.**
+
+```sh
+quickchr add --name q50-a --version 7.24.5 --arch x86 --add-network user   # 1s
+quickchr start q50-a --bg
+# → Warning: --bg is deprecated and does nothing — background is already the
+#   default, and it never made start return early. Use --no-wait to return as
+#   soon as QEMU is running.
+quickchr start q50-a        # → "● q50-a started", elapsed 25s (first boot)
+```
+
+(The `--bg` run above then failed on a transient DNS error resolving
+`upgrade.mikrotik.com`. The plain retry is the one timed.)
+
+**`stop` is a power cut; `--no-wait` returns at once.**
+
+```sh
+quickchr stop q50-a                    # → "○ q50-a stopped", 1s
+quickchr start q50-a --no-wait
+# → "● q50-a launched — not waiting for RouterOS (--no-wait)", 2s
+#   tip: wait for readiness with: centrs retrieve --quickchr q50-a /system/resource --wait 5m
+centrs retrieve --quickchr q50-a /system/resource --wait 5m
+# → "version": "7.24.5 (stable)", "uptime": "14s"
+```
+
+centrs 0.1.6 (an older global install) rejected `--wait`; MANUAL.md
+names centrs 0.1.8+ for it.
+
+**`--no-wait` refusals** — all `INVALID_ARGUMENT`, exit 1, nothing booted:
+
+```text
+$ quickchr start --name q50-b --version 7.24.5 --arch x86 --no-wait --add-package container
+Error [INVALID_ARGUMENT]: --no-wait (wait: false) cannot be combined with provisioning:
+  provisioning was requested (install extra packages), … Drop --no-wait for this first
+  boot — later starts can use it.
+$ quickchr start q50-a --no-wait --fg
+Error [INVALID_ARGUMENT]: --no-wait (wait: false) cannot be combined with --fg …
+$ quickchr add --name q50-c … --device-mode-enable container; quickchr start q50-c --no-wait
+Error [INVALID_ARGUMENT]: … machine "q50-c" has first-boot provisioning recorded by 'add'
+  (change device-mode) …
+```
+
+`q50-b` was not left behind (`quickchr list` did not show it).
+
+**A provisioning flag on a booted machine is refused, with the route.**
+`q50-a` had booted once, with no provisioning:
+
+```text
+$ quickchr start q50-a --device-mode-enable container
+Error [PROVISIONING_WINDOW_CLOSED]: Machine "q50-a" has already booted, so provisioning
+  cannot run against it — the guest may no longer hold the default configuration
+  provisioning expects.
+  device-mode (mode=rose container=yes) — apply it with:
+      quickchr set q50-a --device-mode rose --device-mode-enable container   # power-cycles the machine
+To provision from scratch, reset the disk to the factory image and reopen the window:
+      quickchr clean q50-a   # then repeat the original start command — a refused request is not remembered
+```
+
+Exit 1 after 2s, and the machine stayed stopped.
+
+**`set` changes device-mode after boot.** On the running machine:
+
+```text
+$ quickchr set q50-a --device-mode-enable container
+Setting device-mode on q50-a: mode=rose container=yes
+Applying device-mode (mode=rose container=yes)...
+  mode: advanced -> rose
+  container: no -> yes
+  Device-mode power-cycled via QEMU monitor quit
+  Device-mode verified: mode=rose container=yes
+# elapsed 21s
+$ quickchr get q50-a device-mode
+    Mode: rose
+    Enabled:  bandwidth-test, container, email, fetch, hotspot, ipsec, l2tp, pptp, proxy, romon, scheduler, smb, sniffer, socks, zerotier
+    Disabled: install-any-version, partitions, routerboard, traffic-gen
+```
+
+`machine.json` then held `"provisioning": {"steps": ["deviceMode"], …}`.
+That record is not in `list --json` or `inspect --json`. Passing the
+same flag on the next start was a no-op, not a refusal:
+
+```text
+$ quickchr start q50-a --device-mode-enable container
+device-mode (mode=rose container=yes) is already applied — nothing to do.
+● q50-a started          # 20s
+```
+
+**`shutdown`.**
+
+```sh
+quickchr shutdown q50-a              # → "q50-a: guest exited after shutdown request", <1s
+quickchr shutdown q50-a --timeout 1  # (after another start) → same, 1s
+quickchr shutdown q50-a              # stopped machine → "q50-a: already stopped", exit 0
+```
+
+**RouterOS 6.**
+
+```text
+$ quickchr add --name q50-v6arm --version 6.49.23 --arch arm64
+Error [INVALID_ARCH]: RouterOS 6.49.23 has no arm64 CHR image — MikroTik publishes
+  RouterOS 6 CHR for x86 only. Pass --arch x86 (arch: "x86").
+$ quickchr add --name q50-v6p --version 6.49.23 --arch x86 --add-package container
+Error [PROVISIONING_VERSION_UNSUPPORTED]: Cannot install extra packages on RouterOS 6.49.23.
+  RouterOS 6 is a best-effort boot-only target: …
+$ quickchr add --name q50-v6 --version 6.49.23 --arch x86   # 88s, image download
+$ quickchr start q50-v6                                      # 27s
+● q50-v6 started
+  Version: 6.49.23 (x86)  boot-only: no REST, no provisioning
+  API:     127.0.0.1:9113  (native API, user admin)
+$ quickchr exec q50-v6 "/system/resource/print"
+Error [REST_UNAVAILABLE]: RouterOS 6: not available — exec uses the REST API, which
+  RouterOS 6.49.23 does not have. … Reach it over the native API instead, e.g. centrs
+  retrieve --quickchr q50-v6 /system/resource --via native-api --no-validate …
+$ centrs retrieve --quickchr q50-v6 /system/resource --via native-api --no-validate
+# → "version": "6.49.23 (stable)", "board-name": "CHR"
+```
+
+**Library surface**, read from the published package's
+`src/lib/types.ts`: no `tzspGatewayIp` anywhere in `src/`;
+`StartOptions.wait?: boolean`; `ShutdownOptions { timeoutMs? }` and
+`ShutdownResult { outcome: "guest-exited" | "forced" | "already-stopped";
+requestError? }`; `ErrorCode` gains `PROVISIONING_WINDOW_CLOSED` and
+`REST_UNAVAILABLE`. Passing both `version` and `channel` warns that
+`channel` is ignored (`QuickCHR` in `src/lib/quickchr.ts`). Neither
+0.4.8 nor 0.5.0 has a static `QuickCHR.stop(name)`. Use
+`QuickCHR.get(name)?.stop()`.
+
+## What the 0.5.0 re-check did *not* cover
+
+- **`shutdown`'s forced fallback.** Every request here ended in "guest
+  exited" within a second. The "forced power cut — guest shutdown not
+  confirmed" outcome is MANUAL.md's account.
+- **`BOOT_TIMEOUT` cleanup by machine history** (#182, #189). It was not
+  forced here. The table in the skill is MANUAL.md §"Auto-cleanup on boot
+  timeout" and the CHANGELOG `[0.5.0]` entries. On 0.4.8, the cleanup
+  function stops QEMU and removes the machine unless
+  `QUICKCHR_PRESERVE_ON_FAILURE=1`.
+- **`clean` reopening the provisioning window** (#176). It is
+  MANUAL.md's account and was not run here.

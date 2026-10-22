@@ -19,6 +19,12 @@ Verify signatures there before relying on exact shapes; this doc favors stable
 concepts over version-specific detail. Installed from npm as `@tikoci/quickchr`
 (`bun add @tikoci/quickchr`, or `bunx @tikoci/quickchr <cmd>` without installing).
 
+Two published lines: **0.4.8** is npm `latest` and **0.5.0** is npm `next`
+(a pre-release, `@tikoci/quickchr@next`). Rows that differ are labelled. The
+0.5.0 rows follow the `[0.5.0]` section of quickchr's
+[`CHANGELOG.md`](https://github.com/tikoci/quickchr/blob/main/CHANGELOG.md) and
+were checked against the published package's `src/lib/types.ts`.
+
 ## Trigger terms
 
 quickchr, `@tikoci/quickchr`, CHR, Cloud Hosted Router, ground/validate RouterOS
@@ -29,18 +35,20 @@ port-forward, guest→host UDP, MNDP/L2 capture from CHR.
 ## `QuickCHR.start(opts)` → `ChrInstance`
 
 Returns a **REST-ready** instance: download, boot, and provisioning have all
-completed when the promise resolves (background/library use). Common `StartOptions`:
+completed when the promise resolves (background/library use), unless 0.5.0's
+`wait: false` is set. Common `StartOptions`:
 
 | Field | Meaning / default |
 |---|---|
 | `name` | machine name (must not start with `-`); auto-generated from version+arch if omitted |
 | `channel` | one of `"stable"`, `"long-term"`, `"testing"`, `"development"` (default `stable`) |
-| `version` | pinned RouterOS, e.g. `"7.23.1"`. **Mutually exclusive with `channel`** — `start()` takes `version` when set and never looks at `channel`, so an inconsistent pair is resolved silently in `version`'s favour, not rejected. A channel name passed as `version` is accepted with a warning. |
+| `version` | pinned RouterOS, e.g. `"7.23.1"`. If `channel` is also given, `version` wins. 0.4.8 drops `channel` silently. 0.5.0 warns that it was ignored (#178). A channel name passed as `version` is accepted with a warning. 0.5.0 also accepts RouterOS 6 (`"6.49.23"`, x86 only, boot-only: no provisioning, no REST). |
 | `arch` | `"x86"` or `"arm64"` or `"auto"` (default: host arch; `"auto"` is an explicit synonym for the default) |
 | `cpu` | vCPUs (default `1`) |
 | `mem` | MiB RAM (default `512`; `1024` for cross-arch TCG) |
 | `background` | `true` (default) — QEMU's stdio goes to a log file, **and since 0.4.8 it is spawned into its own session on POSIX** (`detached: true`), so a signal to the caller's process group no longer reaches it; Windows uses a detached child for the same reason. `false` = foreground, serial on stdio — **except when provisioning options are also set**: `start()` then boots detached anyway (`spawnInBackground = background \|\| (!background && hasProvisioning)`), provisions, `stop()`s, and relaunches with serial attached, so a foreground provisioning run is really boot → provision → full restart. Note none of this is "return immediately": `start()` resolves only when the guest is REST-ready. |
-| `secureLogin` | `true` → managed `quickchr` user with a stored password; `false`/omitted → open admin. Inverse alias: `noAuth` (`noAuth: true` ≙ `secureLogin: false`; `secureLogin` wins if both set). Prefer `secureLogin`. **Must be explicitly `true` to take effect** — provisioning tests `secureLogin === true`, so omitting it leaves `admin` password-less (observed: `inspect --json` reports `"password": ""`). That open-admin result holds only when nothing else changes admin's state: `disableAdmin: true` is applied independently and will disable `admin` even with no managed account, warning *"disabling admin without creating another user — you may lose access"*; an explicit `user` creates that user but does not disable `admin`. Some doc comments in `types.ts`/`provision.ts` still say it defaults to true; the code does not (tikoci/quickchr#178). |
+| `wait` | **0.5.0.** `true` (default). `false` resolves once QEMU is running, with state and ports saved, and leaves readiness to you (`instance.waitForBoot()`). Throws `INVALID_ARGUMENT` with any provisioning option, including ones `add()` recorded for a first boot, or with `background: false`. (#159) |
+| `secureLogin` | `true` → managed `quickchr` user with a stored password; `false`/omitted → open admin. Inverse alias: `noAuth` (`noAuth: true` ≙ `secureLogin: false`; `secureLogin` wins if both set). Prefer `secureLogin`. **Must be explicitly `true` to take effect** — provisioning tests `secureLogin === true`, so omitting it leaves `admin` password-less (observed: `inspect --json` reports `"password": ""`). That open-admin result holds only when nothing else changes admin's state: `disableAdmin: true` is applied independently and will disable `admin` even with no managed account, warning *"disabling admin without creating another user — you may lose access"*; an explicit `user` creates that user but does not disable `admin`. In 0.4.8 some doc comments in `types.ts`/`provision.ts` still say it defaults to true. The code never did, and 0.5.0 fixed the comments (tikoci/quickchr#178). |
 | `user` | `{ name, password }` custom user (provisioning, ≥ 7.20.8) |
 | `disableAdmin` | disable default admin after boot (provisioning, ≥ 7.20.8) |
 | `packages` | `string[]` extra packages to install (provisioning, ≥ 7.20.8) |
@@ -60,7 +68,16 @@ completed when the promise resolves (background/library use). Common `StartOptio
 | `dryRun` | print resolved options + QEMU command, don't start |
 
 The full option set + defaults are in `StartOptions` (types.ts). Other static
-entry points: `QuickCHR.list()`, `QuickCHR.get(name)`, `QuickCHR.stop(name)`.
+entry points: `QuickCHR.add(opts)`, `QuickCHR.list()`, `QuickCHR.get(name)`
+(returns a `ChrInstance` or `null`). There is no static `stop`: use
+`QuickCHR.get(name)?.stop()`.
+
+Provisioning options apply on a machine's **first boot**. Passed to `start()`
+on a machine that has booted, 0.4.8 drops them silently. 0.5.0 throws
+`PROVISIONING_WINDOW_CLOSED` naming the route that still works:
+`setDeviceMode()`, `installPackage()`, or `clean()` and then the original
+`start()` again. An option the machine already has is reported as applied
+rather than refused.
 
 ## `ChrInstance`
 
@@ -79,14 +96,18 @@ entry points: `QuickCHR.list()`, `QuickCHR.get(name)`, `QuickCHR.stop(name)`.
 | `descriptor()` | structured `{ urls, auth, ports, status, version, … }` |
 | `snapshot(...)` | qcow2 savevm/loadvm/list/delete |
 | `qga(cmd, args?)` | QEMU Guest Agent (x86 on **Linux with KVM only**; excludes macOS/HVF and Windows) |
-| `stop()` / `remove()` / `destroy()` | lifecycle teardown |
+| `setDeviceMode(opts)` | change device-mode on a running machine; power-cycles QEMU and verifies |
+| `stop()` | power cut: SIGTERM to QEMU, SIGKILL after 5s. No guest shutdown |
+| `shutdown({ timeoutMs? })` | **0.5.0.** `/system/shutdown` over REST, wait for QEMU to exit (default 10,000 ms), else a power cut. Returns `{ outcome: "guest-exited" \| "forced" \| "already-stopped", requestError? }`. An HTTP 400 `interrupted` can accompany a clean exit (#143) |
+| `clean()` | reset the boot disk to the factory image and clear its credentials. On 0.5.0 it also reopens the provisioning window |
+| `remove()` / `destroy()` | lifecycle teardown |
 
 **Properties:** `name`, `state`, `ports`, `restUrl`, `sshPort`, `portBase`,
 `captureInterface` (`"lo0"` on macOS, `"any"` on Linux), `hostGatewayIp`
-(`"10.0.2.2"` — the host as seen from the guest). Since 0.4.8 the old name
-`tzspGatewayIp` is a deprecated alias carrying the identical value; it is due
-for removal no earlier than 0.5.0, and the value was never TZSP-specific — it
-carries any guest→host UDP.
+(`"10.0.2.2"` — the host as seen from the guest). The old name
+`tzspGatewayIp` is a deprecated alias in 0.4.8 and **removed in 0.5.0**
+(#186). Rename call sites to `hostGatewayIp`; the value is the same, and it
+was never TZSP-specific: it carries any guest→host UDP.
 
 ### `exec` details (what you otherwise need `types.ts` for)
 
@@ -139,7 +160,7 @@ this machine's services and other machines'.
 
 Concurrent creations: on quickchr 0.4.8 and earlier, two at once can pick the same
 auto-allocated block, so create one at a time or pass disjoint `portBase` values.
-From the first release after 0.4.8 they get distinct blocks. An explicit
+From 0.5.0 they get distinct blocks. An explicit
 `portBase` that overlaps another machine's block is then a `PORT_CONFLICT`,
 never silently moved. See "Running several CHRs at once" in `SKILL.md`.
 
@@ -154,9 +175,19 @@ never silently moved. See "Running several CHRs at once" in `SKILL.md`.
 `INVALID_ARGUMENT`, `INVALID_DISK_SIZE`, `INVALID_SIZE_STRING`, `INVALID_NETWORK`,
 `INVALID_FORWARD_SPEC`, `INVALID_SETTING_KEY`, `INVALID_SETTING_VALUE`,
 `PROVISIONING_VERSION_UNSUPPORTED`, `INSUFFICIENT_DISK_SPACE`, `STATE_ERROR`,
-`EXEC_FAILED`, `PROCESS_FAILED`, `NETWORK_UNAVAILABLE`.
+`EXEC_FAILED`, `PROCESS_FAILED`, `NETWORK_UNAVAILABLE`. 0.5.0 adds two:
 
-`MACHINE_LOCKED` means another operation holds that machine's lock. After 0.4.8 the
+- `PROVISIONING_WINDOW_CLOSED`: a provisioning option on a machine that has
+  already booted.
+- `REST_UNAVAILABLE`: a REST operation (`exec`, `rest()`) on RouterOS 6.
+
+`BOOT_TIMEOUT` cleanup depends on the version. quickchr stops QEMU first. 0.4.8
+then removes the machine, even one that has booted before. 0.5.0 removes a
+machine this call created, resets one `add()` created that never booted, and
+preserves one that booted before. `QUICKCHR_PRESERVE_ON_FAILURE=1` keeps the
+machine in every case (#182, #189).
+
+`MACHINE_LOCKED` means another operation holds that machine's lock. From 0.5.0 the
 message names it, with its pid and how long it has held the lock. `stop`, `clean`
 and `remove` wait for it, except for a machine running in the foreground, which holds
 the lock until its VM exits. A second `start` of the same machine never waits.
@@ -164,7 +195,7 @@ the lock until its VM exits. A second `start` of the same machine never waits.
 Frequently seen in grounding: `MISSING_QEMU`, `PORT_CONFLICT`, `BOOT_TIMEOUT`,
 `DOWNLOAD_FAILED`, `SPAWN_FAILED`, `MACHINE_EXISTS`, `MACHINE_STOPPED`,
 `INVALID_FORWARD_SPEC`, `INVALID_NETWORK`, `PROVISIONING_VERSION_UNSUPPORTED`,
-`QGA_UNSUPPORTED`.
+`PROVISIONING_WINDOW_CLOSED` (0.5.0), `QGA_UNSUPPORTED`.
 
 ## CLI ↔ library parity
 
@@ -176,5 +207,9 @@ Frequently seen in grounding: `MISSING_QEMU`, `PORT_CONFLICT`, `BOOT_TIMEOUT`,
 | `quickchr exec <name> "<cmd>"` | `instance.exec(cmd)` |
 | `quickchr inspect/env <name>` | `instance.descriptor()` / `subprocessEnv()` |
 | `quickchr list` | `QuickCHR.list()` |
+| `quickchr stop <name>` | `instance.stop()` |
+| `quickchr shutdown <name> [--timeout <s>]` (0.5.0) | `instance.shutdown({ timeoutMs })` (milliseconds) |
+| `quickchr start --no-wait` (0.5.0) | `QuickCHR.start({ wait: false })` |
+| `quickchr set <name> --device-mode…` (0.5.0) | `instance.setDeviceMode(opts)` (both versions) |
 
 Run the CLI without installing: `bunx @tikoci/quickchr <cmd>`.

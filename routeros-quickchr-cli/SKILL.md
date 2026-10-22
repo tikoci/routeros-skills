@@ -1,6 +1,6 @@
 ---
 name: routeros-quickchr-cli
-description: "Answer a RouterOS question by asking RouterOS. quickchr boots a real, disposable MikroTik CHR router on the local machine under QEMU — no hardware, no cloud, gone when you remove it — and centrs drives it. Covers the shell path end to end: the add/start/stop/remove lifecycle and what --bg actually does, getting REST endpoints and credentials out of a machine, L2 links between two VMs, and the provisioning steps (device-mode) that only work before a machine's first boot. Use when: checking a claim or config against real RouterOS instead of guessing; needing a throwaway router for REST/CLI/API iteration; giving a shell script or CI job a router to talk to. For TypeScript harnesses that import the QuickCHR class, use routeros-quickchr instead."
+description: "Answer a RouterOS question by asking RouterOS. quickchr boots a real, disposable MikroTik CHR router on the local machine under QEMU — no hardware, no cloud, gone when you remove it — and centrs drives it. Covers the shell path end to end: the add/start/stop/shutdown/remove lifecycle, getting the shell back (--no-wait; --bg does not), getting REST endpoints and credentials out of a machine, L2 links between two VMs, provisioning (device-mode) that applies at first boot and the set route after it, and RouterOS 6 as a boot-only target. Labels quickchr 0.4.8 (npm latest) vs 0.5.0 (npm next) where they differ. Use when: checking a claim or config against real RouterOS instead of guessing; needing a throwaway router for REST/CLI/API iteration; giving a shell script or CI job a router to talk to. For TypeScript harnesses that import the QuickCHR class, use routeros-quickchr instead."
 ---
 
 # CHR from the shell: quickchr CLI + centrs
@@ -13,8 +13,11 @@ commands (e.g. in a `forum.mikrotik.com` reply). If you are writing a
 `bun:test` harness that imports `QuickCHR`, use the
 **routeros-quickchr** skill instead — one scheme per task, never both.[^split]
 
-Behavior below is pinned to **quickchr 0.4.8**. Several of these are 0.4.8
-changes, called out inline; on 0.4.7 and earlier the answer differs.[^pin]
+Behavior below is pinned to two published releases: **0.4.8** (npm
+`latest`) and **0.5.0** (npm `next`, a pre-release, installed with
+`@tikoci/quickchr@next`). Where they differ, the text says which.
+Check yours with `quickchr --version`. A few points are 0.4.8 changes,
+and on 0.4.7 and earlier the answer differs again.[^pin]
 
 One limit to keep in view: a CHR booted this way runs the **free**
 license (`quickchr get <name>` shows `Level: free`), which MikroTik caps
@@ -27,7 +30,7 @@ feature.[^license]
 
 ```sh
 quickchr add --name lab-a --version 7.24.4 --arch x86 --add-network user
-quickchr start lab-a --bg
+quickchr start lab-a
 quickchr exec lab-a "/system/resource/print"
 quickchr stop lab-a
 quickchr remove lab-a
@@ -36,9 +39,10 @@ quickchr remove lab-a
 - `add` only writes config (0s on a warm cache) and prints
   `quickchr start <name>` as its tip. **It never boots** — the single most
   common wrong assumption about this CLI.[^ground-add]
-- `start --bg` blocks until the guest is REST-ready, then prints the
-  REST/SSH/WinBox endpoints (≈22s first boot, ≈11s restart, warm-cache
-  HVF). Under TCG software emulation expect minutes, not seconds — a
+- `start` blocks until the guest is REST-ready, then prints the
+  REST/SSH/WinBox endpoints (≈22–25s first boot, ≈11–20s restart,
+  warm-cache HVF). On 0.5.0, `--no-wait` returns as soon as QEMU is
+  running (next section). Under TCG software emulation expect minutes, not seconds — a
   sandboxed field lab saw ~4 min boots and a real `BOOT_TIMEOUT` at
   480s. Size harness timeouts from the slow end.[^ground-timings]
 - `exec <name> <command…>` runs one RouterOS command over REST.
@@ -48,8 +52,15 @@ quickchr remove lab-a
   the guest never opens it, and ARM64 CHR has no QGA at all — both time
   out. Stay on REST unless you are on Linux/KVM with an x86 guest. (The
   library's `ExecTransport` type also lists `ssh` and `console`; those
-  are not CLI surface.) `stop` is instant; `remove` deletes the
-  machine. `list` shows state and PIDs.[^ground-exec]
+  are not CLI surface.) `remove` deletes the machine. `list` shows
+  state and PIDs.[^ground-exec]
+- **`stop` is a power cut**: SIGTERM to QEMU, then SIGKILL after 5s. It
+  does not ask RouterOS to shut down, so unsaved guest state can be
+  lost. That is fine for a disposable lab. 0.5.0 adds `quickchr
+  shutdown <name> [--timeout <s>]`. It sends `/system/shutdown` over
+  REST, waits up to 10s by default (`QUICKCHR_SHUTDOWN_TIMEOUT`) for
+  QEMU to exit, and falls back to a power cut it reports as "forced".
+  Disks and credentials survive either way.[^shutdown]
 - **Version selection**: `--version 7.24.4` pins; `--channel
   stable|long-term|testing|development` resolves the newest of a
   channel. Bare `quickchr --version` prints what each channel currently
@@ -60,9 +71,9 @@ quickchr remove lab-a
   `--forward name:host:guest/proto` adds extras, ranges
   included.[^ground-ports]
 - **Creating several at once** (`quickchr start a & quickchr start b &`)
-  is only safe after 0.4.8. On 0.4.8 and earlier both can pick the same
+  is safe from 0.5.0. On 0.4.8 and earlier both can pick the same
   block, and one fails with `SPAWN_FAILED`. Start them one at a time,
-  or give each `--port-base` at least 10 apart. Later releases give
+  or give each `--port-base` at least 10 apart. 0.5.0 gives
   concurrent creations distinct blocks, refuse an overlapping
   `--port-base` with `PORT_CONFLICT`, and make `stop`/`remove` wait
   for a `start` of the same machine in progress. A foreground `start`
@@ -75,24 +86,38 @@ quickchr remove lab-a
   only way to warm the cache was to boot something.)[^ground-cache]
 - **Never hand-edit `machine.json`** to change networks or options — it
   breaks boot. Everything is reachable through `add` flags.[^field]
+- **Keep `QUICKCHR_DATA_DIR` short on macOS.** QEMU's monitor socket
+  lives under it, and a socket path of 104 bytes or more makes `start`
+  fail with `SPAWN_FAILED` ("UNIX socket path … is too long").[^socket-path]
 
-## `--bg` is a no-op — background it yourself
+## Getting the shell back: `--no-wait`, not `--bg`
 
-**`--bg` changes nothing: background is already the default.** The CLI
-sets `background = !wantFg`, so the flag only fails to select the
-foreground mode you did not ask for; `--fg`/`--foreground` is the
-switch that does something. And `start` waits for REST-readiness by
-contract either way, so `--bg` does not hand your shell back. Both
-halves of what the name promises are things it does not do
-(tikoci/quickchr#159 — the `--no-wait` half and the naming decision are
-still open).[^bg]
+**`--bg` never returned early.** Background is already the default. The
+flag only failed to select the foreground mode you did not ask for, and
+`start` waited for REST-readiness either way. On 0.4.8 it is silently
+harmless. On 0.5.0 it is deprecated, does nothing, and prints a warning
+on stderr. Leave it out of scripts on both. `--fg`/`--foreground` is
+the switch that does something.[^bg]
 
-Examples here pass `--bg` only because it is harmless and widespread in
-existing scripts. To actually get the shell back, background it
-yourself and poll readiness:
+**0.5.0: `--no-wait`.** `start` returns once QEMU is running (about
+2s), with state and ports already saved, and readiness is yours. centrs
+0.1.8+ waits for it with a bound:
 
 ```sh
-nohup quickchr start lab-a --bg >lab-a.start.log 2>&1 &
+quickchr start lab-a --no-wait
+centrs retrieve --quickchr lab-a /system/resource --wait 5m
+```
+
+It is refused (`INVALID_ARGUMENT`, nothing booted) when combined with
+`--fg`, or with any provisioning flag. That includes provisioning that
+`add` recorded and the first start has not applied yet. Provisioning
+runs against the booted guest, so that first `start` has to wait. Later
+starts can use `--no-wait`.[^nowait]
+
+**0.4.8: background it yourself and poll.**
+
+```sh
+nohup quickchr start lab-a >lab-a.start.log 2>&1 &
 
 ready() { centrs retrieve --quickchr lab-a /system/resource >/dev/null 2>&1; }
 for _ in $(seq 60); do ready && break; sleep 5; done   # 60 x 5s = 5 min
@@ -106,18 +131,31 @@ bound off the slow end (TCG minutes, not HVF seconds) and on timeout
 print `quickchr list` plus the start log rather than just
 exiting.[^ground-poll]
 
-**A killed `start` does not stop the VM.** On 0.4.8 QEMU is spawned
+**A killed `start` does not stop the VM.** From 0.4.8, QEMU is spawned
 `detached` (its own session), so even a harness that SIGKILLs the whole
 process group leaves the guest booting — it comes up REST-ready with
 nothing left to report it. Verified against both published releases:
 group-SIGKILL 8s into a first boot took the VM down on **0.4.7**, and
 left it running and REST-ready on **0.4.8**. So never infer "start
 failed" from a killed CLI — check `quickchr list` and poll REST, and
-`stop`/`remove` to clean up. (A `BOOT_TIMEOUT` can likewise auto-clean
-the machine while QEMU keeps running.)[^ground-bg]
+`stop`/`remove` to clean up.[^ground-bg]
 
 If a harness group-kills commands and you are pinned below 0.4.8, that
 kill *does* take the VM with it — upgrade rather than work around it.
+
+**A `BOOT_TIMEOUT` cleans up after itself, and the version decides how.**
+quickchr stops QEMU first, then:[^boot-timeout]
+
+| machine when `start` began | 0.4.8 | 0.5.0 |
+|---|---|---|
+| created by this `start` | removed | removed |
+| created by `add`, never booted | removed | reset to the factory disk, `add`'s options kept |
+| booted before (a restart) | **removed** | preserved: retry with `start` |
+
+On 0.4.8, set `QUICKCHR_PRESERVE_ON_FAILURE=1` before restarting a
+machine you configured by hand, or a slow boot deletes it. 0.5.0 keeps
+it without the flag. The flag still keeps the first two cases for
+inspection.
 
 ## NIC order and the two-VM link
 
@@ -228,31 +266,42 @@ timeout and `container` was unchanged afterwards. (Whether it would
 Do not reach for this, and do not read the timeout as a transport
 problem.[^dm-trap]
 
-**The flags are honored only on a machine's first boot.** quickchr
-applies device-mode by provisioning — boot the guest, set the mode,
+**Provisioning flags apply at a machine's first boot.** quickchr
+applies device-mode by provisioning: boot the guest, set the mode,
 power-cycle QEMU via the monitor, re-read to confirm (≈45s vs ≈22s
-without). That runs only while the machine has never started. Once
-`lastStartedAt` is set, `--device-mode-enable` is parsed, accepted and
-**silently ignored**: no warning, no extra boot time, no change
-(tikoci/quickchr#176 — open).[^dm-window]
+without). That runs on the first boot, so pass it to `add`, or to the
+first `start` of a machine `add` created plain. After that boot the
+releases differ:[^dm-window]
 
-| machine state | `start --device-mode-enable container` |
-|---|---|
-| added, never started | applies — "Device-mode verified: mode=rose container=yes" |
-| started at least once | silently ignored — stays `container: false` |
+| `start --device-mode-enable container` on… | 0.4.8 | 0.5.0 |
+|---|---|---|
+| a machine that never started | applies — "Device-mode verified: mode=rose container=yes" | same |
+| a machine that has booted | **silently ignored**: no warning, `container` stays `false` | refused, `PROVISIONING_WINDOW_CLOSED`, with the `quickchr set …` command to run |
+| a machine that already has it | silently ignored | "already applied — nothing to do", and it starts |
 
-So `add --device-mode-enable <feature>` when you can; if you only
-realize you need it *after* creating the machine, you can still pass it
-to the **first** `start`. Once it has booted, the CLI has no way to
-change device-mode — `remove` + `add --device-mode-enable …` + `start`
-is the only CLI path. (The library exposes
-`instance.setDeviceMode()`, which power-cycles for you — see
-**routeros-quickchr**.)
+**Changing it later.** On 0.5.0, `quickchr set <name> --device-mode-enable
+container` works on a running machine. It prints each setting that will
+move, power-cycles once, verifies, and records the change. Read it back
+with `quickchr get <name> device-mode`. Observed: 21s, then `container`
+listed under Enabled.[^dm-set]
 
-Which side of the line a machine is on, and what it currently has:
+On 0.4.8 the CLI has no route. `remove`, then `add --device-mode-enable
+…`, then `start` is the only CLI path. The library's
+`instance.setDeviceMode()` power-cycles for you on both versions (see
+**routeros-quickchr**).
+
+On 0.5.0 the other provisioning flags also refuse after first boot
+(`--add-package`, `--add-user`, `--disable-admin`, `--secure-login`,
+`--license-*`, `--install-all-packages`). The refusal names the route
+that still works. For anything without one, `quickchr clean <name>`
+resets the disk and reopens the window, at first-boot cost. Then repeat
+the original command, because a refused request is not saved.[^window]
+
+On 0.4.8, check which side of the line a machine is on before you rely
+on a flag. On 0.5.0 the refusal tells you.
 
 ```sh
-quickchr inspect <name> --json | jq -r '.lastStartedAt // "never started"'
+quickchr inspect <name> --json | jq -r '.lastStartedAt // "never started"'   # 0.4.8's gate
 quickchr get <name>    # live Device Mode / License / Admin Users
 ```
 
@@ -260,6 +309,32 @@ Enabling `container` moves the mode itself too (`advanced` → `rose`).
 Provisioning needs RouterOS **7.20.8+** *and* a user-mode NIC — with
 only socket NICs it fails `NETWORK_UNAVAILABLE`; older 7.x is
 boot-only.[^device-mode]
+
+## RouterOS 6: boot-only (0.5.0)
+
+0.5.0 boots RouterOS 6 CHR for v6→v7 migration work. It is best-effort,
+CLI-only, and x86 only. quickchr runs no REST and no provisioning
+against it:[^v6]
+
+```sh
+quickchr add --name lab6 --version 6.49.23 --arch x86
+quickchr start lab6    # ready on a native-API login, ~27s on HVF
+centrs retrieve --quickchr lab6 /system/resource --via native-api --no-validate
+```
+
+- `--arch arm64` is refused with `INVALID_ARCH`, because MikroTik
+  publishes no arm64 CHR for 6.x.
+- Every provisioning flag, and the `set` routes, fail with
+  `PROVISIONING_VERSION_UNSUPPORTED`.
+- `quickchr exec`, `get`'s live groups and REST calls fail at once with
+  `REST_UNAVAILABLE` and do not time out. Use the native API, as above.
+  `--no-validate` is needed because centrs validates against the 7.x
+  command tree.
+- `list`, `inspect`, `stop`, `remove` and `start --no-wait` work as on
+  7.x.
+
+On 0.4.8, a 6.x `start` waits for a REST API that 6.x does not have,
+and times out. Use 7.x, or install `@tikoci/quickchr@next`.
 
 ## Grounding behind this skill
 
@@ -282,24 +357,63 @@ boot-only.[^device-mode]
     0.4.7 as a control), CHR 7.24.4 x86, QEMU 11.1.1 + HVF on macOS
     Intel. The named-socket `dgram` default, the printed transport,
     the three-machine refusal and the POSIX detach are all 0.4.8
-    (quickchr #158, #159) — they are absent from 0.4.7.
+    (quickchr #158, #159) — they are absent from 0.4.7. The 0.5.0
+    claims were re-run against published `@tikoci/quickchr@0.5.0` and
+    `@tikoci/centrs@0.1.8`, CHR 7.24.5 and 6.49.23 x86
+    (`references/cli-grounding.md` §quickchr 0.5.0 re-check), and
+    checked against quickchr's
+    [`CHANGELOG.md`](https://github.com/tikoci/quickchr/blob/main/CHANGELOG.md)
+    `[0.5.0]` section. `npm view @tikoci/quickchr dist-tags` →
+    `{ next: '0.5.0', latest: '0.4.8' }`.
 [^ground-add]: `references/cli-grounding.md` §Lifecycle timings.
-[^ground-timings]: Same; TCG band and the 480s `BOOT_TIMEOUT` from the
-    field lab notes.
+[^ground-timings]: Same (0.4.8: 22s / 11s); §quickchr 0.5.0 re-check
+    (0.5.0: 25s / 20s, CHR 7.24.5). TCG band and the 480s
+    `BOOT_TIMEOUT` from the field lab notes.
 [^ground-exec]: Same, §Lifecycle timings.
 [^ground-cache]: `references/cli-grounding.md` §Cache; quickchr
     CHANGELOG 0.4.8 "Added" (`cache add`, `cache key`).
 [^field]: Field lab notes: `--add-network` at `add` time, never a
     hand-edited `machine.json`.
-[^bg]: `--bg` as a no-op: `src/cli/index.ts` — "Background default:
+[^bg]: 0.4.8: `src/cli/index.ts` — "Background default:
     true. Explicitly foreground only with --fg / --foreground /
     --no-background / --no-bg", and `quickchr start --help` renders
-    `--bg / --background   Run in background (default)`.
-    tikoci/quickchr#159 — part 1 (`--no-wait`) and the `--bg` naming
-    decision remain open; part 2 (POSIX process group) shipped in
-    0.4.8.
+    `--bg / --background   Run in background (default)`. 0.5.0:
+    CHANGELOG `[0.5.0]` Breaking, "`start --bg` / `--background` are
+    deprecated and do nothing" (tikoci/quickchr#159). The warning text
+    is quoted in `references/cli-grounding.md` §quickchr 0.5.0
+    re-check.
 [^ground-bg]: `references/cli-grounding.md` §Group-kill, which records
-    the 0.4.7-vs-0.4.8 before/after.
+    the 0.4.7-vs-0.4.8 before/after. Unchanged in 0.5.0: MANUAL.md
+    `start` — "QEMU runs detached in its own session either way".
+[^nowait]: quickchr MANUAL.md `start` (`--no-wait` row and the centrs
+    0.1.8+ example); CHANGELOG `[0.5.0]` Added (#159). All three
+    refusals reproduced in `references/cli-grounding.md` §quickchr
+    0.5.0 re-check.
+[^shutdown]: quickchr MANUAL.md `stop` ("Power cut: sends SIGTERM to
+    QEMU, waits up to 5 seconds, then SIGKILL") and `shutdown`;
+    CHANGELOG `[0.5.0]` Added and Fixed (#143). The "guest exited" and
+    "already stopped" outcomes were observed. The forced fallback was
+    not (§What the 0.5.0 re-check did *not* cover).
+[^socket-path]: Observed on macOS while setting up the 0.5.0 re-check
+    (`references/cli-grounding.md`); QEMU reports "Path must be less
+    than 104 bytes".
+[^boot-timeout]: 0.5.0: quickchr MANUAL.md §"Auto-cleanup on boot
+    timeout"; CHANGELOG `[0.5.0]` Breaking (#182) and Fixed (#189).
+    0.4.8: `cleanupAfterBootFailure()` in `src/lib/quickchr.ts` at tag
+    `v0.4.8` calls `stop()`, then `remove()` unless
+    `QUICKCHR_PRESERVE_ON_FAILURE=1`. Not forced live in either
+    version.
+[^dm-set]: quickchr MANUAL.md `set`; reproduced in
+    `references/cli-grounding.md` §quickchr 0.5.0 re-check.
+[^window]: quickchr MANUAL.md §5 "Provisioning pipeline" (the window,
+    the routes table, and `clean()` retaining intent); CHANGELOG
+    `[0.5.0]` Fixed (#176). `clean` was not run in the re-check.
+[^v6]: quickchr MANUAL.md §"RouterOS 6 (boot-only)"; CHANGELOG
+    `[0.5.0]` Added (#182), which also gives the 0.4.8 behavior ("ready
+    in ~25 s under HVF instead of timing out against a REST API it does
+    not have"). The arm64 refusal, the provisioning
+    refusal, the 27s boot, `REST_UNAVAILABLE` and the native-API read
+    are in `references/cli-grounding.md` §quickchr 0.5.0 re-check.
 [^ground-nic]: `references/cli-grounding.md` §First NIC.
 [^ground-l2]: `references/cli-grounding.md` §Named-socket link.
 [^ground-forms]: `parseSocketSpecifier()` in quickchr
@@ -321,14 +435,13 @@ boot-only.[^device-mode]
 [^dm-trap]: `references/cli-grounding.md` §Device-mode — the guest-side
     `/system/device-mode/update container=yes` timing out with
     `container` unchanged, reproduced on 0.4.8 / CHR 7.24.4.
-[^dm-window]: Same section: the never-started machine applied and
-    verified the change, the already-booted one silently did not. The
-    gate is `!existing.lastStartedAt` in `QuickCHR.start()`
-    (`src/lib/quickchr.ts`), which passes provisioning options to
-    `_launchExisting()` on a first boot and `undefined` afterwards.
-    Filed as tikoci/quickchr#176, which also asks which provisioning
-    steps should be allowed to run later; until it lands, treat the
-    silence as the documented behavior.
+[^dm-window]: 0.4.8: `references/cli-grounding.md` §Device-mode —
+    the never-started machine applied and verified the change, the
+    already-booted one silently did not. The gate was
+    `!existing.lastStartedAt` in `QuickCHR.start()`
+    (`src/lib/quickchr.ts`). 0.5.0: tikoci/quickchr#176 shipped. The
+    gate is the new `MachineState.provisioning` record, and the refusal
+    and the "already applied" path are in §quickchr 0.5.0 re-check.
 [^ground-inspect]: `references/cli-grounding.md` §Endpoints and
     credentials (`quickchr inspect --json`, `quickchr get`).
 [^ground-poll]: Failure codes from quickchr's `ErrorCode` union
@@ -341,6 +454,7 @@ boot-only.[^device-mode]
     (two concurrent starts on 0.4.7 both chose 9140; the second QEMU failed
     its `hostfwd` bind) and the fix,
     [tikoci/quickchr#190](https://github.com/tikoci/quickchr/pull/190),
+    released in 0.5.0 (CHANGELOG `[0.5.0]` Fixed, #140 and #181) and
     covered by quickchr's concurrency unit tests and a live two-CHR start.
     See the **routeros-quickchr** skill, "Running several CHRs at once".
 [^ground-ports]: `quickchr add --help` — "`--port-base <port>` Starting
