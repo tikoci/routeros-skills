@@ -158,7 +158,8 @@ never silently moved. See "Running several CHRs at once" in `SKILL.md`.
 
 `MACHINE_LOCKED` means another operation holds that machine's lock. After 0.4.8 the
 message names it, with its pid and how long it has held the lock. `stop`, `clean`
-and `remove` wait for it; a second `start` of the same machine does not.
+and `remove` wait for it, except for a machine running in the foreground, which holds
+the lock until its VM exits. A second `start` of the same machine never waits.
 
 Frequently seen in grounding: `MISSING_QEMU`, `PORT_CONFLICT`, `BOOT_TIMEOUT`,
 `DOWNLOAD_FAILED`, `SPAWN_FAILED`, `MACHINE_EXISTS`, `MACHINE_STOPPED`,

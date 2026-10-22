@@ -65,7 +65,9 @@ quickchr remove lab-a
   or give each `--port-base` at least 10 apart. Later releases give
   concurrent creations distinct blocks, refuse an overlapping
   `--port-base` with `PORT_CONFLICT`, and make `stop`/`remove` wait
-  for a `start` of the same machine in progress.[^ground-concurrent]
+  for a `start` of the same machine in progress. A foreground `start`
+  holds the machine until its VM exits, so they fail with
+  `MACHINE_LOCKED` instead of waiting.[^ground-concurrent]
 - **Pre-warm without booting**: `quickchr cache add --version 7.24.4
   --arch x86` resolves and downloads one image, no QEMU and no machine
   required. `cache key` prints `dir=/version=/arch=` for CI. (Both new

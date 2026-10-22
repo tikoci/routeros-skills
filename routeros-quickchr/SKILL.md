@@ -153,9 +153,11 @@ What is safe depends on the quickchr version:
   machine's block is refused with `PORT_CONFLICT`. Lifecycle calls on
   *one* machine are ordered by a per-machine lock. `stop()`, `clean()`
   and `remove()` wait (up to the boot timeout) for an operation already
-  in progress. A second `start()` of the same machine fails at once with
-  `MACHINE_LOCKED`, and the message names the operation, pid and age of
-  the holder.[^ground-lock]
+  in progress. The exception is a machine started in the foreground: it
+  holds the lock until its VM exits, so they fail at once instead. A
+  second `start()` of the same machine also fails at once. Both failures
+  are `MACHINE_LOCKED`, and the message names the operation, pid and age
+  of the holder.[^ground-lock]
 
 ## Grounding gotchas & known limitations
 
