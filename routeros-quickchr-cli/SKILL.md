@@ -55,10 +55,19 @@ quickchr remove lab-a
   channel. Bare `quickchr --version` prints what each channel currently
   resolves to.[^ground-channel]
 - **Ports are auto-allocated** from 9100 in per-machine blocks of ten
-  (9140, 9150, 9160 …), so parallel machines do not collide and you
-  need no port bookkeeping. `--port-base` overrides;
+  (9140, 9150, 9160 …), so machines created one after another do not
+  collide and you need no port bookkeeping. `--port-base` overrides;
   `--forward name:host:guest/proto` adds extras, ranges
   included.[^ground-ports]
+- **Creating several at once** (`quickchr start a & quickchr start b &`)
+  is only safe after 0.4.8. On 0.4.8 and earlier both can pick the same
+  block, and one fails with `SPAWN_FAILED`. Start them one at a time,
+  or give each `--port-base` at least 10 apart. Later releases give
+  concurrent creations distinct blocks, refuse an overlapping
+  `--port-base` with `PORT_CONFLICT`, and make `stop`/`remove` wait
+  for a `start` of the same machine in progress. A foreground `start`
+  holds the machine until its VM exits, so they fail with
+  `MACHINE_LOCKED` instead of waiting.[^ground-concurrent]
 - **Pre-warm without booting**: `quickchr cache add --version 7.24.4
   --arch x86` resolves and downloads one image, no QEMU and no machine
   required. `cache key` prints `dir=/version=/arch=` for CI. (Both new
@@ -328,6 +337,12 @@ boot-only.[^device-mode]
     `references/cli-grounding.md` §Bounded readiness poll.
 [^ground-channel]: `quickchr add --help` (`--version`, `--channel`);
     `quickchr --version` prints the resolved stable/long-term versions.
+[^ground-concurrent]: [tikoci/quickchr#140](https://github.com/tikoci/quickchr/issues/140)
+    (two concurrent starts on 0.4.7 both chose 9140; the second QEMU failed
+    its `hostfwd` bind) and the fix,
+    [tikoci/quickchr#190](https://github.com/tikoci/quickchr/pull/190),
+    covered by quickchr's concurrency unit tests and a live two-CHR start.
+    See the **routeros-quickchr** skill, "Running several CHRs at once".
 [^ground-ports]: `quickchr add --help` — "`--port-base <port>` Starting
     port number (default: auto-allocated from 9100)"; successive
     machines observed at 9140/9150/9160 in

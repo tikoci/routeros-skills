@@ -135,6 +135,30 @@ secret-bearing** — pass via env, don't log. Always check a machine is `running
 before using stored ports. Runnable:
 [`examples/harness/`](https://github.com/tikoci/quickchr/tree/main/examples/harness).
 
+## Running several CHRs at once
+
+What is safe depends on the quickchr version:
+
+- **quickchr 0.4.8 and earlier:** concurrent *creations* can collide.
+  Two `QuickCHR.start()` calls in one `Promise.all`, or two
+  `quickchr start` processes, can both pick the same auto-allocated
+  port block, and one QEMU then fails with `SPAWN_FAILED` (*"Could not set
+  up host forwarding rule"*).[^ground-race] Create machines one at a time,
+  or give each an explicit `portBase` at least 10 apart. Once created,
+  machines can run side by side.
+- **From the first release after 0.4.8** (quickchr#190): concurrent
+  creations are safe. Auto-allocated machines get distinct port blocks
+  and NIC MACs whether they come from one process or several.
+  An explicit `portBase` is never moved: one that overlaps another
+  machine's block is refused with `PORT_CONFLICT`. Lifecycle calls on
+  *one* machine are ordered by a per-machine lock. `stop()`, `clean()`
+  and `remove()` wait (up to the boot timeout) for an operation already
+  in progress. The exception is a machine started in the foreground: it
+  holds the lock until its VM exits, so they fail at once instead. A
+  second `start()` of the same machine also fails at once. Both failures
+  are `MACHINE_LOCKED`, and the message names the operation, pid and age
+  of the holder.[^ground-lock]
+
 ## Grounding gotchas & known limitations
 
 - **Provisioning floor:** managed login, package install, and `exec`-write
@@ -174,3 +198,17 @@ before using stored ports. Runnable:
 - **routeros-fundamentals** — RouterOS CLI/REST/scripting once the CHR is up.
 - **routeros-sniffer** / **routeros-mndp** — TZSP capture and MNDP wire format
   (the gateway-UDP and `socket-connect` recipes above feed these).
+
+[^ground-race]: [tikoci/quickchr#140](https://github.com/tikoci/quickchr/issues/140):
+    two concurrent `QuickCHR.start()` calls on quickchr 0.4.7 both chose
+    `portBase=9140`, and the second QEMU failed `hostfwd=tcp::9145-:8291`
+    with `SPAWN_FAILED`. The issue records a second collision at 9100 and
+    the cause: the port block is chosen before any lock is taken.
+[^ground-lock]: [tikoci/quickchr#190](https://github.com/tikoci/quickchr/pull/190),
+    which closes #140, #180 and #181. quickchr's
+    [`MANUAL.md`](https://github.com/tikoci/quickchr/blob/main/MANUAL.md#static-methods-on-quickchr)
+    (**Concurrency**) states the guarantee. It is covered by quickchr's
+    `test/unit/machine-lock-concurrency.test.ts` (one `Promise.all` of
+    four creations, and three processes started at the same instant, get
+    distinct blocks) and by a live test in which two concurrent starts
+    both boot (`test/integration/start-stop.test.ts`, "concurrent starts").
