@@ -137,6 +137,12 @@ Pin a service to a known host port with `--forward winbox:8291` (CLI) or an
 explicit-`host` `extraPorts` entry; explicit hosts are collision-checked against
 this machine's services and other machines'.
 
+Concurrent creations: on quickchr 0.4.8 and earlier, two at once can pick the same
+auto-allocated block, so create one at a time or pass disjoint `portBase` values.
+From the first release after 0.4.8 they get distinct blocks. An explicit
+`portBase` that overlaps another machine's block is then a `PORT_CONFLICT`,
+never silently moved. See "Running several CHRs at once" in `SKILL.md`.
+
 ## Error codes
 
 `QuickCHRError.code` is one of `ErrorCode` (types.ts). Full set:
@@ -149,6 +155,10 @@ this machine's services and other machines'.
 `INVALID_FORWARD_SPEC`, `INVALID_SETTING_KEY`, `INVALID_SETTING_VALUE`,
 `PROVISIONING_VERSION_UNSUPPORTED`, `INSUFFICIENT_DISK_SPACE`, `STATE_ERROR`,
 `EXEC_FAILED`, `PROCESS_FAILED`, `NETWORK_UNAVAILABLE`.
+
+`MACHINE_LOCKED` means another operation holds that machine's lock. After 0.4.8 the
+message names it, with its pid and how long it has held the lock. `stop`, `clean`
+and `remove` wait for it; a second `start` of the same machine does not.
 
 Frequently seen in grounding: `MISSING_QEMU`, `PORT_CONFLICT`, `BOOT_TIMEOUT`,
 `DOWNLOAD_FAILED`, `SPAWN_FAILED`, `MACHINE_EXISTS`, `MACHINE_STOPPED`,
