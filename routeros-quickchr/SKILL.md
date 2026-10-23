@@ -5,6 +5,10 @@ description: "Ground RouterOS config/scripts/API code against a REAL router usin
 
 # Grounding RouterOS with quickchr
 
+Pinned to **0.5.2**. Read the release `CHANGELOG.md` entries
+from `[0.5.0]` through `[0.5.2]` before upgrading from 0.4.x. Where a
+behavior changed, this skill names the version.[^versions]
+
 ## What this is for
 
 The reliable way to know whether a RouterOS config, script, or API call actually
@@ -40,8 +44,8 @@ await chr.remove();   // tear down
 ```
 
 `exec()` runs a CLI command (config writes, scripts) and returns `{ output, via }`;
-`rest()` does a REST call and returns parsed JSON. Install from npm (`bun add @tikoci/quickchr`)
-or run the CLI without installing (`bunx @tikoci/quickchr <cmd>`). Worked, runnable version:
+`rest()` does a REST call and returns parsed JSON. Install from npm (`bun add @tikoci/quickchr@0.5.2`)
+or run the CLI without installing (`bunx @tikoci/quickchr@0.5.2 <cmd>`). Worked, runnable version:
 [`examples/grounding/`](https://github.com/tikoci/quickchr/tree/main/examples/grounding).
 Minimal boot-and-read smoke test:
 [`examples/quickstart/`](https://github.com/tikoci/quickchr/tree/main/examples/quickstart).
@@ -64,7 +68,8 @@ See also [`references/quickchr-api.md`](./references/quickchr-api.md) in this sk
 | Need | Surface |
 |---|---|
 | Boot / create a machine | `QuickCHR.start(opts)` → REST-ready `ChrInstance` |
-| Pick RouterOS | `channel` (`stable`/`long-term`/`testing`/`development`) **or** `version` (`"7.23.1"`) |
+| Pick RouterOS | `channel` (`stable`/`long-term`/`testing`/`development`) **or** `version` (`"7.23.1"`); if both, `version` wins (with a warning) |
+| Return before ready | `wait: false`, then `instance.waitForBoot()`; refused with provisioning options |
 | Architecture | `arch:` — `"x86"` or `"arm64"` |
 | Managed login vs open admin | `secureLogin: true` (managed user, real password) / `false` |
 | Run a CLI command | `instance.exec(cmd, opts?)` — `opts.via` is `auto`/`rest`/`ssh`/`console`/`qga` |
@@ -75,14 +80,15 @@ See also [`references/quickchr-api.md`](./references/quickchr-api.md) in this sk
 | Extra NICs | `networks` / CLI `--add-network` (see Networking) |
 | Connection surface for a child process | `instance.subprocessEnv()` / `instance.descriptor()` |
 | Snapshots | `instance.snapshot(...)` |
-| Tear down | `instance.remove()` / `instance.stop()` / `instance.destroy()` |
+| Change device-mode after boot | `instance.setDeviceMode(opts)` (power-cycles the VM) |
+| Tear down | `instance.stop()` (power cut) / `instance.shutdown()` (guest shutdown first) / `instance.remove()` / `instance.destroy()` |
 
 Shell-first agents (terminal, forum answers): the **routeros-quickchr-cli**
 skill owns the CLI lifecycle (`add`, `start`, `networks`, `cache`)
 and the `centrs --quickchr` driving pattern — this skill does not repeat
 it. Library dependency patterns (npm / `file:` / `bun link`):
 [`examples/README.md`](https://github.com/tikoci/quickchr/blob/main/examples/README.md).
-CLI without installing: `bunx @tikoci/quickchr <cmd>`.
+CLI without installing: `bunx @tikoci/quickchr@0.5.2 <cmd>`.
 
 ## Networking — which mechanism for which traffic
 
@@ -137,32 +143,44 @@ before using stored ports. Runnable:
 
 ## Running several CHRs at once
 
-What is safe depends on the quickchr version:
+Concurrent creations are safe (quickchr#190):[^ground-lock]
+auto-allocated machines get distinct port blocks and NIC MACs whether
+they come from one process or several. An explicit `portBase` is never
+moved: one that overlaps another machine's block is refused with
+`PORT_CONFLICT`. Lifecycle calls on *one* machine are ordered by a
+per-machine lock. `stop()`, `clean()` and `remove()` wait (up to the
+boot timeout) for an operation already in progress. The exception is a
+machine started in the foreground: it holds the lock until its VM
+exits, so they fail at once instead. A second `start()` of the same
+machine also fails at once. Both failures are `MACHINE_LOCKED`, and
+the message names the operation, pid and age of the holder.
 
-- **quickchr 0.4.8 and earlier:** concurrent *creations* can collide.
-  Two `QuickCHR.start()` calls in one `Promise.all`, or two
-  `quickchr start` processes, can both pick the same auto-allocated
-  port block, and one QEMU then fails with `SPAWN_FAILED` (*"Could not set
-  up host forwarding rule"*).[^ground-race] Create machines one at a time,
-  or give each an explicit `portBase` at least 10 apart. Once created,
-  machines can run side by side.
-- **From the first release after 0.4.8** (quickchr#190): concurrent
-  creations are safe. Auto-allocated machines get distinct port blocks
-  and NIC MACs whether they come from one process or several.
-  An explicit `portBase` is never moved: one that overlaps another
-  machine's block is refused with `PORT_CONFLICT`. Lifecycle calls on
-  *one* machine are ordered by a per-machine lock. `stop()`, `clean()`
-  and `remove()` wait (up to the boot timeout) for an operation already
-  in progress. The exception is a machine started in the foreground: it
-  holds the lock until its VM exits, so they fail at once instead. A
-  second `start()` of the same machine also fails at once. Both failures
-  are `MACHINE_LOCKED`, and the message names the operation, pid and age
-  of the holder.[^ground-lock]
+On 0.4.7, concurrent *creations* collided: two
+`QuickCHR.start()` calls in one `Promise.all`, or two `quickchr start`
+processes, could both pick the same auto-allocated port block, and one
+QEMU then failed with `SPAWN_FAILED` (*"Could not set up host
+forwarding rule"*).[^ground-race] For versions before the 0.5.0 fix, create machines
+one at a time, or give each an explicit `portBase` at least 10 apart.
+Once created, machines can run side by side.
 
 ## Grounding gotchas & known limitations
 
 - **Provisioning floor:** managed login, package install, and `exec`-write
-  provisioning need RouterOS **7.20.8+**; older 7.x is boot-only.
+  provisioning need RouterOS **7.20.8+**; older 7.x is boot-only. quickchr
+  also boots RouterOS 6 (x86, CLI only, no REST, no provisioning): see
+  **routeros-quickchr-cli**.
+- **Provisioning runs once, at first boot.** Provisioning
+  options passed to `start()` on a machine that has booted throw
+  `PROVISIONING_WINDOW_CLOSED`, which
+  names the route that still works (`setDeviceMode()`,
+  `installPackage()`, or `clean()` and start again). (On 0.4.8 they
+  were silently dropped.)[^window]
+- **`BOOT_TIMEOUT` on a restart:** 0.5.0 preserves a machine that
+  booted before. A machine created by
+  the same call is still removed, and one `add()` created that never
+  booted is reset. On 0.4.8 the machine was removed instead, so set
+  `QUICKCHR_PRESERVE_ON_FAILURE=1` there before restarting one you
+  configured.[^boot-timeout]
 - **QGA (`--via=qga`) needs KVM** — RouterOS only starts the guest agent under a
   KVM hypervisor, so it's unavailable under HVF (macOS) and TCG. Use REST/exec.
 - **`socket-mcast` fails silently on macOS and in restricted Linux** (QEMU
@@ -199,13 +217,27 @@ What is safe depends on the quickchr version:
 - **routeros-sniffer** / **routeros-mndp** — TZSP capture and MNDP wire format
   (the gateway-UDP and `socket-connect` recipes above feed these).
 
+[^versions]: quickchr
+    [`CHANGELOG.md`](https://github.com/tikoci/quickchr/blob/v0.5.2/CHANGELOG.md)
+    `[0.5.0]` through `[0.5.2]`;
+    [0.5.2 package review](../routeros-quickchr-cli/references/cli-grounding.md#quickchr-052-package-review). The 0.5.0 behavior here was re-run against the published
+    package (`routeros-quickchr-cli/references/cli-grounding.md`
+    §quickchr 0.5.0 re-check).
+[^window]: quickchr MANUAL.md §5 "Provisioning pipeline"; CHANGELOG
+    `[0.5.0]` Fixed (#176). 0.4.8's silent drop is reproduced in
+    `routeros-quickchr-cli/references/cli-grounding.md` §Device-mode.
+[^boot-timeout]: 0.5.0: quickchr MANUAL.md §"Auto-cleanup on boot
+    timeout" and CHANGELOG `[0.5.0]` (#182, #189). 0.4.8:
+    `cleanupAfterBootFailure()` in `src/lib/quickchr.ts` at tag
+    `v0.4.8` stops QEMU, then removes the machine unless
+    `QUICKCHR_PRESERVE_ON_FAILURE=1`.
 [^ground-race]: [tikoci/quickchr#140](https://github.com/tikoci/quickchr/issues/140):
     two concurrent `QuickCHR.start()` calls on quickchr 0.4.7 both chose
     `portBase=9140`, and the second QEMU failed `hostfwd=tcp::9145-:8291`
     with `SPAWN_FAILED`. The issue records a second collision at 9100 and
     the cause: the port block is chosen before any lock is taken.
 [^ground-lock]: [tikoci/quickchr#190](https://github.com/tikoci/quickchr/pull/190),
-    which closes #140, #180 and #181. quickchr's
+    which closes #140, #180 and #181, released in 0.5.0. quickchr's
     [`MANUAL.md`](https://github.com/tikoci/quickchr/blob/main/MANUAL.md#static-methods-on-quickchr)
     (**Concurrency**) states the guarantee. It is covered by quickchr's
     `test/unit/machine-lock-concurrency.test.ts` (one `Promise.all` of
