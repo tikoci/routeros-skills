@@ -101,7 +101,7 @@ already has is reported as applied rather than refused.
 | `qga(cmd, args?)` | QEMU Guest Agent (x86 on **Linux with KVM only**; excludes macOS/HVF and Windows) |
 | `setDeviceMode(opts)` | change device-mode on a running machine; power-cycles QEMU and verifies |
 | `stop()` | power cut: SIGTERM to QEMU, SIGKILL after 5s. No guest shutdown |
-| `shutdown({ timeoutMs? })` | `/system/shutdown` over REST, wait for QEMU to exit (default 10,000 ms), else a power cut. Returns `{ outcome: "guest-exited" \| "forced" \| "already-stopped", requestError? }`. An HTTP 400 `interrupted` can accompany a clean exit (#143) |
+| `shutdown({ timeoutMs? })` | `/system/shutdown` over REST, wait for QEMU to exit (default 10,000 ms), else a power cut. Returns `{ outcome: "guest-exited" \| "forced" \| "already-stopped", requestError? }`. An HTTP 400 `interrupted` can accompany a clean exit (#143). On RouterOS 6 the request fails with `REST_UNAVAILABLE` (in `requestError`), so it waits out `timeoutMs` and returns `forced` |
 | `clean()` | reset the boot disk to the factory image and clear its credentials; also reopens the provisioning window |
 | `remove()` / `destroy()` | lifecycle teardown |
 

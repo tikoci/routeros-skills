@@ -81,12 +81,19 @@ quickchr remove lab-a
   state and PIDs.[^ground-exec]
 - **`stop` is a power cut**: SIGTERM to QEMU, then SIGKILL after 5s. It
   does not ask RouterOS to shut down, so unsaved guest state can be
-  lost. That is fine for a disposable lab. For a graceful exit,
-  `quickchr shutdown <name> [--timeout <s>]` sends `/system/shutdown`
-  over REST, waits up to 10s by default
+  lost. That is fine for a disposable lab. For a graceful exit on
+  RouterOS 7, `quickchr shutdown <name> [--timeout <s>]` sends
+  `/system/shutdown` over REST, waits up to 10s by default
   (`QUICKCHR_SHUTDOWN_TIMEOUT`) for QEMU to exit, and falls back to a
-  power cut it reports as "forced".
+  power cut it reports as "forced". On RouterOS 6 the REST request
+  fails at once, so `shutdown` sits out the whole timeout and then
+  cuts power ("forced", exit 0) — use `stop` there.
   Disks and credentials survive either way.[^shutdown]
+- **`start --all`** starts every stopped machine in the background. It
+  accepts only `--no-wait`, `--bg`/`--background`, `--accel`,
+  `--timeout-extra` and `--[no-]secure-login`; any other option fails
+  with `INVALID_ARGUMENT` rather than being silently dropped (0.5.0+).
+  Start a machine by name to pass anything else.[^start-all]
 - **Version selection**: `--version 7.24.4` pins; `--channel
   stable|long-term|testing|development` resolves the newest of a
   channel. Bare `quickchr --version` prints what each channel currently
@@ -346,7 +353,9 @@ centrs retrieve --quickchr lab6 /system/resource --via native-api --no-validate
   `--no-validate` is needed because centrs validates against the 7.x
   command tree.
 - `list`, `inspect`, `stop`, `remove` and `start --no-wait` work as on
-  7.x.
+  7.x. `shutdown` cannot ask a 6.x guest to halt: it waits out its
+  timeout and reports a forced power cut, so `stop` is the faster
+  equivalent.
 
 On 0.4.8 and earlier, a 6.x `start` waits for a REST API that 6.x does
 not have, and times out. Use 7.x there, or upgrade.
@@ -411,8 +420,14 @@ not have, and times out. Use 7.x there, or upgrade.
 [^shutdown]: quickchr MANUAL.md `stop` ("Power cut: sends SIGTERM to
     QEMU, waits up to 5 seconds, then SIGKILL") and `shutdown`;
     CHANGELOG `[0.5.0]` Added and Fixed (#143). The "guest exited" and
-    "already stopped" outcomes were observed. The forced fallback was
-    not (§What the 0.5.0 re-check did *not* cover).
+    "already stopped" outcomes were observed on 7.x. The forced
+    fallback was observed on RouterOS 6.49.23 with 0.5.2
+    (`references/cli-grounding.md` §quickchr 0.5.2 package review); it was not
+    forced on 7.x.
+[^start-all]: quickchr MANUAL.md `start` (`--all` row); CHANGELOG
+    `[0.5.0]`; the `batchFlags` check in `cmdStart()`,
+    `src/cli/index.ts` at `v0.5.2`. The refusal was reproduced in
+    `references/cli-grounding.md` §quickchr 0.5.2 package review.
 [^socket-path]: Observed on macOS while setting up the 0.5.0 re-check
     (`references/cli-grounding.md`); QEMU reports "Path must be less
     than 104 bytes".

@@ -564,7 +564,8 @@ requestError? }`; `ErrorCode` gains `PROVISIONING_WINDOW_CLOSED` and
 
 - **`shutdown`'s forced fallback.** Every request here ended in "guest
   exited" within a second. The "forced power cut — guest shutdown not
-  confirmed" outcome is MANUAL.md's account.
+  confirmed" outcome is MANUAL.md's account on 7.x. It was later observed
+  on RouterOS 6 (§quickchr 0.5.2 package review, follow-up live checks).
 - **`BOOT_TIMEOUT` cleanup by machine history** (#182, #189). It was not
   forced here. The table in the skill is MANUAL.md §"Auto-cleanup on boot
   timeout" and the CHANGELOG `[0.5.0]` entries. On 0.4.8, the cleanup
@@ -614,7 +615,41 @@ Checked directly in the published source:
   and [MANUAL](https://github.com/tikoci/quickchr/blob/v0.5.2/MANUAL.md): the
   0.5.1 storage admission/cache changes, 0.5.2 prerequisites and runtime pin.
 
-This pass did **not** repeat the earlier live CHR tests, force storage exhaustion,
+This pass did **not** repeat the earlier live CHR tests (apart from the
+follow-up checks below), force storage exhaustion,
 exercise cache eviction, or remove `qemu-img` from the host. Earlier timings and
 live results retain their original package versions. Registry tags are mutable;
 the skill's runnable install commands pin 0.5.2 rather than depending on a tag.
+
+### Follow-up live checks (PR review)
+
+Run on 2026-10-23 from a quickchr checkout at commit
+`2158582723e309f7a2bfd615e5a62ac99ceb188b` (tag `v0.5.2`, the npm
+`gitHead` above), Bun 1.4.4, macOS x86_64, HVF:
+
+```sh
+bun src/cli/index.ts add --name pr43-v6 --version 6.49.23 --arch x86 --add-network user
+bun src/cli/index.ts start pr43-v6     # → "boot-only: no REST, no provisioning", 26.9s
+bun src/cli/index.ts shutdown pr43-v6  # 10.2s, exit 0
+bun src/cli/index.ts start --all --mem 512
+bun src/cli/index.ts remove pr43-v6
+```
+
+**`shutdown` on RouterOS 6 ends forced.** The REST request fails at once
+with `REST_UNAVAILABLE`, but `shutdownGuest()` (`src/lib/shutdown.ts`)
+still waits out the whole timeout before cutting power:
+
+```text
+pr43-v6: forced power cut — guest shutdown not confirmed
+Shutdown request: RouterOS 6: not available — exec uses the REST API, which
+RouterOS 6.49.23 does not have. …
+```
+
+**`start --all` refuses an option it cannot apply**, before starting
+anything:
+
+```text
+Error [INVALID_ARGUMENT]: start --all runs in background and accepts only
+--no-wait, --bg, --background, --accel, --timeout-extra, --secure-login and
+--no-secure-login. Start an individual machine to use other options.
+```
