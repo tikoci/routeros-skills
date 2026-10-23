@@ -5,9 +5,9 @@ description: "Ground RouterOS config/scripts/API code against a REAL router usin
 
 # Grounding RouterOS with quickchr
 
-Pinned to **0.5.0**. It is a clean break from 0.4.x: read its
-`CHANGELOG.md` `[0.5.0]` section before you upgrade. Where a behavior
-changed, this skill names the version.[^versions]
+Pinned to **0.5.2**. Read the release `CHANGELOG.md` entries
+from `[0.5.0]` through `[0.5.2]` before upgrading from 0.4.x. Where a
+behavior changed, this skill names the version.[^versions]
 
 ## What this is for
 
@@ -44,8 +44,8 @@ await chr.remove();   // tear down
 ```
 
 `exec()` runs a CLI command (config writes, scripts) and returns `{ output, via }`;
-`rest()` does a REST call and returns parsed JSON. Install from npm (`bun add @tikoci/quickchr`)
-or run the CLI without installing (`bunx @tikoci/quickchr <cmd>`). Worked, runnable version:
+`rest()` does a REST call and returns parsed JSON. Install from npm (`bun add @tikoci/quickchr@0.5.2`)
+or run the CLI without installing (`bunx @tikoci/quickchr@0.5.2 <cmd>`). Worked, runnable version:
 [`examples/grounding/`](https://github.com/tikoci/quickchr/tree/main/examples/grounding).
 Minimal boot-and-read smoke test:
 [`examples/quickstart/`](https://github.com/tikoci/quickchr/tree/main/examples/quickstart).
@@ -88,7 +88,7 @@ skill owns the CLI lifecycle (`add`, `start`, `networks`, `cache`)
 and the `centrs --quickchr` driving pattern — this skill does not repeat
 it. Library dependency patterns (npm / `file:` / `bun link`):
 [`examples/README.md`](https://github.com/tikoci/quickchr/blob/main/examples/README.md).
-CLI without installing: `bunx @tikoci/quickchr <cmd>`.
+CLI without installing: `bunx @tikoci/quickchr@0.5.2 <cmd>`.
 
 ## Networking — which mechanism for which traffic
 
@@ -155,11 +155,11 @@ exits, so they fail at once instead. A second `start()` of the same
 machine also fails at once. Both failures are `MACHINE_LOCKED`, and
 the message names the operation, pid and age of the holder.
 
-Before 0.5.0, concurrent *creations* could collide: two
+On 0.4.7, concurrent *creations* collided: two
 `QuickCHR.start()` calls in one `Promise.all`, or two `quickchr start`
 processes, could both pick the same auto-allocated port block, and one
 QEMU then failed with `SPAWN_FAILED` (*"Could not set up host
-forwarding rule"*).[^ground-race] On 0.4.8 and earlier, create machines
+forwarding rule"*).[^ground-race] For versions before the 0.5.0 fix, create machines
 one at a time, or give each an explicit `portBase` at least 10 apart.
 Once created, machines can run side by side.
 
@@ -218,8 +218,9 @@ Once created, machines can run side by side.
   (the gateway-UDP and `socket-connect` recipes above feed these).
 
 [^versions]: quickchr
-    [`CHANGELOG.md`](https://github.com/tikoci/quickchr/blob/main/CHANGELOG.md)
-    `[0.5.0]`. The 0.5.0 behavior here was re-run against the published
+    [`CHANGELOG.md`](https://github.com/tikoci/quickchr/blob/v0.5.2/CHANGELOG.md)
+    `[0.5.0]` through `[0.5.2]`;
+    [0.5.2 package review](../routeros-quickchr-cli/references/cli-grounding.md#quickchr-052-package-review). The 0.5.0 behavior here was re-run against the published
     package (`routeros-quickchr-cli/references/cli-grounding.md`
     §quickchr 0.5.0 re-check).
 [^window]: quickchr MANUAL.md §5 "Provisioning pipeline"; CHANGELOG

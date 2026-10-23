@@ -1,4 +1,4 @@
-# CLI grounding log — quickchr 0.4.8 and 0.5.0, CHR x86, HVF
+# CLI grounding log — quickchr 0.4.8, 0.5.0 and 0.5.2
 
 ## Contents
 
@@ -16,6 +16,7 @@
 - What was *not* re-verified in this run
 - quickchr 0.5.0 re-check
 - What the 0.5.0 re-check did *not* cover
+- quickchr 0.5.2 package review
 
 Live runs behind the claims in `routeros-quickchr-cli/SKILL.md`, so a
 reviewer can re-run any of them. Every section up to "What was *not*
@@ -571,3 +572,49 @@ requestError? }`; `ErrorCode` gains `PROVISIONING_WINDOW_CLOSED` and
   `QUICKCHR_PRESERVE_ON_FAILURE=1`.
 - **`clean` reopening the provisioning window** (#176). It is
   MANUAL.md's account and was not run here.
+
+## quickchr 0.5.2 package review
+
+Reviewed on 2026-10-23 using the published npm tarball, not a linked checkout:
+
+```sh
+npm view @tikoci/quickchr@0.5.2 dist.tarball gitHead --json
+npm pack @tikoci/quickchr@0.5.2
+# Extract the archive, then in package/:
+bun install --production
+QUICKCHR_DATA_DIR=/tmp/q52-review bun src/cli/index.ts start --help
+QUICKCHR_DATA_DIR=/tmp/q52-review bun src/cli/index.ts start skill-check --version 7.24.5 --arch x86 --dry-run
+QUICKCHR_DATA_DIR=/tmp/q52-review bun src/cli/index.ts start skill-check --install-deps
+```
+
+The npm `gitHead` is `2158582723e309f7a2bfd615e5a62ac99ceb188b`, matching
+[tag v0.5.2](https://github.com/tikoci/quickchr/tree/v0.5.2).
+Bun was 1.4.4, matching the package's `.bun-version`.
+
+Observed without booting a VM:
+
+- `start --help` says an unknown name creates a fresh machine; it defaults to
+  qcow2 and requires `qemu-img` for qcow2/resize/extra disks.
+- `start … --dry-run` exits 0 and renders `bootDiskFormat: "qcow2"`.
+- `start … --install-deps` exits 1 with `INVALID_ARGUMENT`, naming `quickchr doctor`.
+
+Checked directly in the published source:
+
+- `src/cli/index.ts`: `startStatusLine()` distinguishes `created and started`
+  from `started`, and `created` from `launched` with `--no-wait`. The
+  `cmdStart()` path calls `QuickCHR.start()` for an unknown name; the library
+  creates it. The older missing-name readiness-poll failure above did not
+  exercise `start` and is not evidence against this creation behavior.
+- `src/lib/quickchr.ts`: `waitForBoot()` selects native-API login for RouterOS 6,
+  REST for RouterOS 7; the v6 path has no provisioning or REST.
+- `src/lib/disk.ts`: `normalizeDiskOptions()` defaults library callers to raw,
+  or qcow2 with `bootSize`; qcow2 and extra disks require `qemu-img`.
+- `src/lib/types.ts`: `installDeps` is deprecated and ignored.
+- [Versioned CHANGELOG](https://github.com/tikoci/quickchr/blob/v0.5.2/CHANGELOG.md)
+  and [MANUAL](https://github.com/tikoci/quickchr/blob/v0.5.2/MANUAL.md): the
+  0.5.1 storage admission/cache changes, 0.5.2 prerequisites and runtime pin.
+
+This pass did **not** repeat the earlier live CHR tests, force storage exhaustion,
+exercise cache eviction, or remove `qemu-img` from the host. Earlier timings and
+live results retain their original package versions. Registry tags are mutable;
+the skill's runnable install commands pin 0.5.2 rather than depending on a tag.

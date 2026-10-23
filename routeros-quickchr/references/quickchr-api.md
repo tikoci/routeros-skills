@@ -17,13 +17,14 @@ a navigational summary — the **authoritative, versioned** source is the quickc
 in [`src/lib/types.ts`](https://github.com/tikoci/quickchr/blob/main/src/lib/types.ts).
 Verify signatures there before relying on exact shapes; this doc favors stable
 concepts over version-specific detail. Installed from npm as `@tikoci/quickchr`
-(`bun add @tikoci/quickchr`, or `bunx @tikoci/quickchr <cmd>` without installing).
+(`bun add @tikoci/quickchr@0.5.2`, or `bunx @tikoci/quickchr@0.5.2 <cmd>` without installing).
 
-Pinned to **0.5.0**. Rows that changed from 0.4.8 are labelled where
-the difference matters. The 0.5.0 surface follows the `[0.5.0]`
-section of quickchr's
+Pinned to **0.5.2**. Rows that changed from 0.4.8 are labelled where
+the difference matters. The surface follows the `[0.5.0]` through `[0.5.2]`
+sections of quickchr's
 [`CHANGELOG.md`](https://github.com/tikoci/quickchr/blob/main/CHANGELOG.md) and
-was checked against the published package's `src/lib/types.ts`.
+was checked against the published 0.5.2 package's `src/lib/types.ts`
+([package review](../../routeros-quickchr-cli/references/cli-grounding.md#quickchr-052-package-review)).
 
 ## Trigger terms
 
@@ -34,9 +35,11 @@ port-forward, guest→host UDP, MNDP/L2 capture from CHR.
 
 ## `QuickCHR.start(opts)` → `ChrInstance`
 
-Returns a **REST-ready** instance: download, boot, and provisioning have all
-completed when the promise resolves (background/library use), unless
-`wait: false` is set. Common `StartOptions`:
+Returns a **REST-ready** instance for RouterOS 7: download, boot, and
+provisioning have completed when the promise resolves (background/library
+use). RouterOS 6 uses native-API login readiness and has no REST or
+provisioning. `wait: false` returns before either readiness check.
+Common `StartOptions`:
 
 | Field | Meaning / default |
 |---|---|
@@ -46,7 +49,7 @@ completed when the promise resolves (background/library use), unless
 | `arch` | `"x86"` or `"arm64"` or `"auto"` (default: host arch; `"auto"` is an explicit synonym for the default) |
 | `cpu` | vCPUs (default `1`) |
 | `mem` | MiB RAM (default `512`; `1024` for cross-arch TCG) |
-| `background` | `true` (default) — QEMU's stdio goes to a log file, **and since 0.4.8 it is spawned into its own session on POSIX** (`detached: true`), so a signal to the caller's process group no longer reaches it; Windows uses a detached child for the same reason. `false` = foreground, serial on stdio — **except when provisioning options are also set**: `start()` then boots detached anyway (`spawnInBackground = background \|\| (!background && hasProvisioning)`), provisions, `stop()`s, and relaunches with serial attached, so a foreground provisioning run is really boot → provision → full restart. Note none of this is "return immediately": `start()` resolves only when the guest is REST-ready. |
+| `background` | `true` (default) — QEMU's stdio goes to a log file, **and since 0.4.8 it is spawned into its own session on POSIX** (`detached: true`), so a signal to the caller's process group no longer reaches it; Windows uses a detached child for the same reason. `false` = foreground, serial on stdio — **except when provisioning options are also set**: `start()` then boots detached anyway (`spawnInBackground = background \|\| (!background && hasProvisioning)`), provisions, `stop()`s, and relaunches with serial attached, so a foreground provisioning run is really boot → provision → full restart. Note none of this is "return immediately": with default `wait`, `start()` resolves after the version-specific readiness check. |
 | `wait` | `true` (default). `false` resolves once QEMU is running, with state and ports saved, and leaves readiness to you (`instance.waitForBoot()`). Throws `INVALID_ARGUMENT` with any provisioning option, including ones `add()` recorded for a first boot, or with `background: false`. (#159) |
 | `secureLogin` | `true` → managed `quickchr` user with a stored password; `false`/omitted → open admin. Inverse alias: `noAuth` (`noAuth: true` ≙ `secureLogin: false`; `secureLogin` wins if both set). Prefer `secureLogin`. **Must be explicitly `true` to take effect** — provisioning tests `secureLogin === true`, so omitting it leaves `admin` password-less (observed: `inspect --json` reports `"password": ""`). That open-admin result holds only when nothing else changes admin's state: `disableAdmin: true` is applied independently and will disable `admin` even with no managed account, warning *"disabling admin without creating another user — you may lose access"*; an explicit `user` creates that user but does not disable `admin`. (Doc comments in 0.4.8 said `secureLogin` defaults to true; the code never did — the comments were fixed in 0.5.0, tikoci/quickchr#178.) |
 | `user` | `{ name, password }` custom user (provisioning, ≥ 7.20.8) |
@@ -60,11 +63,11 @@ completed when the promise resolves (background/library use), unless
 | `portBase` | first port of the 10-port block (auto from `9100` if omitted) |
 | `excludePorts` | `ServiceName[]` to exclude (e.g. `["winbox", "api-ssl"]`) |
 | `bootSize` | resize boot disk e.g. `"512M"` / `"2G"` (needs `qemu-img`; auto-converts to qcow2) |
-| `bootDiskFormat` | `"qcow2"` (snapshots + resize) or `"raw"` |
+| `bootDiskFormat` | `"raw"` by default in the library; `bootSize` implies `"qcow2"` (snapshots + resize). CLI default: `"qcow2"`. qcow2 and extra disks require `qemu-img` |
 | `extraDisks` | `string[]` extra blank qcow2 disks e.g. `["512M", "1G"]` |
 | `timeoutExtra` | extra ms added to computed boot timeout |
 | `onProgress` | `(msg: string) => void` progress callback (debug lines only when `QUICKCHR_DEBUG=1`) |
-| `installDeps` | auto-install missing host deps |
+| `installDeps` | deprecated and ignored since 0.5.1; never installed anything. Run `quickchr doctor` for install hints; CLI `--install-deps` errors |
 | `dryRun` | print resolved options + QEMU command, don't start |
 
 The full option set + defaults are in `StartOptions` (types.ts). Other static
@@ -87,7 +90,7 @@ already has is reported as applied rather than refused.
 |---|---|
 | `rest(path, init?)` | REST call → parsed JSON |
 | `exec(cmd, opts?)` | run a CLI command/script → `{ output, via }`. `opts.via`: `auto`/`rest`/`ssh`/`console`/`qga` |
-| `waitForBoot(timeoutMs?)` | optional re-check that REST is up (start() already waits) |
+| `waitForBoot(timeoutMs?)` | wait for REST on RouterOS 7 or native-API login on RouterOS 6; needed after `wait: false` (default start() already waits) |
 | `waitFor(cond, timeoutMs?)` | poll an arbitrary async predicate (e.g. "/dude enabled") |
 | `installPackage(names)` | one name or an array; download + install + reboot; returns names actually installed |
 | `availablePackages()` | package names available for this version/arch |
@@ -202,7 +205,8 @@ Frequently seen in grounding: `MISSING_QEMU`, `PORT_CONFLICT`, `BOOT_TIMEOUT`,
 
 | CLI | Library |
 |---|---|
-| `quickchr add/start <name> …` | `QuickCHR.start({ name, … })` |
+| `quickchr add --name <name> …` | `QuickCHR.add({ name, … })` (no boot) |
+| `quickchr start <name> …` | `QuickCHR.start({ name, … })` |
 | `--forward <spec>` (repeatable) | `extraPorts` (`parseForwardSpec` / `expandForwardSpec`) |
 | `--add-network <spec>` (repeatable) | `networks` |
 | `quickchr exec <name> "<cmd>"` | `instance.exec(cmd)` |
@@ -211,6 +215,6 @@ Frequently seen in grounding: `MISSING_QEMU`, `PORT_CONFLICT`, `BOOT_TIMEOUT`,
 | `quickchr stop <name>` | `instance.stop()` |
 | `quickchr shutdown <name> [--timeout <s>]` | `instance.shutdown({ timeoutMs })` (milliseconds) |
 | `quickchr start --no-wait` | `QuickCHR.start({ wait: false })` |
-| `quickchr set <name> --device-mode…` | `instance.setDeviceMode(opts)` (both versions) |
+| `quickchr set <name> --device-mode…` | `instance.setDeviceMode(opts)` |
 
-Run the CLI without installing: `bunx @tikoci/quickchr <cmd>`.
+Run the CLI without installing: `bunx @tikoci/quickchr@0.5.2 <cmd>`.

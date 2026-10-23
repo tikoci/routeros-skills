@@ -1,6 +1,6 @@
 ---
 name: routeros-quickchr-cli
-description: "Answer a RouterOS question by asking RouterOS. quickchr boots a real, disposable MikroTik CHR router on the local machine under QEMU — no hardware, no cloud, gone when you remove it — and centrs drives it. Covers the shell path end to end: the add/start/stop/shutdown/remove lifecycle, getting the shell back (--no-wait; --bg does not), getting REST endpoints and credentials out of a machine, L2 links between two VMs, provisioning (device-mode) that applies at first boot and the set route after it, and RouterOS 6 as a boot-only target. Pinned to quickchr 0.5.0. Use when: checking a claim or config against real RouterOS instead of guessing; needing a throwaway router for REST/CLI/API iteration; giving a shell script or CI job a router to talk to. For TypeScript harnesses that import the QuickCHR class, use routeros-quickchr instead."
+description: "Answer a RouterOS question by asking RouterOS. quickchr boots a real, disposable MikroTik CHR router on the local machine under QEMU — no hardware, no cloud, gone when you remove it — and centrs drives it. Covers the shell path end to end: the add/start/stop/shutdown/remove lifecycle, getting the shell back (--no-wait; --bg does not), getting REST endpoints and credentials out of a machine, L2 links between two VMs, provisioning (device-mode) that applies at first boot and the set route after it, and RouterOS 6 as a boot-only target. Pinned to quickchr 0.5.2. Use when: checking a claim or config against real RouterOS instead of guessing; needing a throwaway router for REST/CLI/API iteration; giving a shell script or CI job a router to talk to. For TypeScript harnesses that import the QuickCHR class, use routeros-quickchr instead."
 ---
 
 # CHR from the shell: quickchr CLI + centrs
@@ -13,7 +13,9 @@ commands (e.g. in a `forum.mikrotik.com` reply). If you are writing a
 `bun:test` harness that imports `QuickCHR`, use the
 **routeros-quickchr** skill instead — one scheme per task, never both.[^split]
 
-Behavior below is pinned to **0.5.0**. Check yours with
+Behavior below is pinned to **0.5.2**. Install with
+`bun install -g @tikoci/quickchr@0.5.2`, or invoke
+`bunx @tikoci/quickchr@0.5.2 <command>`. Check yours with
 `quickchr --version`. Where 0.4.8 and earlier differ in a way that can
 hurt you, the text says so inline; the rest of the version history
 lives in the footnotes.[^pin]
@@ -24,6 +26,23 @@ at **1 Mbps upload per interface** — every other RouterOS feature is
 unrestricted. Config, API and CLI grounding are unaffected; a throughput
 or queue number measured here is the license talking, not the
 feature.[^license]
+
+## Host prerequisites and storage
+
+Use Bun **1.4.4**, the tested runtime shipped in 0.5.2. Run
+`quickchr doctor` for missing dependencies and install hints. The old
+`start --install-deps` flag now errors; it never installed dependencies.
+The CLI defaults to **qcow2**, requiring `qemu-img`; the library defaults
+to **raw** unless `bootSize` implies qcow2. Extra disks also need
+`qemu-img`.[^release052]
+
+Storage admission checks the bytes the operation will write plus a
+**2 GiB reserve** on each filesystem it uses, accounting for concurrent
+operations. The old 10 GiB floor is gone. `QUICKCHR_STORAGE_RESERVE`
+(or `storage-reserve`) adjusts the reserve; cache eviction precedes an
+`INSUFFICIENT_DISK_SPACE` refusal. Cache limits now include packages and
+partial downloads, so the first prune after upgrading can evict more
+than before.[^release052]
 
 ## Lifecycle: `add` is not `start`
 
@@ -48,7 +67,9 @@ quickchr remove lab-a
   one-command flow. A typo'd name therefore boots a factory machine on
   fresh ports instead of erroring, which after a failed start can look
   like your machine came back wrong. Check `quickchr list` before
-  retrying a name.[^field]
+  retrying a name. Since 0.5.1 the status says "created and started"
+  ("created — not waiting for RouterOS" with `--no-wait`); resuming
+  an existing machine says "started".[^release052]
 - `exec <name> <command…>` runs one RouterOS command over REST.
   `--via` is `auto|rest|qga` here, and **`qga` is narrower than it
   looks**: RouterOS only starts its guest agent for an **x86** CHR
@@ -265,14 +286,14 @@ power-cycle QEMU via the monitor, re-read to confirm (≈45s vs ≈22s
 without). That runs on the first boot, so pass it to `add`, or to the
 first `start` of a machine `add` created plain. After that boot:[^dm-window]
 
-| `start --device-mode-enable container` on… | 0.5.0 |
+| `start --device-mode-enable container` on… | 0.5.2 |
 |---|---|
 | a machine that never started | applies — "Device-mode verified: mode=rose container=yes" |
 | a machine that has booted | refused, `PROVISIONING_WINDOW_CLOSED`, with the `quickchr set …` command to run |
 | a machine that already has it | "already applied — nothing to do", and it starts |
 
-(On 0.4.8 the second and third cases were silently ignored instead:
-no warning, `container` stayed `false`.)
+(On 0.4.8 an already-booted machine silently ignored the request:
+`container=false` stayed false; an already-enabled container stayed enabled.)
 
 **Changing it later.** `quickchr set <name> --device-mode-enable
 container` works on a running machine. It prints each setting that will
@@ -347,7 +368,12 @@ not have, and times out. Use 7.x there, or upgrade.
 
 [^split]: Split rationale: tikoci/routeros-skills#21. Library consumers
     stay on **routeros-quickchr**; shell-first agents come here.
-[^pin]: Pinned observations: the 0.5.0 claims were re-run against
+[^release052]: quickchr [0.5.2 CHANGELOG](https://github.com/tikoci/quickchr/blob/v0.5.2/CHANGELOG.md)
+    `[0.5.1]` and `[0.5.2]`;
+    [package review](./references/cli-grounding.md#quickchr-052-package-review).
+[^pin]: The 0.5.2 changes were checked against the published package
+    ([package review](./references/cli-grounding.md#quickchr-052-package-review)).
+    Pinned observations: the 0.5.0 claims were re-run against
     published `@tikoci/quickchr@0.5.0` and `@tikoci/centrs@0.1.8`,
     CHR 7.24.5 and 6.49.23 x86
     (`references/cli-grounding.md` §quickchr 0.5.0 re-check), and
