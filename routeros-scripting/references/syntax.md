@@ -442,6 +442,29 @@ Scheduler/Netwatch/hook policies must cover what the script does. Backups and
 sensitive data require `sensitive`; file operations commonly require `ftp`. Use
 `dont-require-permissions=yes` only for tightly bounded scripts.
 
+## `/import` — Debugging with Verbose Dry-Run
+
+Plain `/import file.rsc` is **fail-fast**: it stops at the first error and
+every earlier line stays applied. To find errors without changing the
+configuration, add **both** flags — `verbose=yes` alone still applies:
+
+```routeros
+/import test.rsc verbose=yes dry-run
+```
+
+Dry-run echoes each line as `#line N`, prints the inline error under the
+offending line, scans the **whole file**, and ends with a count
+(`Script Error: found 1 error(s) in import file`). Plain and verbose imports
+stop at the first error with no count. Every mode reports `line N column M`
+coordinates with the error. A clean dry-run ends with
+`No syntax errors found in the import file`; a clean real import answers
+`Script file loaded and executed successfully`.
+
+> Lab note: fail-fast partial application, dry-run side-effect freedom
+> (firewall entries and system identity unchanged), and the whole-file error
+> count verified on stock CHR 7.24.5 (2026-10-31); manual documents the
+> `verbose=yes dry-run` form and the `#line`/summary output shape.
+
 ## Important Gotchas
 
 - **No pipes, no redirection** — can't do `cmd | grep` or `cmd > file`
