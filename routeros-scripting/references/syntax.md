@@ -444,9 +444,8 @@ sensitive data require `sensitive`; file operations commonly require `ftp`. Use
 
 ## `/import` — Debugging with Verbose Dry-Run
 
-Plain `/import file.rsc` is **fail-fast**: it stops at the first error and
-every earlier line stays applied. To find errors without changing the
-configuration, add **both** flags — `verbose=yes` alone still applies:
+To check a file without changing the configuration, add **both** flags —
+`verbose=yes` alone still applies:
 
 ```routeros
 /import test.rsc verbose=yes dry-run
@@ -454,16 +453,38 @@ configuration, add **both** flags — `verbose=yes` alone still applies:
 
 Dry-run echoes each line as `#line N`, prints the inline error under the
 offending line, scans the **whole file**, and ends with a count
-(`Script Error: found 1 error(s) in import file`). Plain and verbose imports
-stop at the first error with no count. Every mode reports `line N column M`
-coordinates with the error. A clean dry-run ends with
+(`Script Error: found 1 error(s) in import file`). A clean dry-run ends with
 `No syntax errors found in the import file`; a clean real import answers
 `Script file loaded and executed successfully`.
 
-> Lab note: fail-fast partial application, dry-run side-effect freedom
-> (firewall entries and system identity unchanged), and the whole-file error
-> count verified on stock CHR 7.24.5 (2026-10-31); manual documents the
-> `verbose=yes dry-run` form and the `#line`/summary output shape.
+**A clean dry-run does not mean the import will apply.** Dry-run executes
+nothing, so it only finds what the parser finds. Failures decided by device
+state pass it and `:parse` alike, then stop the real import:
+
+- a duplicate (`failure: already have such entry`), including one created by an
+  earlier line of the same file;
+- a builtin object (`failure: cannot change builtin`);
+- a missing mandatory value checked on apply (an `/snmp community` with
+  `security=private` and no passwords);
+- a missing object (`no such item`).
+
+A real import stops at the first error, and what is already applied depends on
+the fault and the mode:
+
+| Fault | Plain `/import` | `verbose=yes` |
+|-------|-----------------|---------------|
+| Syntax error (e.g. a value outside its allowed set) | nothing runs | earlier lines applied |
+| `bad command name` or an apply-time failure | earlier lines applied | earlier lines applied |
+
+Neither mode rolls back. Syntax errors report `line N column M`; apply-time
+failures report the command path and line (`(/interface/list/set; line 2)`)
+with no column.
+
+> Lab note: verified on stock CHR 7.24.5 (2026-11-01), one fresh router per
+> import, with harmless address-list markers before and after each faulty
+> line; the plain-vs-verbose syntax-error difference reproduced on a second
+> pass. The manual documents the `verbose=yes dry-run` form and the
+> `#line`/summary output shape.
 
 ## Important Gotchas
 
