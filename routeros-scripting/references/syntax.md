@@ -451,6 +451,9 @@ To check a file without changing the configuration, add **both** flags —
 /import test.rsc verbose=yes dry-run
 ```
 
+The behavior below was measured on RouterOS 7.24.5 (see the lab note); other
+versions are unverified.
+
 Dry-run echoes each line as `#line N`, prints the inline error under the
 offending line, scans the **whole file**, and ends with a count
 (`Script Error: found 1 error(s) in import file`). A clean dry-run ends with
