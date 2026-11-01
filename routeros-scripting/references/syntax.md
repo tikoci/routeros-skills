@@ -476,9 +476,10 @@ the fault and the mode:
 | Syntax error (e.g. a value outside its allowed set) | nothing runs | earlier lines applied |
 | `bad command name` or an apply-time failure | earlier lines applied | earlier lines applied |
 
-Neither mode rolls back. Syntax errors report `line N column M`; apply-time
-failures report the command path and line (`(/interface/list/set; line 2)`)
-with no column.
+Neither mode rolls back. Syntax errors report `line N column M`. A plain
+import reports an apply-time failure with the command path and line
+(`(/interface/list/set; line 2)`) and no column; `verbose=yes` prints the bare
+failure under the `#line N` echo instead.
 
 > Lab note: verified on stock CHR 7.24.5 (2026-11-01), one fresh router per
 > import, with harmless address-list markers before and after each faulty
