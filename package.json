@@ -9,7 +9,7 @@
     "lint:markdown": "markdownlint-cli2 \"**/*.md\"",
     "lint:cspell": "cspell lint . --no-progress",
     "lint:skills": "bun scripts/check-skills.ts",
-    "lint:refs": "bun scripts/check-refs.ts && bun scripts/build-refs.ts --check",
+    "lint:refs": "bun scripts/check-refs.ts && bun scripts/build-refs.ts --check && bun scripts/check-refs.ts --self-test",
     "build:refs": "bun scripts/build-refs.ts"
   },
   "devDependencies": {

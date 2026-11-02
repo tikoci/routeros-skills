@@ -7,8 +7,14 @@
     "source_commit": "84c890ddcb55c80176fc2bdb0d3db038fb73e22f",
     "built_at": "2026-10-21T17:12:26.963Z",
     "docs_manual_version": "7.26",
+    "inspect_versions": [
+      "7.24.5"
+    ],
     "cliref_tree": "7.26",
-    "cliref_rows_digest": "610ac4a0dde812fbaefcc35f7cf5c5ba3dacabe4883294999cf590b85a826d25"
+    "cliref_rows_digest": "610ac4a0dde812fbaefcc35f7cf5c5ba3dacabe4883294999cf590b85a826d25",
+    "format": "rosetta-datasets",
+    "format_version": 2,
+    "slice_sha256": "d6f6afb6bb71de566978966908d051a87166896ce3cb939e51aafc836ea8757e"
   },
   "owned_prefixes": [
     "/app",
@@ -2484,1867 +2490,4064 @@
       }
     }
   },
-  "fields": {
-    "/app/network": [
-      {
-        "name": "allow-outgoing-access",
-        "kind": "Argument",
-        "description": ""
-      },
-      {
-        "name": "bridge-interface",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "cmds",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "ip",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "name",
-        "kind": "Argument",
-        "description": ""
-      },
-      {
-        "name": "network",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "status",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "used-ips",
-        "kind": "Read-only Argument",
-        "description": ""
-      }
-    ],
-    "/app/settings": [
-      {
-        "name": "app-store-urls",
-        "kind": "Argument",
-        "description": "URL to a custom app store. Must point to a YAML array where each application is an element"
-      },
-      {
-        "name": "assumed-download-path",
-        "kind": "Read-only Argument",
-        "description": "Default download directory path, typically located within the media storage area"
-      },
-      {
-        "name": "assumed-lan-bridge",
-        "kind": "Read-only Argument",
-        "description": "Automatically detected bridge interface used for LAN connectivity"
-      },
-      {
-        "name": "assumed-media-path",
-        "kind": "Read-only Argument",
-        "description": "Default media storage path, typically located on the system disk"
-      },
-      {
-        "name": "assumed-router-ip",
-        "kind": "Read-only Argument",
-        "description": "Automatically detected network IP address of the RouterOS device"
-      },
-      {
-        "name": "auto-update",
-        "kind": "Argument",
-        "description": "Global setting that enables automatic updates for all installed applications packages"
-      },
-      {
-        "name": "certificate",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "certificate-status",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "disk",
-        "kind": "Argument",
-        "description": "Global setting that specifies which disk will be used for storage operations"
-      },
-      {
-        "name": "download-path",
-        "kind": "Argument",
-        "description": "Manually specifies the directory path where all downloaded content will be stored"
-      },
-      {
-        "name": "lan-bridge",
-        "kind": "Argument",
-        "description": "Manually specifies the bridge interface that represents the local area network"
-      },
-      {
-        "name": "media-path",
-        "kind": "Argument",
-        "description": "Manually specifies the directory path where all media files will be stored"
-      },
-      {
-        "name": "registry-mirrors",
-        "kind": "Argument",
-        "description": "Specifies one or more registry mirror URLs for container image retrieval"
-      },
-      {
-        "name": "router-ip",
-        "kind": "Argument",
-        "description": "Manually specifies the IP address at which the current RouterOS device can be reached"
-      },
-      {
-        "name": "show-in-webfig",
-        "kind": "Argument",
-        "description": "Controls whether links to enabled applications are displayed on the WebFig login page"
-      }
-    ],
-    "/app/setup": [
-      {
-        "name": "disk",
-        "kind": "Read-only Argument",
-        "description": "Selected storage disk for application installation"
-      },
-      {
-        "name": "lan-bridge",
-        "kind": "Read-only Argument",
-        "description": "Selected LAN bridge interface for container networking"
-      },
-      {
-        "name": "router-ip-alt",
-        "kind": "Read-only Argument",
-        "description": "Manual IP address override for the RouterOS device"
-      }
-    ],
-    "/console/inspect": [
-      {
-        "name": "completion",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "highlight",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "input",
-        "kind": "Argument",
-        "description": ""
-      },
-      {
-        "name": "name",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "nested",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "node-type",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "nonorm",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "offset",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "path",
-        "kind": "Argument",
-        "description": ""
-      },
-      {
-        "name": "preference",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "request",
-        "kind": "Argument",
-        "description": ""
-      },
-      {
-        "name": "show",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "style",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "symbol",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "symbol-type",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "text",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "type",
-        "kind": "Read-only Argument",
-        "description": ""
-      }
-    ],
-    "/container": [
-      {
-        "name": "arch",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "check-certificate",
-        "kind": "Argument",
-        "description": ""
-      },
-      {
-        "name": "cmd",
-        "kind": "Argument",
-        "description": ""
-      },
-      {
-        "name": "config-json",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "container-size",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "cpu-list",
-        "kind": "Argument",
-        "description": ""
-      },
-      {
-        "name": "cpu-usage",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "data-size",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "default-cmd",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "default-dns",
-        "kind": "Argument",
-        "description": ""
-      },
-      {
-        "name": "default-entrypoint",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "default-healthcheck-cmd",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "default-healthcheck-interval",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "default-healthcheck-retries",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "default-healthcheck-start-interval",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "default-healthcheck-start-period",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "default-healthcheck-timeout",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "default-shell",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "default-stop-signal",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "default-user",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "default-workdir",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "devices",
-        "kind": "Argument",
-        "description": ""
-      },
-      {
-        "name": "dns",
-        "kind": "Argument",
-        "description": ""
-      },
-      {
-        "name": "domain-name",
-        "kind": "Argument",
-        "description": ""
-      },
-      {
-        "name": "entrypoint",
-        "kind": "Argument",
-        "description": ""
-      },
-      {
-        "name": "env",
-        "kind": "Argument",
-        "description": ""
-      },
-      {
-        "name": "env-current",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "envlists",
-        "kind": "Argument",
-        "description": ""
-      },
-      {
-        "name": "file",
-        "kind": "Argument",
-        "description": ""
-      },
-      {
-        "name": "healthcheck-cmd",
-        "kind": "Argument",
-        "description": ""
-      },
-      {
-        "name": "healthcheck-interval",
-        "kind": "Argument",
-        "description": ""
-      },
-      {
-        "name": "healthcheck-retries",
-        "kind": "Argument",
-        "description": ""
-      },
-      {
-        "name": "healthcheck-start-interval",
-        "kind": "Argument",
-        "description": ""
-      },
-      {
-        "name": "healthcheck-start-period",
-        "kind": "Argument",
-        "description": ""
-      },
-      {
-        "name": "healthcheck-status",
-        "kind": "Argument",
-        "description": ""
-      },
-      {
-        "name": "healthcheck-timeout",
-        "kind": "Argument",
-        "description": ""
-      },
-      {
-        "name": "hostname",
-        "kind": "Argument",
-        "description": ""
-      },
-      {
-        "name": "hosts",
-        "kind": "Argument",
-        "description": ""
-      },
-      {
-        "name": "ignore-remote-image-change",
-        "kind": "Argument",
-        "description": ""
-      },
-      {
-        "name": "image-id",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "interface",
-        "kind": "Argument",
-        "description": ""
-      },
-      {
-        "name": "layer-dir",
-        "kind": "Argument",
-        "description": ""
-      },
-      {
-        "name": "layers",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "logging",
-        "kind": "Argument",
-        "description": ""
-      },
-      {
-        "name": "memory-current",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "memory-high",
-        "kind": "Argument",
-        "description": ""
-      },
-      {
-        "name": "memory-max",
-        "kind": "Argument",
-        "description": ""
-      },
-      {
-        "name": "mount",
-        "kind": "Argument",
-        "description": ""
-      },
-      {
-        "name": "mountlists",
-        "kind": "Argument",
-        "description": ""
-      },
-      {
-        "name": "name",
-        "kind": "Argument",
-        "description": ""
-      },
-      {
-        "name": "os",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "privileged",
-        "kind": "Argument",
-        "description": ""
-      },
-      {
-        "name": "remote-image",
-        "kind": "Argument",
-        "description": ""
-      },
-      {
-        "name": "restart-count",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "restart-interval",
-        "kind": "Argument",
-        "description": ""
-      },
-      {
-        "name": "restart-max-count",
-        "kind": "Argument",
-        "description": ""
-      },
-      {
-        "name": "restart-policy",
-        "kind": "Argument",
-        "description": ""
-      },
-      {
-        "name": "root-dir",
-        "kind": "Argument",
-        "description": ""
-      },
-      {
-        "name": "shell",
-        "kind": "Argument",
-        "description": ""
-      },
-      {
-        "name": "shm-size",
-        "kind": "Argument",
-        "description": ""
-      },
-      {
-        "name": "start-on-boot",
-        "kind": "Argument",
-        "description": ""
-      },
-      {
-        "name": "stop-on-unhealthy",
-        "kind": "Argument",
-        "description": ""
-      },
-      {
-        "name": "stop-signal",
-        "kind": "Argument",
-        "description": ""
-      },
-      {
-        "name": "stop-time",
-        "kind": "Argument",
-        "description": ""
-      },
-      {
-        "name": "swap-current",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "swap-max",
-        "kind": "Argument",
-        "description": ""
-      },
-      {
-        "name": "tag",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "tmpfs",
-        "kind": "Argument",
-        "description": ""
-      },
-      {
-        "name": "user",
-        "kind": "Argument",
-        "description": ""
-      },
-      {
-        "name": "workdir",
-        "kind": "Argument",
-        "description": ""
-      }
-    ],
-    "/container/config": [
-      {
-        "name": "assumed-registry-url",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "layer-dir",
-        "kind": "Argument",
-        "description": ""
-      },
-      {
-        "name": "memory-current",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "memory-high",
-        "kind": "Argument",
-        "description": ""
-      },
-      {
-        "name": "memory-max",
-        "kind": "Argument",
-        "description": ""
-      },
-      {
-        "name": "password",
-        "kind": "Argument",
-        "description": ""
-      },
-      {
-        "name": "registry-url",
-        "kind": "Argument",
-        "description": ""
-      },
-      {
-        "name": "swap-current",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "swap-max",
-        "kind": "Argument",
-        "description": ""
-      },
-      {
-        "name": "tmpdir",
-        "kind": "Argument",
-        "description": ""
-      },
-      {
-        "name": "username",
-        "kind": "Argument",
-        "description": ""
-      }
-    ],
-    "/container/envs": [
-      {
-        "name": "key",
-        "kind": "Argument",
-        "description": ""
-      },
-      {
-        "name": "list",
-        "kind": "Argument",
-        "description": ""
-      },
-      {
-        "name": "value",
-        "kind": "Argument",
-        "description": ""
-      }
-    ],
-    "/container/kill": [
-      {
-        "name": "signal",
-        "kind": "Argument",
-        "description": ""
-      }
-    ],
-    "/container/layers": [
-      {
-        "name": "containers",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "layer-dir",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "name",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "size",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "type",
-        "kind": "Read-only Argument",
-        "description": ""
-      }
-    ],
-    "/container/log": [
-      {
-        "name": "container",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "message",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "time",
-        "kind": "Read-only Argument",
-        "description": ""
-      }
-    ],
-    "/container/mounts": [
-      {
-        "name": "dst",
-        "kind": "Argument",
-        "description": ""
-      },
-      {
-        "name": "list",
-        "kind": "Argument",
-        "description": ""
-      },
-      {
-        "name": "mode",
-        "kind": "Argument",
-        "description": ""
-      },
-      {
-        "name": "src",
-        "kind": "Argument",
-        "description": ""
-      }
-    ],
-    "/container/repull": [
-      {
-        "name": "file",
-        "kind": "Argument",
-        "description": ""
-      },
-      {
-        "name": "remote-image",
-        "kind": "Argument",
-        "description": ""
-      }
-    ],
-    "/container/save": [
-      {
-        "name": "commit",
-        "kind": "Argument",
-        "description": ""
-      },
-      {
-        "name": "file",
-        "kind": "Argument",
-        "description": ""
-      },
-      {
-        "name": "name",
-        "kind": "Argument",
-        "description": ""
-      }
-    ],
-    "/interface/bridge/port": [
-      {
-        "name": "actual-path-cost",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "auto-isolate",
-        "kind": "Argument",
-        "description": ""
-      },
-      {
-        "name": "bpdu-guard",
-        "kind": "Argument",
-        "description": ""
-      },
-      {
-        "name": "bridge",
-        "kind": "Argument",
-        "description": ""
-      },
-      {
-        "name": "broadcast-flood",
-        "kind": "Argument",
-        "description": ""
-      },
-      {
-        "name": "debug-info",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "declared-vlan-ids",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "designated-bridge-id",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "designated-cost",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "designated-port-id",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "discard-transitions",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "edge",
-        "kind": "Argument",
-        "description": ""
-      },
-      {
-        "name": "edge-port",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "edge-port-discovery",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "external-fdb-status",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "fast-leave",
-        "kind": "Argument",
-        "description": ""
-      },
-      {
-        "name": "forward-transitions",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "forwarding",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "frame-types",
-        "kind": "Argument",
-        "description": ""
-      },
-      {
-        "name": "horizon",
-        "kind": "Argument",
-        "description": ""
-      },
-      {
-        "name": "hw",
-        "kind": "Argument",
-        "description": ""
-      },
-      {
-        "name": "hw-offload",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "hw-offload-group",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "ingress-filtering",
-        "kind": "Argument",
-        "description": ""
-      },
-      {
-        "name": "interface",
-        "kind": "Argument",
-        "description": ""
-      },
-      {
-        "name": "internal-path-cost",
-        "kind": "Argument",
-        "description": ""
-      },
-      {
-        "name": "internal-root-path-cost",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "last-topology-change",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "learn",
-        "kind": "Argument",
-        "description": ""
-      },
-      {
-        "name": "learning",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "multicast-router",
-        "kind": "Argument",
-        "description": ""
-      },
-      {
-        "name": "multicast-router",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "mvrp-applicant-state",
-        "kind": "Argument",
-        "description": ""
-      },
-      {
-        "name": "mvrp-registrar-state",
-        "kind": "Argument",
-        "description": ""
-      },
-      {
-        "name": "parent",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "path-cost",
-        "kind": "Argument",
-        "description": ""
-      },
-      {
-        "name": "point-to-point",
-        "kind": "Argument",
-        "description": ""
-      },
-      {
-        "name": "point-to-point-port",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "port-id",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "priority",
-        "kind": "Argument",
-        "description": ""
-      },
-      {
-        "name": "pvid",
-        "kind": "Argument",
-        "description": ""
-      },
-      {
-        "name": "registered-vlan-ids",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "restricted-role",
-        "kind": "Argument",
-        "description": ""
-      },
-      {
-        "name": "restricted-tcn",
-        "kind": "Argument",
-        "description": ""
-      },
-      {
-        "name": "role",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "root-path-cost",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "rx-bpdu",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "rx-tc",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "sending-rstp",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "status",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "tag-stacking",
-        "kind": "Argument",
-        "description": ""
-      },
-      {
-        "name": "topology-changes",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "trusted",
-        "kind": "Argument",
-        "description": ""
-      },
-      {
-        "name": "trusted-arp",
-        "kind": "Argument",
-        "description": ""
-      },
-      {
-        "name": "trusted-dhcpv6",
-        "kind": "Argument",
-        "description": ""
-      },
-      {
-        "name": "trusted-ra",
-        "kind": "Argument",
-        "description": ""
-      },
-      {
-        "name": "tx-bpdu",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "tx-tc",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "unknown-multicast-flood",
-        "kind": "Argument",
-        "description": ""
-      },
-      {
-        "name": "unknown-unicast-flood",
-        "kind": "Argument",
-        "description": ""
-      }
-    ],
-    "/interface/bridge/port/monitor": [
-      {
-        "name": "actual-path-cost",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "declared-vlan-ids",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "designated-bridge-id",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "designated-cost",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "designated-internal-cost",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "designated-max-age",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "designated-message-age",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "designated-port-id",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "designated-remaining-hops",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "discard-transitions",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "edge-port",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "edge-port-discovery",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "external-fdb",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "forward-transitions",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "forwarding",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "hw-offload-group",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "interface",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "internal-root-path-cost",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "last-topology-change",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "learning",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "multicast-router",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "point-to-point-port",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "port-id",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "registered-vlan-ids",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "role",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "root-path-cost",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "sending-rstp",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "status",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "topology-changes",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "tx-rx-bpdu",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "tx-rx-tc",
-        "kind": "Read-only Argument",
-        "description": ""
-      }
-    ],
-    "/interface/bridge/port/mst-override": [
-      {
-        "name": "debug-info",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "identifier",
-        "kind": "Argument",
-        "description": ""
-      },
-      {
-        "name": "interface",
-        "kind": "Argument",
-        "description": ""
-      },
-      {
-        "name": "internal-path-cost",
-        "kind": "Argument",
-        "description": ""
-      },
-      {
-        "name": "priority",
-        "kind": "Argument",
-        "description": ""
-      }
-    ],
-    "/interface/bridge/port/mst-override/monitor": [
-      {
-        "name": "designated-bridge-id",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "designated-cost",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "designated-internal-cost",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "designated-port-id",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "designated-remaining-hops",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "discard-transitions",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "forward-transitions",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "forwarding",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "identifier",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "internal-root-path-cost",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "last-topology-change",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "learning",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "port",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "port-id",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "role",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "status",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "topology-changes",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "tx-rx-bpdu",
-        "kind": "Read-only Argument",
-        "description": ""
-      },
-      {
-        "name": "tx-rx-tc",
-        "kind": "Read-only Argument",
-        "description": ""
-      }
-    ],
-    "/interface/list/member": [
-      {
-        "name": "dynamic",
-        "kind": "Read-only Argument",
-        "description": "Whether the member was added dynamically."
-      },
-      {
-        "name": "interface",
-        "kind": "Argument",
-        "description": "Name of the interface that is a member of the list."
-      },
-      {
-        "name": "list",
-        "kind": "Argument",
-        "description": "Name of the interface list to which the member belongs."
-      }
-    ],
-    "/log": [
-      {
-        "name": "buffer",
-        "kind": "Read-only Argument",
-        "description": "Buffer the entry belongs to: `memory` for the default buffer, or the name of another memory action or of a disk action. A disk action's newest entries show here, and after a reboot the entries of its active file. `/log/print` without a filter lists every buffer, so a message passed to several actions shows once per action."
-      },
-      {
-        "name": "extra-info",
-        "kind": "Read-only Argument",
-        "description": "Extra `key=value` fields that some messages carry, for example a login: `app=ssh duser=admin outcome=success src=192.0.2.1`. `print with-extra-info` appends them to the message, and the `cef` remote log format sends them after `msg=`."
-      },
-      {
-        "name": "message",
-        "kind": "Read-only Argument",
-        "description": "Text of the entry, with the rule's `prefix` in front when the rule has one."
-      },
-      {
-        "name": "time",
-        "kind": "Read-only Argument",
-        "description": "Date and time the entry was added."
-      },
-      {
-        "name": "topics",
-        "kind": "Read-only Argument",
-        "description": "Topics of the entry, for example `system,info,account`. The rules in [`/system/logging`](system/logging/) select messages by these topics."
-      }
-    ],
-    "/system/device-mode/update": [
-      {
-        "name": "activation-timeout",
-        "kind": "Argument",
-        "description": "How long to wait for the physical confirmation (button press or power cycle) before the update is canceled. Also sets the length of the `attempt-count` reset window when an update is refused after three unsuccessful attempts. Range: 00:00:10 to 1d00:00:00. Default: 5m."
-      },
-      {
-        "name": "bandwidth-test",
-        "kind": "Argument",
-        "description": "Allow or block `/tool/bandwidth-test`, `/tool/bandwidth-server` and `/tool/speed-test`."
-      },
-      {
-        "name": "container",
-        "kind": "Argument",
-        "description": "Allow or block container functionality."
-      },
-      {
-        "name": "email",
-        "kind": "Argument",
-        "description": "Allow or block `/tool/e-mail`."
-      },
-      {
-        "name": "fetch",
-        "kind": "Argument",
-        "description": "Allow or block `/tool/fetch`."
-      },
-      {
-        "name": "flagged",
-        "kind": "Argument",
-        "description": "Set to `no` to clear the flagged state, after inspecting the configuration for unauthorized changes. Requires physical confirmation."
-      },
-      {
-        "name": "flagging-enabled",
-        "kind": "Argument",
-        "description": "Enable or disable the configuration analysis for signs of unauthorized access. Default: yes."
-      },
-      {
-        "name": "hotspot",
-        "kind": "Argument",
-        "description": "Allow or block `/ip/hotspot`."
-      },
-      {
-        "name": "install-any-version",
-        "kind": "Argument",
-        "description": "Allow or block downgrading to RouterOS versions outside the allowed-versions list."
-      },
-      {
-        "name": "ipsec",
-        "kind": "Argument",
-        "description": "Allow or block `/ip/ipsec`."
-      },
-      {
-        "name": "l2tp",
-        "kind": "Argument",
-        "description": "Allow or block L2TP client and server interfaces."
-      },
-      {
-        "name": "mode",
-        "kind": "Argument",
-        "description": "Device mode to apply. Specifying `mode` replaces the entire device-mode configuration except the other parameters given in the same command; omitted features get the new mode's defaults.\n- `advanced` - Previously called `enterprise`.\n- `basic` - For most other devices.\n- `home` - For home routers.\n- `rose` - For RDS and similar devices with wide disk use."
-      },
-      {
-        "name": "partitions",
-        "kind": "Argument",
-        "description": "Allow or block changing partition count."
-      },
-      {
-        "name": "pptp",
-        "kind": "Argument",
-        "description": "Allow or block PPTP client and server interfaces."
-      },
-      {
-        "name": "proxy",
-        "kind": "Argument",
-        "description": "Allow or block `/ip/proxy`."
-      },
-      {
-        "name": "romon",
-        "kind": "Argument",
-        "description": "Allow or block `/tool/romon`."
-      },
-      {
-        "name": "routerboard",
-        "kind": "Argument",
-        "description": "Allow or block `/system/routerboard/settings` (except auto-upgrade) and SwOS/RouterOS transition on dual-boot devices."
-      },
-      {
-        "name": "scheduler",
-        "kind": "Argument",
-        "description": "Allow or block `/system/scheduler`."
-      },
-      {
-        "name": "smb",
-        "kind": "Argument",
-        "description": "Allow or block `/ip/smb`."
-      },
-      {
-        "name": "sniffer",
-        "kind": "Argument",
-        "description": "Allow or block `/tool/sniffer`."
-      },
-      {
-        "name": "socks",
-        "kind": "Argument",
-        "description": "Allow or block `/ip/socks`."
-      },
-      {
-        "name": "traffic-gen",
-        "kind": "Argument",
-        "description": "Allow or block `/tool/traffic-generator`, `/tool/flood-ping`, and `/tool/ping-speed`."
-      },
-      {
-        "name": "update",
-        "kind": "Read-only Argument",
-        "description": "Status of a pending update with the time left to confirm it; empty when no update is pending."
-      },
-      {
-        "name": "zerotier",
-        "kind": "Argument",
-        "description": "Allow or block `/zerotier`."
-      }
-    ],
-    "/system/package/apply-changes": [
-      {
-        "name": "ignore-missing",
-        "kind": "Argument",
-        "description": "Upgrade only the RouterOS main package, omitting packages that are missing or not uploaded."
-      }
-    ],
-    "/system/package/update": [
-      {
-        "name": "channel",
-        "kind": "Argument",
-        "description": "Upgrade [channel](#channel) to use when checking for new versions."
-      },
-      {
-        "name": "check-certificate",
-        "kind": "Argument",
-        "description": "Whether and how to validate the server SSL certificate. Always use `yes` to ensure a secure connection. `yes-without-crl` can be used to skip CRL validation."
-      },
-      {
-        "name": "installed-version",
-        "kind": "Read-only Argument",
-        "description": "Currently installed RouterOS version."
-      },
-      {
-        "name": "ip-version",
-        "kind": "Argument",
-        "description": "IP version preference for connecting to the MikroTik download server."
-      },
-      {
-        "name": "latest-version",
-        "kind": "Read-only Argument",
-        "description": "Latest available RouterOS version in the selected [channel](#channel)."
-      },
-      {
-        "name": "mode",
-        "kind": "Argument",
-        "description": "Protocol for connecting to the MikroTik download server. Use `http` only if your network blocks HTTPS. HTTPS is recommended."
-      },
-      {
-        "name": "status",
-        "kind": "Read-only Argument",
-        "description": "Current status of the update process (for example, `New version is available`)."
-      }
-    ],
-    "/system/package/update/check-for-updates": [
-      {
-        "name": "changelog",
-        "kind": "Read-only Argument",
-        "description": "Changelog text for the latest available version."
-      },
-      {
-        "name": "fetch-changelog",
-        "kind": "Argument",
-        "description": "Whether to fetch the changelog along with the update check."
-      }
-    ],
-    "/system/package/update/download": [
-      {
-        "name": "ignore-missing",
-        "kind": "Argument",
-        "description": "Download only the RouterOS main package, omitting packages that are missing or not uploaded."
-      }
-    ],
-    "/system/package/update/install": [
-      {
-        "name": "ignore-missing",
-        "kind": "Argument",
-        "description": "Install only the RouterOS main package, omitting packages that are missing or not uploaded."
-      }
-    ],
-    "/system/resource": [
-      {
-        "name": "architecture-name",
-        "kind": "Read-only Argument",
-        "description": "CPU architecture of this build (arm, arm64, x86, tile ...)"
-      },
-      {
-        "name": "bad-blocks",
-        "kind": "Read-only Argument",
-        "description": "Percentage of bad blocks on the NAND"
-      },
-      {
-        "name": "board-name",
-        "kind": "Read-only Argument",
-        "description": "RouterBOARD model name"
-      },
-      {
-        "name": "build-time",
-        "kind": "Read-only Argument",
-        "description": "Installed RouterOS version build-time"
-      },
-      {
-        "name": "cpu",
-        "kind": "Read-only Argument",
-        "description": "CPU model that is on the board"
-      },
-      {
-        "name": "cpu-count",
-        "kind": "Read-only Argument",
-        "description": "Number of CPUs present on the system; each core is a separate CPU, Intel HT also counts as one CPU"
-      },
-      {
-        "name": "cpu-frequency",
-        "kind": "Read-only Argument",
-        "description": "Current CPU frequency"
-      },
-      {
-        "name": "cpu-load",
-        "kind": "Read-only Argument",
-        "description": "Percentage of used CPU resources, combined for all CPUs; per-core values are in [`/system/resource/cpu`](cpu)"
-      },
-      {
-        "name": "free-hdd-space",
-        "kind": "Read-only Argument",
-        "description": "Free space on the hard drive or NAND"
-      },
-      {
-        "name": "free-memory",
-        "kind": "Read-only Argument",
-        "description": "The unused amount of RAM"
-      },
-      {
-        "name": "minimum-version",
-        "kind": "Read-only Argument",
-        "description": "Minimum RouterOS version the board allows downgrading to (was factory-software)"
-      },
-      {
-        "name": "platform",
-        "kind": "Read-only Argument",
-        "description": "Platform name"
-      },
-      {
-        "name": "total-hdd-space",
-        "kind": "Read-only Argument",
-        "description": "Size of the hard drive or NAND"
-      },
-      {
-        "name": "total-memory",
-        "kind": "Read-only Argument",
-        "description": "Amount of installed RAM"
-      },
-      {
-        "name": "uptime",
-        "kind": "Read-only Argument",
-        "description": "Time interval passed since boot-up"
-      },
-      {
-        "name": "version",
-        "kind": "Read-only Argument",
-        "description": "Installed RouterOS version number"
-      },
-      {
-        "name": "write-sect-since-reboot",
-        "kind": "Read-only Argument",
-        "description": "The number of sector writes to the drive/NAND since the router was last rebooted"
-      },
-      {
-        "name": "write-sect-total",
-        "kind": "Read-only Argument",
-        "description": "The number of sector writes in total"
-      }
-    ],
-    "/system/resource/cpu": [
-      {
-        "name": "cpu",
-        "kind": "Read-only Argument",
-        "description": "Identification number of the CPU whose usage is shown"
-      },
-      {
-        "name": "disk",
-        "kind": "Read-only Argument",
-        "description": "Disk usage in percent"
-      },
-      {
-        "name": "irq",
-        "kind": "Read-only Argument",
-        "description": "IRQ usage in percent"
-      },
-      {
-        "name": "load",
-        "kind": "Read-only Argument",
-        "description": "CPU usage in percent"
-      }
-    ],
-    "/system/resource/hardware": [
-      {
-        "name": "category",
-        "kind": "Read-only Argument",
-        "description": "Device category"
-      },
-      {
-        "name": "device-id",
-        "kind": "Read-only Argument",
-        "description": "Device identifier (PID / Device ID)"
-      },
-      {
-        "name": "device-name",
-        "kind": "Read-only Argument",
-        "description": "Name of the device as reported by its firmware (name column refinement)"
-      },
-      {
-        "name": "device-path",
-        "kind": "Read-only Argument",
-        "description": "Device path from root bus to endpoint"
-      },
-      {
-        "name": "io",
-        "kind": "Read-only Argument",
-        "description": "I/O window assigned to the device"
-      },
-      {
-        "name": "irq",
-        "kind": "Read-only Argument",
-        "description": "Assigned interrupt number"
-      },
-      {
-        "name": "location",
-        "kind": "Read-only Argument",
-        "description": "Device location in the system topology"
-      },
-      {
-        "name": "manufacturer-reported-max-power",
-        "kind": "Read-only Argument",
-        "description": "Maximum power draw reported by the device (for example a USB modem)"
-      },
-      {
-        "name": "memory",
-        "kind": "Read-only Argument",
-        "description": "Memory window assigned to the device"
-      },
-      {
-        "name": "name",
-        "kind": "Read-only Argument",
-        "description": "Device name or model"
-      },
-      {
-        "name": "owner",
-        "kind": "Read-only Argument",
-        "description": "Subsystem or driver owning the device"
-      },
-      {
-        "name": "parent",
-        "kind": "Read-only Argument",
-        "description": "Parent bus or controller"
-      },
-      {
-        "name": "ports",
-        "kind": "Read-only Argument",
-        "description": "Number of ports provided by the device"
-      },
-      {
-        "name": "serial-number",
-        "kind": "Read-only Argument",
-        "description": "Device serial number"
-      },
-      {
-        "name": "speed",
-        "kind": "Read-only Argument",
-        "description": "Negotiated device speed"
-      },
-      {
-        "name": "type",
-        "kind": "Read-only Argument",
-        "description": "Bus type of the device: `usb`, `pci`, `scsi` or `serial`"
-      },
-      {
-        "name": "usb-version",
-        "kind": "Read-only Argument",
-        "description": "Supported USB version"
-      },
-      {
-        "name": "vendor",
-        "kind": "Read-only Argument",
-        "description": "Device vendor name"
-      },
-      {
-        "name": "vendor-id",
-        "kind": "Read-only Argument",
-        "description": "Vendor identifier (VID)"
-      }
-    ],
-    "/system/resource/hardware/authorize": [
-      {
-        "name": "allow",
-        "kind": "Argument",
-        "description": "Authorize the USB device (`yes`) or keep it unusable (`no`)"
-      }
-    ],
-    "/system/resource/hardware/usb-power-reset": [
-      {
-        "name": "bus",
-        "kind": "Argument",
-        "description": "USB bus number (as shown by `/system/resource/hardware`)"
-      },
-      {
-        "name": "duration",
-        "kind": "Argument",
-        "description": "Power-off duration before re-enabling USB"
-      },
-      {
-        "name": "slot",
-        "kind": "Argument",
-        "description": "USB slot number on the bus"
-      }
-    ],
-    "/system/resource/hardware/usb-settings": [
-      {
-        "name": "authorization",
-        "kind": "Argument",
-        "description": "Require per-device authorization before USB devices become usable (`authorization=yes`)"
-      }
-    ],
-    "/system/resource/irq": [
-      {
-        "name": "active-cpu",
-        "kind": "Read-only Argument",
-        "description": "The CPU currently serving the IRQ on multicore systems"
-      },
-      {
-        "name": "count",
-        "kind": "Read-only Argument",
-        "description": "The number of interrupts handled (on ethernet interfaces interrupt = packet)"
-      },
-      {
-        "name": "cpu",
-        "kind": "Argument",
-        "description": "The CPU the IRQ is pinned to; `auto` lets the scheduler balance by interrupt counts"
-      },
-      {
-        "name": "irq",
-        "kind": "Read-only Argument",
-        "description": "IRQ identification number"
-      },
-      {
-        "name": "per-cpu-count",
-        "kind": "Read-only Argument",
-        "description": "Per-CPU interrupt counts as a list"
-      },
-      {
-        "name": "users",
-        "kind": "Read-only Argument",
-        "description": "Process/driver bound to the IRQ"
-      }
-    ],
-    "/system/resource/monitor": [
-      {
-        "name": "cpu-used",
-        "kind": "Read-only Argument",
-        "description": "Total CPU usage across cores"
-      },
-      {
-        "name": "cpu-used-per-core",
-        "kind": "Read-only Argument",
-        "description": "One line per core with its percent usage"
-      },
-      {
-        "name": "free-memory",
-        "kind": "Read-only Argument",
-        "description": "Free memory in KiB"
-      }
-    ]
-  }
+  "occurrences": [
+    {
+      "manual_version": "7.26",
+      "entry_id": "1",
+      "source_path": "app",
+      "source_type": "Directory",
+      "inspect_path": "/app",
+      "match_kind": "exact",
+      "package": "container",
+      "conditions": null,
+      "syscap": "app",
+      "source_url": "https://manual.mikrotik.com/docs/cli-reference/app",
+      "fields": [],
+      "flags": []
+    },
+    {
+      "manual_version": "7.26",
+      "entry_id": "100",
+      "source_path": "container/log",
+      "source_type": "Directory",
+      "inspect_path": "/container/log",
+      "match_kind": "exact",
+      "package": "container",
+      "conditions": null,
+      "syscap": null,
+      "source_url": "https://manual.mikrotik.com/docs/cli-reference/container/log",
+      "fields": [
+        {
+          "name": "time",
+          "kind": "Read-only Argument",
+          "raw_type": "date",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "container",
+          "kind": "Read-only Argument",
+          "raw_type": "enum",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "message",
+          "kind": "Read-only Argument",
+          "raw_type": "string",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        }
+      ],
+      "flags": []
+    },
+    {
+      "manual_version": "7.26",
+      "entry_id": "101",
+      "source_path": "container/mounts",
+      "source_type": "Directory",
+      "inspect_path": "/container/mounts",
+      "match_kind": "exact",
+      "package": "container",
+      "conditions": null,
+      "syscap": null,
+      "source_url": "https://manual.mikrotik.com/docs/cli-reference/container/mounts",
+      "fields": [
+        {
+          "name": "list",
+          "kind": "Argument",
+          "raw_type": "enum",
+          "mandatory": "1",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "src",
+          "kind": "Argument",
+          "raw_type": "file",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "dst",
+          "kind": "Argument",
+          "raw_type": "string",
+          "mandatory": "1",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "mode",
+          "kind": "Argument",
+          "raw_type": "enum (rw | ro | rw,noexec | ro,noexec)",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        }
+      ],
+      "flags": [
+        {
+          "flag": "X",
+          "name": "disabled",
+          "description": ""
+        }
+      ]
+    },
+    {
+      "manual_version": "7.26",
+      "entry_id": "102",
+      "source_path": "container/repull",
+      "source_type": "Command",
+      "inspect_path": "/container/repull",
+      "match_kind": "exact",
+      "package": "container",
+      "conditions": null,
+      "syscap": null,
+      "source_url": "https://manual.mikrotik.com/docs/cli-reference/container/repull",
+      "fields": [
+        {
+          "name": "file",
+          "kind": "Argument",
+          "raw_type": "file",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "remote-image",
+          "kind": "Argument",
+          "raw_type": "string",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        }
+      ],
+      "flags": []
+    },
+    {
+      "manual_version": "7.26",
+      "entry_id": "103",
+      "source_path": "container/restart",
+      "source_type": "Command",
+      "inspect_path": "/container/restart",
+      "match_kind": "exact",
+      "package": "container",
+      "conditions": null,
+      "syscap": null,
+      "source_url": "https://manual.mikrotik.com/docs/cli-reference/container/restart",
+      "fields": [],
+      "flags": []
+    },
+    {
+      "manual_version": "7.26",
+      "entry_id": "104",
+      "source_path": "container/save",
+      "source_type": "Command",
+      "inspect_path": "/container/save",
+      "match_kind": "exact",
+      "package": "container",
+      "conditions": null,
+      "syscap": null,
+      "source_url": "https://manual.mikrotik.com/docs/cli-reference/container/save",
+      "fields": [
+        {
+          "name": "file",
+          "kind": "Argument",
+          "raw_type": "file",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "commit",
+          "kind": "Argument",
+          "raw_type": "switch",
+          "mandatory": "0",
+          "unsettable": "1",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "name",
+          "kind": "Argument",
+          "raw_type": "string",
+          "mandatory": "0",
+          "unsettable": "1",
+          "syscap": null,
+          "description": ""
+        }
+      ],
+      "flags": []
+    },
+    {
+      "manual_version": "7.26",
+      "entry_id": "105",
+      "source_path": "container/start",
+      "source_type": "Command",
+      "inspect_path": "/container/start",
+      "match_kind": "exact",
+      "package": "container",
+      "conditions": null,
+      "syscap": null,
+      "source_url": "https://manual.mikrotik.com/docs/cli-reference/container/start",
+      "fields": [],
+      "flags": []
+    },
+    {
+      "manual_version": "7.26",
+      "entry_id": "106",
+      "source_path": "container/stop",
+      "source_type": "Command",
+      "inspect_path": "/container/stop",
+      "match_kind": "exact",
+      "package": "container",
+      "conditions": null,
+      "syscap": null,
+      "source_url": "https://manual.mikrotik.com/docs/cli-reference/container/stop",
+      "fields": [],
+      "flags": []
+    },
+    {
+      "manual_version": "7.26",
+      "entry_id": "107",
+      "source_path": "container/update",
+      "source_type": "Command",
+      "inspect_path": "/container/update",
+      "match_kind": "exact",
+      "package": "container",
+      "conditions": null,
+      "syscap": null,
+      "source_url": "https://manual.mikrotik.com/docs/cli-reference/container/update",
+      "fields": [],
+      "flags": []
+    },
+    {
+      "manual_version": "7.26",
+      "entry_id": "192",
+      "source_path": "interface/bridge/port",
+      "source_type": "Directory",
+      "inspect_path": "/interface/bridge/port",
+      "match_kind": "exact",
+      "package": null,
+      "conditions": null,
+      "syscap": null,
+      "source_url": "https://manual.mikrotik.com/docs/cli-reference/interface/bridge/port",
+      "fields": [
+        {
+          "name": "interface",
+          "kind": "Argument",
+          "raw_type": "alt { interface: iface_enum\n, interface-list: enum\n }",
+          "mandatory": "1",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "bridge",
+          "kind": "Argument",
+          "raw_type": "iface_enum",
+          "mandatory": "1",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "priority",
+          "kind": "Argument",
+          "raw_type": "enum (0x00 | 0x10 | 0x20 | 0x30 | 0x40 | 0x50 | 0x60 | 0x70 | 0x80 | 0x90 | 0xa0 | 0xb0 | 0xc0 | 0xd0 | 0xe0 | 0xf0) { 0x00:0x00, 0x10:0x10, 0x20:0x20, 0x30:0x30, 0x40:0x40, 0x50:0x50, 0x60:0x60, 0x70:0x70, 0x80:0x80, 0x90:0x90, 0xa0:0xa0, 0xb0:0xb0, 0xc0:0xc0, 0xd0:0xd0, 0xe0:0xe0, 0xf0:0xf0 }",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "path-cost",
+          "kind": "Argument",
+          "raw_type": "num",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "internal-path-cost",
+          "kind": "Argument",
+          "raw_type": "num",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "edge",
+          "kind": "Argument",
+          "raw_type": "enum (auto | yes | no | yes-discover | no-discover) { auto:0, yes:1, no:2, yes-discover:3, no-discover:4 }",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "point-to-point",
+          "kind": "Argument",
+          "raw_type": "enum (auto | yes | no) { auto:0, yes:1, no:2 }",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "learn",
+          "kind": "Argument",
+          "raw_type": "enum (auto | yes | no) { auto:0, yes:2, no:1 }",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "horizon",
+          "kind": "Argument",
+          "raw_type": "num",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "hw",
+          "kind": "Argument",
+          "raw_type": "bool",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "auto-isolate",
+          "kind": "Argument",
+          "raw_type": "bool",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "restricted-role",
+          "kind": "Argument",
+          "raw_type": "bool",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "restricted-tcn",
+          "kind": "Argument",
+          "raw_type": "bool",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "pvid",
+          "kind": "Argument",
+          "raw_type": "num",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "frame-types",
+          "kind": "Argument",
+          "raw_type": "enum (admit-all | admit-only-vlan-tagged | admit-only-untagged-and-priority-tagged) { admit-all:0, admit-only-vlan-tagged:1, admit-only-untagged-and-priority-tagged:2 }",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "ingress-filtering",
+          "kind": "Argument",
+          "raw_type": "bool",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "unknown-unicast-flood",
+          "kind": "Argument",
+          "raw_type": "bool",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "unknown-multicast-flood",
+          "kind": "Argument",
+          "raw_type": "bool",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "broadcast-flood",
+          "kind": "Argument",
+          "raw_type": "bool",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "tag-stacking",
+          "kind": "Argument",
+          "raw_type": "bool",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "bpdu-guard",
+          "kind": "Argument",
+          "raw_type": "bool",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "trusted",
+          "kind": "Argument",
+          "raw_type": "bool",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "trusted-ra",
+          "kind": "Argument",
+          "raw_type": "bool",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "trusted-dhcpv6",
+          "kind": "Argument",
+          "raw_type": "bool",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "trusted-arp",
+          "kind": "Argument",
+          "raw_type": "bool",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "mvrp-registrar-state",
+          "kind": "Argument",
+          "raw_type": "enum (normal | fixed)",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "mvrp-applicant-state",
+          "kind": "Argument",
+          "raw_type": "enum (normal-participant | non-participant)",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "multicast-router",
+          "kind": "Argument",
+          "raw_type": "enum (disabled | temporary-query | permanent) { disabled:0, temporary-query:1, permanent:2 }",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "fast-leave",
+          "kind": "Argument",
+          "raw_type": "bool",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "parent",
+          "kind": "Read-only Argument",
+          "raw_type": "enum",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "status",
+          "kind": "Read-only Argument",
+          "raw_type": "enum (inactive | in-bridge | in-bridge | disabled)",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "port-id",
+          "kind": "Read-only Argument",
+          "raw_type": "composite { priority: num\n, number: num\n }",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "role",
+          "kind": "Read-only Argument",
+          "raw_type": "enum (disabled-port | root-port | designated-port | alternate-port | backup-port) { disabled-port:0, root-port:1, designated-port:2, alternate-port:3, backup-port:4 }",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "edge-port",
+          "kind": "Read-only Argument",
+          "raw_type": "bool",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "edge-port-discovery",
+          "kind": "Read-only Argument",
+          "raw_type": "bool",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "point-to-point-port",
+          "kind": "Read-only Argument",
+          "raw_type": "bool",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "external-fdb-status",
+          "kind": "Read-only Argument",
+          "raw_type": "bool",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "sending-rstp",
+          "kind": "Read-only Argument",
+          "raw_type": "bool",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "learning",
+          "kind": "Read-only Argument",
+          "raw_type": "bool",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "forwarding",
+          "kind": "Read-only Argument",
+          "raw_type": "bool",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "actual-path-cost",
+          "kind": "Read-only Argument",
+          "raw_type": "num",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "root-path-cost",
+          "kind": "Read-only Argument",
+          "raw_type": "num",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "internal-root-path-cost",
+          "kind": "Read-only Argument",
+          "raw_type": "num",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "designated-bridge-id",
+          "kind": "Read-only Argument",
+          "raw_type": "composite { number: num\n, address: macAddr\n }",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "designated-cost",
+          "kind": "Read-only Argument",
+          "raw_type": "num",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "designated-port-id",
+          "kind": "Read-only Argument",
+          "raw_type": "composite { priority: num\n, number: num\n }",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "tx-bpdu",
+          "kind": "Read-only Argument",
+          "raw_type": "num",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "rx-bpdu",
+          "kind": "Read-only Argument",
+          "raw_type": "num",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "discard-transitions",
+          "kind": "Read-only Argument",
+          "raw_type": "num",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "forward-transitions",
+          "kind": "Read-only Argument",
+          "raw_type": "num",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "tx-tc",
+          "kind": "Read-only Argument",
+          "raw_type": "num",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "rx-tc",
+          "kind": "Read-only Argument",
+          "raw_type": "num",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "topology-changes",
+          "kind": "Read-only Argument",
+          "raw_type": "num",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "last-topology-change",
+          "kind": "Read-only Argument",
+          "raw_type": "time",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "multicast-router",
+          "kind": "Read-only Argument",
+          "raw_type": "bool",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "hw-offload-group",
+          "kind": "Read-only Argument",
+          "raw_type": "enum",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "declared-vlan-ids",
+          "kind": "Read-only Argument",
+          "raw_type": "multi { vlan-range: range\n }",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "registered-vlan-ids",
+          "kind": "Read-only Argument",
+          "raw_type": "multi { vlan-range: range\n }",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "hw-offload",
+          "kind": "Read-only Argument",
+          "raw_type": "bool",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "debug-info",
+          "kind": "Read-only Argument",
+          "raw_type": "string",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        }
+      ],
+      "flags": [
+        {
+          "flag": "X",
+          "name": "disabled",
+          "description": "disabled"
+        },
+        {
+          "flag": "I",
+          "name": "inactive",
+          "description": "inactive"
+        },
+        {
+          "flag": "D",
+          "name": "dynamic",
+          "description": "dynamic"
+        },
+        {
+          "flag": "H",
+          "name": "hw-offload",
+          "description": "hw-offload"
+        },
+        {
+          "flag": "Y",
+          "name": "managed",
+          "description": "managed"
+        }
+      ]
+    },
+    {
+      "manual_version": "7.26",
+      "entry_id": "193",
+      "source_path": "interface/bridge/port/monitor",
+      "source_type": "Command",
+      "inspect_path": "/interface/bridge/port/monitor",
+      "match_kind": "exact",
+      "package": null,
+      "conditions": null,
+      "syscap": null,
+      "source_url": "https://manual.mikrotik.com/docs/cli-reference/interface/bridge/port/monitor",
+      "fields": [
+        {
+          "name": "interface",
+          "kind": "Read-only Argument",
+          "raw_type": "alt { interface: iface_enum\n, interface-list: enum\n }",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "status",
+          "kind": "Read-only Argument",
+          "raw_type": "enum (inactive | in-bridge | in-bridge | disabled)",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "port-id",
+          "kind": "Read-only Argument",
+          "raw_type": "composite { priority: num\n, number: num\n }",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "role",
+          "kind": "Read-only Argument",
+          "raw_type": "enum (disabled-port | root-port | designated-port | alternate-port | backup-port) { disabled-port:0, root-port:1, designated-port:2, alternate-port:3, backup-port:4 }",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "edge-port",
+          "kind": "Read-only Argument",
+          "raw_type": "bool",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "edge-port-discovery",
+          "kind": "Read-only Argument",
+          "raw_type": "bool",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "point-to-point-port",
+          "kind": "Read-only Argument",
+          "raw_type": "bool",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "external-fdb",
+          "kind": "Read-only Argument",
+          "raw_type": "bool",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "sending-rstp",
+          "kind": "Read-only Argument",
+          "raw_type": "bool",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "learning",
+          "kind": "Read-only Argument",
+          "raw_type": "bool",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "forwarding",
+          "kind": "Read-only Argument",
+          "raw_type": "bool",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "actual-path-cost",
+          "kind": "Read-only Argument",
+          "raw_type": "num",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "root-path-cost",
+          "kind": "Read-only Argument",
+          "raw_type": "num",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "internal-root-path-cost",
+          "kind": "Read-only Argument",
+          "raw_type": "num",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "designated-bridge-id",
+          "kind": "Read-only Argument",
+          "raw_type": "composite { number: num\n, address: macAddr\n }",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "designated-cost",
+          "kind": "Read-only Argument",
+          "raw_type": "num",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "designated-internal-cost",
+          "kind": "Read-only Argument",
+          "raw_type": "num",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "designated-port-id",
+          "kind": "Read-only Argument",
+          "raw_type": "composite { priority: num\n, number: num\n }",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "designated-message-age",
+          "kind": "Read-only Argument",
+          "raw_type": "num",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "designated-max-age",
+          "kind": "Read-only Argument",
+          "raw_type": "num",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "designated-remaining-hops",
+          "kind": "Read-only Argument",
+          "raw_type": "num",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "tx-rx-bpdu",
+          "kind": "Read-only Argument",
+          "raw_type": "composite { tx: num\n, rx: num\n }",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "discard-transitions",
+          "kind": "Read-only Argument",
+          "raw_type": "num",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "forward-transitions",
+          "kind": "Read-only Argument",
+          "raw_type": "num",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "tx-rx-tc",
+          "kind": "Read-only Argument",
+          "raw_type": "composite { tx: num\n, rx: num\n }",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "topology-changes",
+          "kind": "Read-only Argument",
+          "raw_type": "num",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "last-topology-change",
+          "kind": "Read-only Argument",
+          "raw_type": "time",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "multicast-router",
+          "kind": "Read-only Argument",
+          "raw_type": "bool",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "hw-offload-group",
+          "kind": "Read-only Argument",
+          "raw_type": "enum",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "declared-vlan-ids",
+          "kind": "Read-only Argument",
+          "raw_type": "multi { vlan-range: range\n }",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "registered-vlan-ids",
+          "kind": "Read-only Argument",
+          "raw_type": "multi { vlan-range: range\n }",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        }
+      ],
+      "flags": []
+    },
+    {
+      "manual_version": "7.26",
+      "entry_id": "194",
+      "source_path": "interface/bridge/port/mst-override",
+      "source_type": "Directory",
+      "inspect_path": "/interface/bridge/port/mst-override",
+      "match_kind": "exact",
+      "package": null,
+      "conditions": null,
+      "syscap": null,
+      "source_url": "https://manual.mikrotik.com/docs/cli-reference/interface/bridge/port/mst-override",
+      "fields": [
+        {
+          "name": "interface",
+          "kind": "Argument",
+          "raw_type": "iface_enum",
+          "mandatory": "1",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "identifier",
+          "kind": "Argument",
+          "raw_type": "num",
+          "mandatory": "1",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "priority",
+          "kind": "Argument",
+          "raw_type": "enum (0x00 | 0x10 | 0x20 | 0x30 | 0x40 | 0x50 | 0x60 | 0x70 | 0x80 | 0x90 | 0xa0 | 0xb0 | 0xc0 | 0xd0 | 0xe0 | 0xf0) { 0x00:0x00, 0x10:0x10, 0x20:0x20, 0x30:0x30, 0x40:0x40, 0x50:0x50, 0x60:0x60, 0x70:0x70, 0x80:0x80, 0x90:0x90, 0xa0:0xa0, 0xb0:0xb0, 0xc0:0xc0, 0xd0:0xd0, 0xe0:0xe0, 0xf0:0xf0 }",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "internal-path-cost",
+          "kind": "Argument",
+          "raw_type": "num",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "debug-info",
+          "kind": "Read-only Argument",
+          "raw_type": "string",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        }
+      ],
+      "flags": [
+        {
+          "flag": "X",
+          "name": "disabled",
+          "description": "disabled"
+        },
+        {
+          "flag": "D",
+          "name": "dynamic",
+          "description": "dynamic"
+        }
+      ]
+    },
+    {
+      "manual_version": "7.26",
+      "entry_id": "195",
+      "source_path": "interface/bridge/port/mst-override/monitor",
+      "source_type": "Command",
+      "inspect_path": "/interface/bridge/port/mst-override/monitor",
+      "match_kind": "exact",
+      "package": null,
+      "conditions": null,
+      "syscap": null,
+      "source_url": "https://manual.mikrotik.com/docs/cli-reference/interface/bridge/port/mst-override/monitor",
+      "fields": [
+        {
+          "name": "port",
+          "kind": "Read-only Argument",
+          "raw_type": "iface_enum",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "status",
+          "kind": "Read-only Argument",
+          "raw_type": "enum (inactive | in-bridge | in-bridge | disabled)",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "identifier",
+          "kind": "Read-only Argument",
+          "raw_type": "num",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "port-id",
+          "kind": "Read-only Argument",
+          "raw_type": "composite { priority: num\n, number: num\n }",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "role",
+          "kind": "Read-only Argument",
+          "raw_type": "enum (disabled-port | root-port | designated-port | alternate-port | backup-port | master-port) { disabled-port:0, root-port:1, designated-port:2, alternate-port:3, backup-port:4, master-port:5 }",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "learning",
+          "kind": "Read-only Argument",
+          "raw_type": "bool",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "forwarding",
+          "kind": "Read-only Argument",
+          "raw_type": "bool",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "internal-root-path-cost",
+          "kind": "Read-only Argument",
+          "raw_type": "num",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "designated-bridge-id",
+          "kind": "Read-only Argument",
+          "raw_type": "composite { number: num\n, address: macAddr\n }",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "designated-cost",
+          "kind": "Read-only Argument",
+          "raw_type": "num",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "designated-internal-cost",
+          "kind": "Read-only Argument",
+          "raw_type": "num",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "designated-port-id",
+          "kind": "Read-only Argument",
+          "raw_type": "composite { priority: num\n, number: num\n }",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "designated-remaining-hops",
+          "kind": "Read-only Argument",
+          "raw_type": "num",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "tx-rx-bpdu",
+          "kind": "Read-only Argument",
+          "raw_type": "composite { tx: num\n, rx: num\n }",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "discard-transitions",
+          "kind": "Read-only Argument",
+          "raw_type": "num",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "forward-transitions",
+          "kind": "Read-only Argument",
+          "raw_type": "num",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "tx-rx-tc",
+          "kind": "Read-only Argument",
+          "raw_type": "composite { tx: num\n, rx: num\n }",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "topology-changes",
+          "kind": "Read-only Argument",
+          "raw_type": "num",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "last-topology-change",
+          "kind": "Read-only Argument",
+          "raw_type": "time",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        }
+      ],
+      "flags": []
+    },
+    {
+      "manual_version": "7.26",
+      "entry_id": "2",
+      "source_path": "app/cleanup",
+      "source_type": "Command",
+      "inspect_path": "/app/cleanup",
+      "match_kind": "exact",
+      "package": "container",
+      "conditions": null,
+      "syscap": "app",
+      "source_url": "https://manual.mikrotik.com/docs/cli-reference/app/cleanup",
+      "fields": [],
+      "flags": []
+    },
+    {
+      "manual_version": "7.26",
+      "entry_id": "285",
+      "source_path": "interface/list/member",
+      "source_type": "Directory",
+      "inspect_path": "/interface/list/member",
+      "match_kind": "exact",
+      "package": null,
+      "conditions": null,
+      "syscap": null,
+      "source_url": "https://manual.mikrotik.com/docs/cli-reference/interface/list/member",
+      "fields": [
+        {
+          "name": "list",
+          "kind": "Argument",
+          "raw_type": "enum",
+          "mandatory": "1",
+          "unsettable": "0",
+          "syscap": null,
+          "description": "Name of the interface list to which the member belongs."
+        },
+        {
+          "name": "interface",
+          "kind": "Argument",
+          "raw_type": "iface_enum",
+          "mandatory": "1",
+          "unsettable": "0",
+          "syscap": null,
+          "description": "Name of the interface that is a member of the list."
+        },
+        {
+          "name": "dynamic",
+          "kind": "Read-only Argument",
+          "raw_type": "bool",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": "Whether the member was added dynamically."
+        }
+      ],
+      "flags": [
+        {
+          "flag": "X",
+          "name": "disabled",
+          "description": "Member entry is disabled."
+        },
+        {
+          "flag": "D",
+          "name": "dynamic",
+          "description": "Dynamically added member."
+        }
+      ]
+    },
+    {
+      "manual_version": "7.26",
+      "entry_id": "3",
+      "source_path": "app/network",
+      "source_type": "Directory",
+      "inspect_path": "/app/network",
+      "match_kind": "exact",
+      "package": "container",
+      "conditions": null,
+      "syscap": "app",
+      "source_url": "https://manual.mikrotik.com/docs/cli-reference/app/network",
+      "fields": [
+        {
+          "name": "name",
+          "kind": "Argument",
+          "raw_type": "string",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "allow-outgoing-access",
+          "kind": "Argument",
+          "raw_type": "bool",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "network",
+          "kind": "Read-only Argument",
+          "raw_type": "ipAddr",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "ip",
+          "kind": "Read-only Argument",
+          "raw_type": "ipAddr",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "status",
+          "kind": "Read-only Argument",
+          "raw_type": "string",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "used-ips",
+          "kind": "Read-only Argument",
+          "raw_type": "multi { array-id, array-id, ip-and-name: composite { ip: ipAddr\n, name: string\n }\n }",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "bridge-interface",
+          "kind": "Read-only Argument",
+          "raw_type": "iface_enum { none }",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "cmds",
+          "kind": "Read-only Argument",
+          "raw_type": "multi { cmd: string\n }",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        }
+      ],
+      "flags": [
+        {
+          "flag": "e",
+          "name": "external",
+          "description": ""
+        },
+        {
+          "flag": "I",
+          "name": "invalid",
+          "description": ""
+        }
+      ]
+    },
+    {
+      "manual_version": "7.26",
+      "entry_id": "4",
+      "source_path": "app/remove",
+      "source_type": "Command",
+      "inspect_path": "/app/remove",
+      "match_kind": "exact",
+      "package": "container",
+      "conditions": null,
+      "syscap": "app",
+      "source_url": "https://manual.mikrotik.com/docs/cli-reference/app/remove",
+      "fields": [],
+      "flags": []
+    },
+    {
+      "manual_version": "7.26",
+      "entry_id": "5",
+      "source_path": "app/restart",
+      "source_type": "Command",
+      "inspect_path": "/app/restart",
+      "match_kind": "exact",
+      "package": "container",
+      "conditions": null,
+      "syscap": "app",
+      "source_url": "https://manual.mikrotik.com/docs/cli-reference/app/restart",
+      "fields": [],
+      "flags": []
+    },
+    {
+      "manual_version": "7.26",
+      "entry_id": "6",
+      "source_path": "app/settings",
+      "source_type": "Settings Directory",
+      "inspect_path": "/app/settings",
+      "match_kind": "exact",
+      "package": "container",
+      "conditions": null,
+      "syscap": "app",
+      "source_url": "https://manual.mikrotik.com/docs/cli-reference/app/settings",
+      "fields": [
+        {
+          "name": "disk",
+          "kind": "Argument",
+          "raw_type": "enum (none)",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": "Global setting that specifies which disk will be used for storage operations"
+        },
+        {
+          "name": "router-ip",
+          "kind": "Argument",
+          "raw_type": "ipAddr",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": "Manually specifies the IP address at which the current RouterOS device can be reached"
+        },
+        {
+          "name": "lan-bridge",
+          "kind": "Argument",
+          "raw_type": "iface_enum { none }",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": "Manually specifies the bridge interface that represents the local area network"
+        },
+        {
+          "name": "media-path",
+          "kind": "Argument",
+          "raw_type": "file",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": "Manually specifies the directory path where all media files will be stored"
+        },
+        {
+          "name": "download-path",
+          "kind": "Argument",
+          "raw_type": "file",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": "Manually specifies the directory path where all downloaded content will be stored"
+        },
+        {
+          "name": "show-in-webfig",
+          "kind": "Argument",
+          "raw_type": "bool",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": "Controls whether links to enabled applications are displayed on the WebFig login page"
+        },
+        {
+          "name": "auto-update",
+          "kind": "Argument",
+          "raw_type": "bool",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": "Global setting that enables automatic updates for all installed applications packages"
+        },
+        {
+          "name": "registry-mirrors",
+          "kind": "Argument",
+          "raw_type": "multi { array-id, array-id, src-and-dst: composite { src: string\n, dst: string\n }\n }",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": "Specifies one or more registry mirror URLs for container image retrieval"
+        },
+        {
+          "name": "app-store-urls",
+          "kind": "Argument",
+          "raw_type": "multi { array-id, app-store-url: string\n }",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": "URL to a custom app store. Must point to a YAML array where each application is an element"
+        },
+        {
+          "name": "assumed-router-ip",
+          "kind": "Read-only Argument",
+          "raw_type": "ipAddr",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": "Automatically detected network IP address of the RouterOS device"
+        },
+        {
+          "name": "assumed-lan-bridge",
+          "kind": "Read-only Argument",
+          "raw_type": "iface_enum { none }",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": "Automatically detected bridge interface used for LAN connectivity"
+        },
+        {
+          "name": "assumed-media-path",
+          "kind": "Read-only Argument",
+          "raw_type": "file",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": "Default media storage path, typically located on the system disk"
+        },
+        {
+          "name": "assumed-download-path",
+          "kind": "Read-only Argument",
+          "raw_type": "file",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": "Default download directory path, typically located within the media storage area"
+        },
+        {
+          "name": "certificate-status",
+          "kind": "Read-only Argument",
+          "raw_type": "string",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "certificate",
+          "kind": "Read-only Argument",
+          "raw_type": "enum (none)",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        }
+      ],
+      "flags": []
+    },
+    {
+      "manual_version": "7.26",
+      "entry_id": "7",
+      "source_path": "app/setup",
+      "source_type": "Command",
+      "inspect_path": "/app/setup",
+      "match_kind": "exact",
+      "package": "container",
+      "conditions": null,
+      "syscap": "app",
+      "source_url": "https://manual.mikrotik.com/docs/cli-reference/app/setup",
+      "fields": [
+        {
+          "name": "disk",
+          "kind": "Read-only Argument",
+          "raw_type": "enum (none)",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": "Selected storage disk for application installation"
+        },
+        {
+          "name": "lan-bridge",
+          "kind": "Read-only Argument",
+          "raw_type": "iface_enum { none }",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": "Selected LAN bridge interface for container networking"
+        },
+        {
+          "name": "router-ip-alt",
+          "kind": "Read-only Argument",
+          "raw_type": "alt { router-ip-enum: enum\n, router-ip: ipAddr\n }",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": "Manual IP address override for the RouterOS device"
+        }
+      ],
+      "flags": []
+    },
+    {
+      "manual_version": "7.26",
+      "entry_id": "731",
+      "source_path": "log",
+      "source_type": "Directory",
+      "inspect_path": "/log",
+      "match_kind": "exact",
+      "package": null,
+      "conditions": null,
+      "syscap": null,
+      "source_url": "https://manual.mikrotik.com/docs/cli-reference/log",
+      "fields": [
+        {
+          "name": "buffer",
+          "kind": "Read-only Argument",
+          "raw_type": "enum",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": "Buffer the entry belongs to: `memory` for the default buffer, or the name of another memory action or of a disk action. A disk action's newest entries show here, and after a reboot the entries of its active file. `/log/print` without a filter lists every buffer, so a message passed to several actions shows once per action."
+        },
+        {
+          "name": "time",
+          "kind": "Read-only Argument",
+          "raw_type": "date",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": "Date and time the entry was added."
+        },
+        {
+          "name": "topics",
+          "kind": "Read-only Argument",
+          "raw_type": "multi { array-id, topic: enum\n }",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": "Topics of the entry, for example `system,info,account`. The rules in [`/system/logging`](system/logging/) select messages by these topics."
+        },
+        {
+          "name": "message",
+          "kind": "Read-only Argument",
+          "raw_type": "string",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": "Text of the entry, with the rule's `prefix` in front when the rule has one."
+        },
+        {
+          "name": "extra-info",
+          "kind": "Read-only Argument",
+          "raw_type": "string",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": "Extra `key=value` fields that some messages carry, for example a login: `app=ssh duser=admin outcome=success src=192.0.2.1`. `print with-extra-info` appends them to the message, and the `cef` remote log format sends them after `msg=`."
+        }
+      ],
+      "flags": []
+    },
+    {
+      "manual_version": "7.26",
+      "entry_id": "8",
+      "source_path": "app/update",
+      "source_type": "Command",
+      "inspect_path": "/app/update",
+      "match_kind": "exact",
+      "package": "container",
+      "conditions": null,
+      "syscap": "app",
+      "source_url": "https://manual.mikrotik.com/docs/cli-reference/app/update",
+      "fields": [],
+      "flags": []
+    },
+    {
+      "manual_version": "7.26",
+      "entry_id": "895",
+      "source_path": "system/device-mode/update",
+      "source_type": "Command",
+      "inspect_path": "/system/device-mode/update",
+      "match_kind": "exact",
+      "package": null,
+      "conditions": null,
+      "syscap": null,
+      "source_url": "https://manual.mikrotik.com/docs/cli-reference/system/device-mode/update",
+      "fields": [
+        {
+          "name": "mode",
+          "kind": "Argument",
+          "raw_type": "enum",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": "Device mode to apply. Specifying `mode` replaces the entire device-mode configuration except the other parameters given in the same command; omitted features get the new mode's defaults.\n- `advanced` - Previously called `enterprise`.\n- `basic` - For most other devices.\n- `home` - For home routers.\n- `rose` - For RDS and similar devices with wide disk use."
+        },
+        {
+          "name": "flagged",
+          "kind": "Argument",
+          "raw_type": "bool",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": "Set to `no` to clear the flagged state, after inspecting the configuration for unauthorized changes. Requires physical confirmation."
+        },
+        {
+          "name": "flagging-enabled",
+          "kind": "Argument",
+          "raw_type": "bool",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": "Enable or disable the configuration analysis for signs of unauthorized access. Default: yes."
+        },
+        {
+          "name": "scheduler",
+          "kind": "Argument",
+          "raw_type": "bool",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": "Allow or block `/system/scheduler`."
+        },
+        {
+          "name": "socks",
+          "kind": "Argument",
+          "raw_type": "bool",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": "Allow or block `/ip/socks`."
+        },
+        {
+          "name": "fetch",
+          "kind": "Argument",
+          "raw_type": "bool",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": "Allow or block `/tool/fetch`."
+        },
+        {
+          "name": "pptp",
+          "kind": "Argument",
+          "raw_type": "bool",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": "Allow or block PPTP client and server interfaces."
+        },
+        {
+          "name": "l2tp",
+          "kind": "Argument",
+          "raw_type": "bool",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": "Allow or block L2TP client and server interfaces."
+        },
+        {
+          "name": "bandwidth-test",
+          "kind": "Argument",
+          "raw_type": "bool",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": "Allow or block `/tool/bandwidth-test`, `/tool/bandwidth-server` and `/tool/speed-test`."
+        },
+        {
+          "name": "traffic-gen",
+          "kind": "Argument",
+          "raw_type": "bool",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": "Allow or block `/tool/traffic-generator`, `/tool/flood-ping`, and `/tool/ping-speed`."
+        },
+        {
+          "name": "sniffer",
+          "kind": "Argument",
+          "raw_type": "bool",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": "Allow or block `/tool/sniffer`."
+        },
+        {
+          "name": "ipsec",
+          "kind": "Argument",
+          "raw_type": "bool",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": "Allow or block `/ip/ipsec`."
+        },
+        {
+          "name": "romon",
+          "kind": "Argument",
+          "raw_type": "bool",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": "Allow or block `/tool/romon`."
+        },
+        {
+          "name": "proxy",
+          "kind": "Argument",
+          "raw_type": "bool",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": "Allow or block `/ip/proxy`."
+        },
+        {
+          "name": "hotspot",
+          "kind": "Argument",
+          "raw_type": "bool",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": "Allow or block `/ip/hotspot`."
+        },
+        {
+          "name": "smb",
+          "kind": "Argument",
+          "raw_type": "bool",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": "Allow or block `/ip/smb`."
+        },
+        {
+          "name": "email",
+          "kind": "Argument",
+          "raw_type": "bool",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": "Allow or block `/tool/e-mail`."
+        },
+        {
+          "name": "zerotier",
+          "kind": "Argument",
+          "raw_type": "bool",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": "Allow or block `/zerotier`."
+        },
+        {
+          "name": "container",
+          "kind": "Argument",
+          "raw_type": "bool",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": "Allow or block container functionality."
+        },
+        {
+          "name": "install-any-version",
+          "kind": "Argument",
+          "raw_type": "bool",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": "Allow or block downgrading to RouterOS versions outside the allowed-versions list."
+        },
+        {
+          "name": "partitions",
+          "kind": "Argument",
+          "raw_type": "bool",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": "Allow or block changing partition count."
+        },
+        {
+          "name": "routerboard",
+          "kind": "Argument",
+          "raw_type": "bool",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": "Allow or block `/system/routerboard/settings` (except auto-upgrade) and SwOS/RouterOS transition on dual-boot devices."
+        },
+        {
+          "name": "activation-timeout",
+          "kind": "Argument",
+          "raw_type": "time",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": "How long to wait for the physical confirmation (button press or power cycle) before the update is canceled. Also sets the length of the `attempt-count` reset window when an update is refused after three unsuccessful attempts. Range: 00:00:10 to 1d00:00:00. Default: 5m."
+        },
+        {
+          "name": "update",
+          "kind": "Read-only Argument",
+          "raw_type": "string",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": "Status of a pending update with the time left to confirm it; empty when no update is pending."
+        }
+      ],
+      "flags": []
+    },
+    {
+      "manual_version": "7.26",
+      "entry_id": "925",
+      "source_path": "system/package/apply-changes",
+      "source_type": "Command",
+      "inspect_path": "/system/package/apply-changes",
+      "match_kind": "exact",
+      "package": null,
+      "conditions": null,
+      "syscap": null,
+      "source_url": "https://manual.mikrotik.com/docs/cli-reference/system/package/apply-changes",
+      "fields": [
+        {
+          "name": "ignore-missing",
+          "kind": "Argument",
+          "raw_type": "bool",
+          "mandatory": "0",
+          "unsettable": "1",
+          "syscap": null,
+          "description": "Upgrade only the RouterOS main package, omitting packages that are missing or not uploaded."
+        }
+      ],
+      "flags": []
+    },
+    {
+      "manual_version": "7.26",
+      "entry_id": "928",
+      "source_path": "system/package/enable",
+      "source_type": "Command",
+      "inspect_path": "/system/package/enable",
+      "match_kind": "exact",
+      "package": null,
+      "conditions": null,
+      "syscap": null,
+      "source_url": "https://manual.mikrotik.com/docs/cli-reference/system/package/enable",
+      "fields": [],
+      "flags": []
+    },
+    {
+      "manual_version": "7.26",
+      "entry_id": "93",
+      "source_path": "console/inspect",
+      "source_type": "Command",
+      "inspect_path": "/console/inspect",
+      "match_kind": "exact",
+      "package": null,
+      "conditions": null,
+      "syscap": null,
+      "source_url": "https://manual.mikrotik.com/docs/cli-reference/console/inspect",
+      "fields": [
+        {
+          "name": "request",
+          "kind": "Argument",
+          "raw_type": "ubit (self, child, completion, highlight, syntax, error)",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "path",
+          "kind": "Argument",
+          "raw_type": "multi { name: string\n }",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "input",
+          "kind": "Argument",
+          "raw_type": "string",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "type",
+          "kind": "Read-only Argument",
+          "raw_type": "enum (self | child | completion | highlight | syntax | error)",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "name",
+          "kind": "Read-only Argument",
+          "raw_type": "string",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "node-type",
+          "kind": "Read-only Argument",
+          "raw_type": "enum (path | dir | cmd | arg)",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "completion",
+          "kind": "Read-only Argument",
+          "raw_type": "string",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "style",
+          "kind": "Read-only Argument",
+          "raw_type": "enum (none | syntax-meta | syntax-nonterminal | syntax-value | syntax-obsolete | error | ambiguous | comment | escaped | variable | variable-undefined | variable-global | variable-local | variable-auto | variable-parameter | dir | cmd | arg | arg-scope | arg-dot | obj-disabled | obj-inactive | obj-dynamic | obj-running | obj-wildcard | obj-decode-error | about | prompt-nosafe | prompt-safe | prompt-user | prompt-host | prompt-path | prompt-hotlock | line-more | line-number | hud-key | flag-title | flag-hints | flag | brief-header | detail-arg-name | detail-arg-equals | gradient-0 | gradient-1 | gradient-2 | gradient-3 | gradient-4 | gradient-5 | gradient-6 | gradient-7)",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "offset",
+          "kind": "Read-only Argument",
+          "raw_type": "num",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "preference",
+          "kind": "Read-only Argument",
+          "raw_type": "num",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "show",
+          "kind": "Read-only Argument",
+          "raw_type": "bool",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "highlight",
+          "kind": "Read-only Argument",
+          "raw_type": "multi { style: enum (none | syntax-meta | syntax-nonterminal | syntax-value | syntax-obsolete | error | ambiguous | comment | escaped | variable | variable-undefined | variable-global | variable-local | variable-auto | variable-parameter | dir | cmd | arg | arg-scope | arg-dot | obj-disabled | obj-inactive | obj-dynamic | obj-running | obj-wildcard | obj-decode-error | about | prompt-nosafe | prompt-safe | prompt-user | prompt-host | prompt-path | prompt-hotlock | line-more | line-number | hud-key | flag-title | flag-hints | flag | brief-header | detail-arg-name | detail-arg-equals | gradient-0 | gradient-1 | gradient-2 | gradient-3 | gradient-4 | gradient-5 | gradient-6 | gradient-7)\n }",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "symbol",
+          "kind": "Read-only Argument",
+          "raw_type": "string",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "symbol-type",
+          "kind": "Read-only Argument",
+          "raw_type": "enum (collection | explanation | definition) { collection:0, explanation:1, definition:2 }",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "nested",
+          "kind": "Read-only Argument",
+          "raw_type": "num",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "nonorm",
+          "kind": "Read-only Argument",
+          "raw_type": "bool",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "text",
+          "kind": "Read-only Argument",
+          "raw_type": "string",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        }
+      ],
+      "flags": []
+    },
+    {
+      "manual_version": "7.26",
+      "entry_id": "938",
+      "source_path": "system/package/update",
+      "source_type": "Settings Directory",
+      "inspect_path": "/system/package/update",
+      "match_kind": "exact",
+      "package": null,
+      "conditions": null,
+      "syscap": null,
+      "source_url": "https://manual.mikrotik.com/docs/cli-reference/system/package/update",
+      "fields": [
+        {
+          "name": "channel",
+          "kind": "Argument",
+          "raw_type": "enum (long-term | stable | testing | development)",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": "Upgrade [channel](#channel) to use when checking for new versions."
+        },
+        {
+          "name": "mode",
+          "kind": "Argument",
+          "raw_type": "enum (https | http)",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": "Protocol for connecting to the MikroTik download server. Use `http` only if your network blocks HTTPS. HTTPS is recommended."
+        },
+        {
+          "name": "check-certificate",
+          "kind": "Argument",
+          "raw_type": "enum (no | yes | yes-without-crl)",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": "Whether and how to validate the server SSL certificate. Always use `yes` to ensure a secure connection. `yes-without-crl` can be used to skip CRL validation."
+        },
+        {
+          "name": "ip-version",
+          "kind": "Argument",
+          "raw_type": "enum (auto | ipv4 | ipv6)",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": "IP version preference for connecting to the MikroTik download server."
+        },
+        {
+          "name": "installed-version",
+          "kind": "Read-only Argument",
+          "raw_type": "string",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": "Currently installed RouterOS version."
+        },
+        {
+          "name": "latest-version",
+          "kind": "Read-only Argument",
+          "raw_type": "string",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": "Latest available RouterOS version in the selected [channel](#channel)."
+        },
+        {
+          "name": "status",
+          "kind": "Read-only Argument",
+          "raw_type": "string",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": "Current status of the update process (for example, `New version is available`)."
+        }
+      ],
+      "flags": []
+    },
+    {
+      "manual_version": "7.26",
+      "entry_id": "939",
+      "source_path": "system/package/update/cancel",
+      "source_type": "Command",
+      "inspect_path": "/system/package/update/cancel",
+      "match_kind": "exact",
+      "package": null,
+      "conditions": null,
+      "syscap": null,
+      "source_url": "https://manual.mikrotik.com/docs/cli-reference/system/package/update/cancel",
+      "fields": [],
+      "flags": []
+    },
+    {
+      "manual_version": "7.26",
+      "entry_id": "940",
+      "source_path": "system/package/update/check-for-updates",
+      "source_type": "Command",
+      "inspect_path": "/system/package/update/check-for-updates",
+      "match_kind": "exact",
+      "package": null,
+      "conditions": null,
+      "syscap": null,
+      "source_url": "https://manual.mikrotik.com/docs/cli-reference/system/package/update/check-for-updates",
+      "fields": [
+        {
+          "name": "fetch-changelog",
+          "kind": "Argument",
+          "raw_type": "switch",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": "Whether to fetch the changelog along with the update check."
+        },
+        {
+          "name": "changelog",
+          "kind": "Read-only Argument",
+          "raw_type": "string",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": "Changelog text for the latest available version."
+        }
+      ],
+      "flags": []
+    },
+    {
+      "manual_version": "7.26",
+      "entry_id": "941",
+      "source_path": "system/package/update/download",
+      "source_type": "Command",
+      "inspect_path": "/system/package/update/download",
+      "match_kind": "exact",
+      "package": null,
+      "conditions": null,
+      "syscap": null,
+      "source_url": "https://manual.mikrotik.com/docs/cli-reference/system/package/update/download",
+      "fields": [
+        {
+          "name": "ignore-missing",
+          "kind": "Argument",
+          "raw_type": "bool",
+          "mandatory": "0",
+          "unsettable": "1",
+          "syscap": null,
+          "description": "Download only the RouterOS main package, omitting packages that are missing or not uploaded."
+        }
+      ],
+      "flags": []
+    },
+    {
+      "manual_version": "7.26",
+      "entry_id": "942",
+      "source_path": "system/package/update/install",
+      "source_type": "Command",
+      "inspect_path": "/system/package/update/install",
+      "match_kind": "exact",
+      "package": null,
+      "conditions": null,
+      "syscap": null,
+      "source_url": "https://manual.mikrotik.com/docs/cli-reference/system/package/update/install",
+      "fields": [
+        {
+          "name": "ignore-missing",
+          "kind": "Argument",
+          "raw_type": "bool",
+          "mandatory": "0",
+          "unsettable": "1",
+          "syscap": null,
+          "description": "Install only the RouterOS main package, omitting packages that are missing or not uploaded."
+        }
+      ],
+      "flags": []
+    },
+    {
+      "manual_version": "7.26",
+      "entry_id": "947",
+      "source_path": "system/reboot",
+      "source_type": "Command",
+      "inspect_path": "/system/reboot",
+      "match_kind": "exact",
+      "package": null,
+      "conditions": null,
+      "syscap": null,
+      "source_url": "https://manual.mikrotik.com/docs/cli-reference/system/reboot",
+      "fields": [],
+      "flags": []
+    },
+    {
+      "manual_version": "7.26",
+      "entry_id": "95",
+      "source_path": "container",
+      "source_type": "Directory",
+      "inspect_path": "/container",
+      "match_kind": "exact",
+      "package": "container",
+      "conditions": null,
+      "syscap": null,
+      "source_url": "https://manual.mikrotik.com/docs/cli-reference/container",
+      "fields": [
+        {
+          "name": "file",
+          "kind": "Argument",
+          "raw_type": "file",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "remote-image",
+          "kind": "Argument",
+          "raw_type": "string",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "ignore-remote-image-change",
+          "kind": "Argument",
+          "raw_type": "bool",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "check-certificate",
+          "kind": "Argument",
+          "raw_type": "bool",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "name",
+          "kind": "Argument",
+          "raw_type": "string",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "privileged",
+          "kind": "Argument",
+          "raw_type": "bool",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "interface",
+          "kind": "Argument",
+          "raw_type": "multi { interface: iface_enum\n }",
+          "mandatory": "1",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "env",
+          "kind": "Argument",
+          "raw_type": "object { key-and-value-element: super { !\n, key-and-value: composite { key: string\n, value: string\n }\n }\n }",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "envlists",
+          "kind": "Argument",
+          "raw_type": "multi { envlist: enum\n }",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "entrypoint",
+          "kind": "Argument",
+          "raw_type": "multi { cmd: string\n }",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "cmd",
+          "kind": "Argument",
+          "raw_type": "multi { cmd: string\n }",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "shell",
+          "kind": "Argument",
+          "raw_type": "multi { cmd: string\n }",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "stop-signal",
+          "kind": "Argument",
+          "raw_type": "enum (1-SIGHUP | 2-SIGINT | 3-SIGQUIT | 4-SIGILL | 5-SIGTRAP | 6-SIGABTR | 7-SIGBUS | 8-SIGFPE | 9-SIGKILL | 10-SIGUSR1 | 11-SIGSEGV | 12-SIGUSR2 | 13-SIGPIPE | 14-SIGALRM | 15-SIGTERM | 16-SIGSTKFLT | 17-SIGCHLD | 18-SIGCONT | 19-SIGSTOP | 20-SIGTSTP | 21-SIGTTIN | 22-SIGTTOU | 23-SIGURG | 24-SIGXCPU | 25-SIGXFSZ | 26-SIGVTALRM | 27-SIGPROF | 28-SIGWINCH | 29-SIGIO | 30-SIGPWR | 31-SIGSYS) { 1-SIGHUP:1, 2-SIGINT:2, 3-SIGQUIT:3, 4-SIGILL:4, 5-SIGTRAP:5, 6-SIGABTR:6, 7-SIGBUS:7, 8-SIGFPE:8, 9-SIGKILL:9, 10-SIGUSR1:10, 11-SIGSEGV:11, 12-SIGUSR2:12, 13-SIGPIPE:13, 14-SIGALRM:14, 15-SIGTERM:15, 16-SIGSTKFLT:16, 17-SIGCHLD:17, 18-SIGCONT:18, 19-SIGSTOP:19, 20-SIGTSTP:20, 21-SIGTTIN:21, 22-SIGTTOU:22, 23-SIGURG:23, 24-SIGXCPU:24, 25-SIGXFSZ:25, 26-SIGVTALRM:26, 27-SIGPROF:27, 28-SIGWINCH:28, 29-SIGIO:29, 30-SIGPWR:30, 31-SIGSYS:31 }",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "stop-time",
+          "kind": "Argument",
+          "raw_type": "time",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "root-dir",
+          "kind": "Argument",
+          "raw_type": "file",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "layer-dir",
+          "kind": "Argument",
+          "raw_type": "file",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "mount",
+          "kind": "Argument",
+          "raw_type": "object { src-dst-mode: composite { src: file\n, dst-mode: composite { dst: string\n, mode: enum (rw | ro | rw,noexec | ro,noexec)\n }\n }\n }",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "tmpfs",
+          "kind": "Argument",
+          "raw_type": "object { dst-size-mode: composite { dst: string\n, size-mode: composite { size: num\n, mode: string\n }\n }\n }",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "mountlists",
+          "kind": "Argument",
+          "raw_type": "multi { mountlist: enum\n }",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "shm-size",
+          "kind": "Argument",
+          "raw_type": "num",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "dns",
+          "kind": "Argument",
+          "raw_type": "multi { dns-server-ip: address (flags=46)\n }",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "default-dns",
+          "kind": "Argument",
+          "raw_type": "multi { dns-server-ip: address (flags=46)\n }",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "hostname",
+          "kind": "Argument",
+          "raw_type": "string",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "domain-name",
+          "kind": "Argument",
+          "raw_type": "string",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "workdir",
+          "kind": "Argument",
+          "raw_type": "string",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "logging",
+          "kind": "Argument",
+          "raw_type": "bool",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "start-on-boot",
+          "kind": "Argument",
+          "raw_type": "bool",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "stop-on-unhealthy",
+          "kind": "Argument",
+          "raw_type": "bool",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "restart-policy",
+          "kind": "Argument",
+          "raw_type": "enum (no | on-failure | always)",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "restart-max-count",
+          "kind": "Argument",
+          "raw_type": "num",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "restart-interval",
+          "kind": "Argument",
+          "raw_type": "time",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "user",
+          "kind": "Argument",
+          "raw_type": "string",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "cpu-list",
+          "kind": "Argument",
+          "raw_type": "multi { cpu: enum\n }",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "memory-high",
+          "kind": "Argument",
+          "raw_type": "num",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "memory-max",
+          "kind": "Argument",
+          "raw_type": "num",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "swap-max",
+          "kind": "Argument",
+          "raw_type": "num",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "devices",
+          "kind": "Argument",
+          "raw_type": "object { dst-size-mode: composite { device: enum\n, container-dev-name: string\n }\n }",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "hosts",
+          "kind": "Argument",
+          "raw_type": "object { host-entry: composite { host-name: string\n, host-addr: address (flags=46)\n }\n }",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "healthcheck-cmd",
+          "kind": "Argument",
+          "raw_type": "multi { healthcheck-cmd: string\n }",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "healthcheck-interval",
+          "kind": "Argument",
+          "raw_type": "time",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "healthcheck-timeout",
+          "kind": "Argument",
+          "raw_type": "time",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "healthcheck-start-period",
+          "kind": "Argument",
+          "raw_type": "time",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "healthcheck-start-interval",
+          "kind": "Argument",
+          "raw_type": "time",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "healthcheck-retries",
+          "kind": "Argument",
+          "raw_type": "num",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "healthcheck-status",
+          "kind": "Argument",
+          "raw_type": "string",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "tag",
+          "kind": "Read-only Argument",
+          "raw_type": "string",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "os",
+          "kind": "Read-only Argument",
+          "raw_type": "string",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "arch",
+          "kind": "Read-only Argument",
+          "raw_type": "string",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "env-current",
+          "kind": "Read-only Argument",
+          "raw_type": "object { key-and-value: composite { key: string\n, value: string\n }\n }",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "default-entrypoint",
+          "kind": "Read-only Argument",
+          "raw_type": "string",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "default-cmd",
+          "kind": "Read-only Argument",
+          "raw_type": "string",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "default-shell",
+          "kind": "Read-only Argument",
+          "raw_type": "string",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "default-stop-signal",
+          "kind": "Read-only Argument",
+          "raw_type": "enum (1-SIGHUP | 2-SIGINT | 3-SIGQUIT | 4-SIGILL | 5-SIGTRAP | 6-SIGABTR | 7-SIGBUS | 8-SIGFPE | 9-SIGKILL | 10-SIGUSR1 | 11-SIGSEGV | 12-SIGUSR2 | 13-SIGPIPE | 14-SIGALRM | 15-SIGTERM | 16-SIGSTKFLT | 17-SIGCHLD | 18-SIGCONT | 19-SIGSTOP | 20-SIGTSTP | 21-SIGTTIN | 22-SIGTTOU | 23-SIGURG | 24-SIGXCPU | 25-SIGXFSZ | 26-SIGVTALRM | 27-SIGPROF | 28-SIGWINCH | 29-SIGIO | 30-SIGPWR | 31-SIGSYS) { 1-SIGHUP:1, 2-SIGINT:2, 3-SIGQUIT:3, 4-SIGILL:4, 5-SIGTRAP:5, 6-SIGABTR:6, 7-SIGBUS:7, 8-SIGFPE:8, 9-SIGKILL:9, 10-SIGUSR1:10, 11-SIGSEGV:11, 12-SIGUSR2:12, 13-SIGPIPE:13, 14-SIGALRM:14, 15-SIGTERM:15, 16-SIGSTKFLT:16, 17-SIGCHLD:17, 18-SIGCONT:18, 19-SIGSTOP:19, 20-SIGTSTP:20, 21-SIGTTIN:21, 22-SIGTTOU:22, 23-SIGURG:23, 24-SIGXCPU:24, 25-SIGXFSZ:25, 26-SIGVTALRM:26, 27-SIGPROF:27, 28-SIGWINCH:28, 29-SIGIO:29, 30-SIGPWR:30, 31-SIGSYS:31 }",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "default-workdir",
+          "kind": "Read-only Argument",
+          "raw_type": "string",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "restart-count",
+          "kind": "Read-only Argument",
+          "raw_type": "num",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "default-user",
+          "kind": "Read-only Argument",
+          "raw_type": "string",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "memory-current",
+          "kind": "Read-only Argument",
+          "raw_type": "num",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "swap-current",
+          "kind": "Read-only Argument",
+          "raw_type": "num",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "cpu-usage",
+          "kind": "Read-only Argument",
+          "raw_type": "num",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "container-size",
+          "kind": "Read-only Argument",
+          "raw_type": "num",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "data-size",
+          "kind": "Read-only Argument",
+          "raw_type": "num",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "image-id",
+          "kind": "Read-only Argument",
+          "raw_type": "string",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "config-json",
+          "kind": "Read-only Argument",
+          "raw_type": "string",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "layers",
+          "kind": "Read-only Argument",
+          "raw_type": "multi { layer: enum\n }",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "default-healthcheck-cmd",
+          "kind": "Read-only Argument",
+          "raw_type": "multi { default-healthcheck-cmd: string\n }",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "default-healthcheck-interval",
+          "kind": "Read-only Argument",
+          "raw_type": "time",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "default-healthcheck-timeout",
+          "kind": "Read-only Argument",
+          "raw_type": "time",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "default-healthcheck-start-period",
+          "kind": "Read-only Argument",
+          "raw_type": "time",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "default-healthcheck-start-interval",
+          "kind": "Read-only Argument",
+          "raw_type": "time",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "default-healthcheck-retries",
+          "kind": "Read-only Argument",
+          "raw_type": "num",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        }
+      ],
+      "flags": [
+        {
+          "flag": "S",
+          "name": "stopped",
+          "description": ""
+        },
+        {
+          "flag": "N",
+          "name": "starting",
+          "description": ""
+        },
+        {
+          "flag": "R",
+          "name": "running",
+          "description": ""
+        },
+        {
+          "flag": "T",
+          "name": "stopping",
+          "description": ""
+        },
+        {
+          "flag": "E",
+          "name": "downloading/extracting",
+          "description": ""
+        },
+        {
+          "flag": "D",
+          "name": "deleting",
+          "description": ""
+        },
+        {
+          "flag": "F",
+          "name": "download/extract failed",
+          "description": ""
+        },
+        {
+          "flag": "C",
+          "name": "starting-with-healthcheck",
+          "description": ""
+        },
+        {
+          "flag": "H",
+          "name": "healthy",
+          "description": ""
+        },
+        {
+          "flag": "U",
+          "name": "unhealthy",
+          "description": ""
+        }
+      ]
+    },
+    {
+      "manual_version": "7.26",
+      "entry_id": "950",
+      "source_path": "system/resource",
+      "source_type": "Settings Directory",
+      "inspect_path": "/system/resource",
+      "match_kind": "exact",
+      "package": null,
+      "conditions": null,
+      "syscap": null,
+      "source_url": "https://manual.mikrotik.com/docs/cli-reference/system/resource",
+      "fields": [
+        {
+          "name": "uptime",
+          "kind": "Read-only Argument",
+          "raw_type": "time",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": "Time interval passed since boot-up"
+        },
+        {
+          "name": "version",
+          "kind": "Read-only Argument",
+          "raw_type": "string",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": "Installed RouterOS version number"
+        },
+        {
+          "name": "build-time",
+          "kind": "Read-only Argument",
+          "raw_type": "string",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": "Installed RouterOS version build-time"
+        },
+        {
+          "name": "minimum-version",
+          "kind": "Read-only Argument",
+          "raw_type": "string",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": "Minimum RouterOS version the board allows downgrading to (was factory-software)"
+        },
+        {
+          "name": "free-memory",
+          "kind": "Read-only Argument",
+          "raw_type": "num",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": "The unused amount of RAM"
+        },
+        {
+          "name": "total-memory",
+          "kind": "Read-only Argument",
+          "raw_type": "num",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": "Amount of installed RAM"
+        },
+        {
+          "name": "cpu",
+          "kind": "Read-only Argument",
+          "raw_type": "string",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": "CPU model that is on the board"
+        },
+        {
+          "name": "cpu-count",
+          "kind": "Read-only Argument",
+          "raw_type": "num",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": "Number of CPUs present on the system; each core is a separate CPU, Intel HT also counts as one CPU"
+        },
+        {
+          "name": "cpu-frequency",
+          "kind": "Read-only Argument",
+          "raw_type": "num",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": "Current CPU frequency"
+        },
+        {
+          "name": "cpu-load",
+          "kind": "Read-only Argument",
+          "raw_type": "num",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": "Percentage of used CPU resources, combined for all CPUs; per-core values are in [`/system/resource/cpu`](cpu)"
+        },
+        {
+          "name": "free-hdd-space",
+          "kind": "Read-only Argument",
+          "raw_type": "num",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": "Free space on the hard drive or NAND"
+        },
+        {
+          "name": "total-hdd-space",
+          "kind": "Read-only Argument",
+          "raw_type": "num",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": "Size of the hard drive or NAND"
+        },
+        {
+          "name": "write-sect-since-reboot",
+          "kind": "Read-only Argument",
+          "raw_type": "num",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": "The number of sector writes to the drive/NAND since the router was last rebooted"
+        },
+        {
+          "name": "write-sect-total",
+          "kind": "Read-only Argument",
+          "raw_type": "num",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": "The number of sector writes in total"
+        },
+        {
+          "name": "bad-blocks",
+          "kind": "Read-only Argument",
+          "raw_type": "num",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": "Percentage of bad blocks on the NAND"
+        },
+        {
+          "name": "architecture-name",
+          "kind": "Read-only Argument",
+          "raw_type": "string",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": "CPU architecture of this build (arm, arm64, x86, tile ...)"
+        },
+        {
+          "name": "board-name",
+          "kind": "Read-only Argument",
+          "raw_type": "string",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": "RouterBOARD model name"
+        },
+        {
+          "name": "platform",
+          "kind": "Read-only Argument",
+          "raw_type": "string",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": "Platform name"
+        }
+      ],
+      "flags": []
+    },
+    {
+      "manual_version": "7.26",
+      "entry_id": "951",
+      "source_path": "system/resource/cpu",
+      "source_type": "Directory",
+      "inspect_path": "/system/resource/cpu",
+      "match_kind": "exact",
+      "package": null,
+      "conditions": null,
+      "syscap": null,
+      "source_url": "https://manual.mikrotik.com/docs/cli-reference/system/resource/cpu",
+      "fields": [
+        {
+          "name": "cpu",
+          "kind": "Read-only Argument",
+          "raw_type": "string",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": "Identification number of the CPU whose usage is shown"
+        },
+        {
+          "name": "load",
+          "kind": "Read-only Argument",
+          "raw_type": "num",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": "CPU usage in percent"
+        },
+        {
+          "name": "irq",
+          "kind": "Read-only Argument",
+          "raw_type": "num",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": "IRQ usage in percent"
+        },
+        {
+          "name": "disk",
+          "kind": "Read-only Argument",
+          "raw_type": "num",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": "Disk usage in percent"
+        }
+      ],
+      "flags": []
+    },
+    {
+      "manual_version": "7.26",
+      "entry_id": "952",
+      "source_path": "system/resource/hardware",
+      "source_type": "Directory",
+      "inspect_path": "/system/resource/hardware",
+      "match_kind": "exact",
+      "package": null,
+      "conditions": "!powerpc, !smips",
+      "syscap": null,
+      "source_url": "https://manual.mikrotik.com/docs/cli-reference/system/resource/hardware",
+      "fields": [
+        {
+          "name": "device-name",
+          "kind": "Read-only Argument",
+          "raw_type": "string",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": "Name of the device as reported by its firmware (name column refinement)"
+        },
+        {
+          "name": "location",
+          "kind": "Read-only Argument",
+          "raw_type": "string",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": "Device location in the system topology"
+        },
+        {
+          "name": "parent",
+          "kind": "Read-only Argument",
+          "raw_type": "enum",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": "Parent bus or controller"
+        },
+        {
+          "name": "type",
+          "kind": "Read-only Argument",
+          "raw_type": "enum (usb | pci | scsi | serial)",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": "Bus type of the device: `usb`, `pci`, `scsi` or `serial`"
+        },
+        {
+          "name": "vendor",
+          "kind": "Read-only Argument",
+          "raw_type": "string",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": "Device vendor name"
+        },
+        {
+          "name": "name",
+          "kind": "Read-only Argument",
+          "raw_type": "string",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": "Device name or model"
+        },
+        {
+          "name": "category",
+          "kind": "Read-only Argument",
+          "raw_type": "string",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": "Device category"
+        },
+        {
+          "name": "serial-number",
+          "kind": "Read-only Argument",
+          "raw_type": "string",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": "Device serial number"
+        },
+        {
+          "name": "vendor-id",
+          "kind": "Read-only Argument",
+          "raw_type": "string",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": "Vendor identifier (VID)"
+        },
+        {
+          "name": "device-id",
+          "kind": "Read-only Argument",
+          "raw_type": "string",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": "Device identifier (PID / Device ID)"
+        },
+        {
+          "name": "speed",
+          "kind": "Read-only Argument",
+          "raw_type": "string",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": "Negotiated device speed"
+        },
+        {
+          "name": "ports",
+          "kind": "Read-only Argument",
+          "raw_type": "num",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": "Number of ports provided by the device"
+        },
+        {
+          "name": "usb-version",
+          "kind": "Read-only Argument",
+          "raw_type": "string",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": "Supported USB version"
+        },
+        {
+          "name": "manufacturer-reported-max-power",
+          "kind": "Read-only Argument",
+          "raw_type": "string",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": "Maximum power draw reported by the device (for example a USB modem)"
+        },
+        {
+          "name": "irq",
+          "kind": "Read-only Argument",
+          "raw_type": "num",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": "Assigned interrupt number"
+        },
+        {
+          "name": "memory",
+          "kind": "Read-only Argument",
+          "raw_type": "multi { range: composite { min: num\n, max: num\n }\n }",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": "Memory window assigned to the device"
+        },
+        {
+          "name": "io",
+          "kind": "Read-only Argument",
+          "raw_type": "multi { range: composite { min: num\n, max: num\n }\n }",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": "I/O window assigned to the device"
+        },
+        {
+          "name": "owner",
+          "kind": "Read-only Argument",
+          "raw_type": "string",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": "Subsystem or driver owning the device"
+        },
+        {
+          "name": "device-path",
+          "kind": "Read-only Argument",
+          "raw_type": "multi { path: string\n }",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": "Device path from root bus to endpoint"
+        }
+      ],
+      "flags": [
+        {
+          "flag": "I",
+          "name": "inactive",
+          "description": "inactive: the device is present but not active"
+        }
+      ]
+    },
+    {
+      "manual_version": "7.26",
+      "entry_id": "953",
+      "source_path": "system/resource/hardware/authorize",
+      "source_type": "Command",
+      "inspect_path": "/system/resource/hardware/authorize",
+      "match_kind": "exact",
+      "package": null,
+      "conditions": "!powerpc, !smips",
+      "syscap": null,
+      "source_url": "https://manual.mikrotik.com/docs/cli-reference/system/resource/hardware/authorize",
+      "fields": [
+        {
+          "name": "allow",
+          "kind": "Argument",
+          "raw_type": "bool",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": "Authorize the USB device (`yes`) or keep it unusable (`no`)"
+        }
+      ],
+      "flags": []
+    },
+    {
+      "manual_version": "7.26",
+      "entry_id": "954",
+      "source_path": "system/resource/hardware/usb-power-reset",
+      "source_type": "Command",
+      "inspect_path": "/system/resource/hardware/usb-power-reset",
+      "match_kind": "exact",
+      "package": null,
+      "conditions": "!powerpc, !smips, i386",
+      "syscap": null,
+      "source_url": "https://manual.mikrotik.com/docs/cli-reference/system/resource/hardware/usb-power-reset",
+      "fields": [
+        {
+          "name": "duration",
+          "kind": "Argument",
+          "raw_type": "time",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": "Power-off duration before re-enabling USB"
+        },
+        {
+          "name": "bus",
+          "kind": "Argument",
+          "raw_type": "num",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": "USB bus number (as shown by `/system/resource/hardware`)"
+        },
+        {
+          "name": "slot",
+          "kind": "Argument",
+          "raw_type": "num",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": "USB slot number on the bus"
+        }
+      ],
+      "flags": []
+    },
+    {
+      "manual_version": "7.26",
+      "entry_id": "955",
+      "source_path": "system/resource/hardware/usb-settings",
+      "source_type": "Settings Directory",
+      "inspect_path": "/system/resource/hardware/usb-settings",
+      "match_kind": "exact",
+      "package": null,
+      "conditions": "!powerpc, !smips",
+      "syscap": null,
+      "source_url": "https://manual.mikrotik.com/docs/cli-reference/system/resource/hardware/usb-settings",
+      "fields": [
+        {
+          "name": "authorization",
+          "kind": "Argument",
+          "raw_type": "bool",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": "Require per-device authorization before USB devices become usable (`authorization=yes`)"
+        }
+      ],
+      "flags": []
+    },
+    {
+      "manual_version": "7.26",
+      "entry_id": "956",
+      "source_path": "system/resource/irq",
+      "source_type": "Directory",
+      "inspect_path": "/system/resource/irq",
+      "match_kind": "exact",
+      "package": null,
+      "conditions": null,
+      "syscap": null,
+      "source_url": "https://manual.mikrotik.com/docs/cli-reference/system/resource/irq",
+      "fields": [
+        {
+          "name": "cpu",
+          "kind": "Argument",
+          "raw_type": "num",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": "The CPU the IRQ is pinned to; `auto` lets the scheduler balance by interrupt counts"
+        },
+        {
+          "name": "irq",
+          "kind": "Read-only Argument",
+          "raw_type": "num",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": "IRQ identification number"
+        },
+        {
+          "name": "users",
+          "kind": "Read-only Argument",
+          "raw_type": "object { user: alt { interface: iface_enum\n, other: string\n }\n }",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": "Process/driver bound to the IRQ"
+        },
+        {
+          "name": "active-cpu",
+          "kind": "Read-only Argument",
+          "raw_type": "num",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": "The CPU currently serving the IRQ on multicore systems"
+        },
+        {
+          "name": "count",
+          "kind": "Read-only Argument",
+          "raw_type": "num",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": "The number of interrupts handled (on ethernet interfaces interrupt = packet)"
+        },
+        {
+          "name": "per-cpu-count",
+          "kind": "Read-only Argument",
+          "raw_type": "multi { count: num\n }",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": "Per-CPU interrupt counts as a list"
+        }
+      ],
+      "flags": [
+        {
+          "flag": "o",
+          "name": "read-only",
+          "description": "read-only (the CPU assignment is fixed by the hardware)"
+        }
+      ]
+    },
+    {
+      "manual_version": "7.26",
+      "entry_id": "957",
+      "source_path": "system/resource/irq/rps",
+      "source_type": "Directory",
+      "inspect_path": null,
+      "match_kind": null,
+      "package": null,
+      "conditions": null,
+      "syscap": "rps",
+      "source_url": "https://manual.mikrotik.com/docs/cli-reference/system/resource/irq/rps",
+      "fields": [
+        {
+          "name": "interface",
+          "kind": "Argument",
+          "raw_type": "iface_enum",
+          "mandatory": "1",
+          "unsettable": "0",
+          "syscap": null,
+          "description": "Interface whose receive path is steered"
+        }
+      ],
+      "flags": [
+        {
+          "flag": "X",
+          "name": "disabled",
+          "description": "disabled entry (RPS steering off for this interface)"
+        }
+      ]
+    },
+    {
+      "manual_version": "7.26",
+      "entry_id": "958",
+      "source_path": "system/resource/monitor",
+      "source_type": "Command",
+      "inspect_path": "/system/resource/monitor",
+      "match_kind": "exact",
+      "package": null,
+      "conditions": null,
+      "syscap": null,
+      "source_url": "https://manual.mikrotik.com/docs/cli-reference/system/resource/monitor",
+      "fields": [
+        {
+          "name": "cpu-used",
+          "kind": "Read-only Argument",
+          "raw_type": "num",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": "Total CPU usage across cores"
+        },
+        {
+          "name": "cpu-used-per-core",
+          "kind": "Read-only Argument",
+          "raw_type": "multi { cpu-used: num\n }",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": "smp",
+          "description": "One line per core with its percent usage"
+        },
+        {
+          "name": "free-memory",
+          "kind": "Read-only Argument",
+          "raw_type": "num",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": "Free memory in KiB"
+        }
+      ],
+      "flags": []
+    },
+    {
+      "manual_version": "7.26",
+      "entry_id": "96",
+      "source_path": "container/config",
+      "source_type": "Settings Directory",
+      "inspect_path": "/container/config",
+      "match_kind": "exact",
+      "package": "container",
+      "conditions": null,
+      "syscap": null,
+      "source_url": "https://manual.mikrotik.com/docs/cli-reference/container/config",
+      "fields": [
+        {
+          "name": "registry-url",
+          "kind": "Argument",
+          "raw_type": "string",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "username",
+          "kind": "Argument",
+          "raw_type": "string",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "password",
+          "kind": "Argument",
+          "raw_type": "string",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "layer-dir",
+          "kind": "Argument",
+          "raw_type": "file",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "tmpdir",
+          "kind": "Argument",
+          "raw_type": "file",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "memory-high",
+          "kind": "Argument",
+          "raw_type": "num",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "memory-max",
+          "kind": "Argument",
+          "raw_type": "num",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "swap-max",
+          "kind": "Argument",
+          "raw_type": "num",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "assumed-registry-url",
+          "kind": "Read-only Argument",
+          "raw_type": "string",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "memory-current",
+          "kind": "Read-only Argument",
+          "raw_type": "num",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "swap-current",
+          "kind": "Read-only Argument",
+          "raw_type": "num",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        }
+      ],
+      "flags": []
+    },
+    {
+      "manual_version": "7.26",
+      "entry_id": "97",
+      "source_path": "container/envs",
+      "source_type": "Directory",
+      "inspect_path": "/container/envs",
+      "match_kind": "exact",
+      "package": "container",
+      "conditions": null,
+      "syscap": null,
+      "source_url": "https://manual.mikrotik.com/docs/cli-reference/container/envs",
+      "fields": [
+        {
+          "name": "list",
+          "kind": "Argument",
+          "raw_type": "enum",
+          "mandatory": "1",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "key",
+          "kind": "Argument",
+          "raw_type": "string",
+          "mandatory": "1",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "value",
+          "kind": "Argument",
+          "raw_type": "string",
+          "mandatory": "1",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        }
+      ],
+      "flags": [
+        {
+          "flag": "X",
+          "name": "disabled",
+          "description": ""
+        }
+      ]
+    },
+    {
+      "manual_version": "7.26",
+      "entry_id": "98",
+      "source_path": "container/kill",
+      "source_type": "Command",
+      "inspect_path": "/container/kill",
+      "match_kind": "exact",
+      "package": "container",
+      "conditions": null,
+      "syscap": null,
+      "source_url": "https://manual.mikrotik.com/docs/cli-reference/container/kill",
+      "fields": [
+        {
+          "name": "signal",
+          "kind": "Argument",
+          "raw_type": "enum (1-SIGHUP | 2-SIGINT | 3-SIGQUIT | 4-SIGILL | 5-SIGTRAP | 6-SIGABTR | 7-SIGBUS | 8-SIGFPE | 9-SIGKILL | 10-SIGUSR1 | 11-SIGSEGV | 12-SIGUSR2 | 13-SIGPIPE | 14-SIGALRM | 15-SIGTERM | 16-SIGSTKFLT | 17-SIGCHLD | 18-SIGCONT | 19-SIGSTOP | 20-SIGTSTP | 21-SIGTTIN | 22-SIGTTOU | 23-SIGURG | 24-SIGXCPU | 25-SIGXFSZ | 26-SIGVTALRM | 27-SIGPROF | 28-SIGWINCH | 29-SIGIO | 30-SIGPWR | 31-SIGSYS) { 1-SIGHUP:1, 2-SIGINT:2, 3-SIGQUIT:3, 4-SIGILL:4, 5-SIGTRAP:5, 6-SIGABTR:6, 7-SIGBUS:7, 8-SIGFPE:8, 9-SIGKILL:9, 10-SIGUSR1:10, 11-SIGSEGV:11, 12-SIGUSR2:12, 13-SIGPIPE:13, 14-SIGALRM:14, 15-SIGTERM:15, 16-SIGSTKFLT:16, 17-SIGCHLD:17, 18-SIGCONT:18, 19-SIGSTOP:19, 20-SIGTSTP:20, 21-SIGTTIN:21, 22-SIGTTOU:22, 23-SIGURG:23, 24-SIGXCPU:24, 25-SIGXFSZ:25, 26-SIGVTALRM:26, 27-SIGPROF:27, 28-SIGWINCH:28, 29-SIGIO:29, 30-SIGPWR:30, 31-SIGSYS:31 }",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        }
+      ],
+      "flags": []
+    },
+    {
+      "manual_version": "7.26",
+      "entry_id": "99",
+      "source_path": "container/layers",
+      "source_type": "Directory",
+      "inspect_path": "/container/layers",
+      "match_kind": "exact",
+      "package": "container",
+      "conditions": null,
+      "syscap": null,
+      "source_url": "https://manual.mikrotik.com/docs/cli-reference/container/layers",
+      "fields": [
+        {
+          "name": "name",
+          "kind": "Read-only Argument",
+          "raw_type": "string",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "layer-dir",
+          "kind": "Read-only Argument",
+          "raw_type": "string",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "size",
+          "kind": "Read-only Argument",
+          "raw_type": "alt { size: num\n, size-state: enum (unavailable | pending | done)\n }",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "type",
+          "kind": "Read-only Argument",
+          "raw_type": "enum (layer | root-dir)",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        },
+        {
+          "name": "containers",
+          "kind": "Read-only Argument",
+          "raw_type": "multi { container: enum\n }",
+          "mandatory": "0",
+          "unsettable": "0",
+          "syscap": null,
+          "description": ""
+        }
+      ],
+      "flags": []
+    }
+  ]
 }

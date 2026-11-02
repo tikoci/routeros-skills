@@ -12,6 +12,9 @@
 		"**/rosetta-snapshot.json"
 	],
 	"useGitignore": true,
+	"ignoreRegExpList": [
+		"\\bSIG[A-Z0-9]+\\b"
+	],
 	"minWordLength": 3,
 	"flagWords": ["hte", "teh"],
 	"dictionaryDefinitions": [

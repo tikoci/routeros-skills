@@ -23,3 +23,5 @@ ignores:
   - "AGENTS.md"
   - ".github/copilot-instructions.md"
   - ".github/instructions/**"
+  # Intentionally malformed checker fixture (unclosed frontmatter is the test).
+  - "scripts/fixtures/refs/neg-unclosed-frontmatter.md"

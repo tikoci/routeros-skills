@@ -3,7 +3,13 @@
 // vendored rosetta snapshot (issue #38). CI-safe: reads only the SKILL.md and the
 // committed snapshot, never a live export.
 //
-//   bun scripts/check-refs.ts
+//   bun scripts/check-refs.ts              # check the pilot SKILL.md
+//   bun scripts/check-refs.ts --self-test  # run the negative/positive fixtures
+//   bun scripts/check-refs.ts --verbose    # also list every claim with its class
+//
+// This is a documentation-presence check, not a CLI validator: a pass means the
+// claim resolves against the pinned snapshot, never that a recipe was live-tested.
+// Missing from the snapshot means unverified here, not nonexistent in RouterOS.
 //
 // Extraction contract (claims are exact tokens with file:line, never fuzzy):
 //   1. Path tokens: leading-slash tokens (`/container/add`, REST `${base}/x`),
@@ -18,14 +24,29 @@
 //      indexing in fenced code (REST status fields).
 //   5. Bare words: lowercase-hyphenated, digits excluded, in `#` comments of
 //      `routeros` blocks only (prose mentions such as activation-timeout).
-// Attribution: nearest path in the same fenced block (preceding, else following),
-// else nearest preceding path in the document. A claim passes when it exists
-// under its attributed menu — a bare menu also tries <menu>/add and <menu>/set —
-// or, failing that, anywhere in the skill's owned slice (the SKILL.md states some
-// props loosely, e.g. in gotcha bullets). Anything else fails with file:line.
-// The allowlists below are explicit, reasoned, and grounded in export probes.
+// HTML comment spans (`<!-- ... -->`) are blanked before extraction: comment
+// text is never a claim.
+//
+// Claim kinds and their evidence bars (layering per rosetta DESIGN.md):
+//   - input: `=` in command context (code line with an attributed command, or a
+//     Property-table cell). Must be an inspect arg of the attributed command
+//     (bare menus also try <menu>/add and <menu>/set). A same-name manual field
+//     or a read-only field never validates an input.
+//   - query: `~` operators and `where`-clause names. Must be an inspect arg or a
+//     manual field (any kind) of the attributed element.
+//   - output: dotted/bracket field references. Must be a manual field of the
+//     attributed element, or a scoped runtime-field exception.
+//   - mention: table/header cells, comment words, prose assigns, and `=` tokens
+//     inside quoted value spans (sub-syntax of another prop's value). Must exist
+//     anywhere in the owned slice; reported as noted, never as validated input.
+// Attribution: same-line path first, then nearest preceding path in the block,
+// then nearest preceding path in the document. An input/query/output claim with
+// no attributable menu fails as unresolved context.
+// Exceptions are scoped by name, kind, menu, and evidence — never global
+// acceptance of a bare name — and exempted claims are reported separately.
 
 const PILOT_SKILL = "routeros-container";
+const FIXTURE_DIR = "scripts/fixtures/refs";
 
 // FS/container-internal lookalikes documented as examples, not RouterOS paths.
 const PATH_DENYLIST = new Map<string, string>([
@@ -37,17 +58,30 @@ const PATH_DENYLIST = new Map<string, string>([
 // RouterOS built-ins, inconsistently present per-menu in the export (verified:
 // /container/add/name exists but /ip/address/add/name and /container/mounts/add/name
 // do not; /container/add/disabled is absent while /ip/address/add/disabled exists).
+// Name-scoped: these three names only, any kind, any owned menu.
 const UNIVERSAL_PROPS = new Set(["name", "comment", "disabled"]);
 
 // Pre-7.20 name, documented as history; absent from the 7.24.5+ export.
+// Mention-kind only: an input claim of envlist= is a version error, not history.
 const HISTORICAL_PROPS = new Set(["envlist"]);
 
-// Explicitly documented as not existing ("No .stopped field exists").
-const DOCUMENTED_ABSENT = new Set([".stopped"]);
+// REST runtime fields, verified absent from the manual-derived export (`running`
+// exists only under unrelated menus; `.running` nowhere). Output-kind only,
+// menu-scoped to /container with per-field evidence.
+const OUTPUT_RUNTIME: Record<string, Record<string, string>> = {
+	"/container": {
+		".running": "REST runtime status field; skill demonstrates string values via fetch",
+		".id": "REST item identity; skill passes it in POST bodies",
+	},
+};
 
-// REST runtime status fields, verified absent from the manual-derived export
-// (`running` exists only under unrelated menus; `.running` nowhere).
-const OUTPUT_FIELDS = new Set([".running", ".id"]);
+// Explicitly documented as not existing ("No .stopped field exists").
+// Output/mention-kind only, menu-scoped to /container.
+const DOCUMENTED_ABSENT: Record<string, Record<string, string>> = {
+	"/container": {
+		".stopped": "skill asserts non-existence; must never resolve or be flagged missing",
+	},
+};
 
 let failures = 0;
 const fail = (msg: string): void => {
@@ -56,13 +90,21 @@ const fail = (msg: string): void => {
 };
 
 type Snapshot = {
+	rosetta: { format: string; format_version: number };
 	paths: Record<string, { type: string; description: string | null; args: Record<string, string | null> }>;
-	fields: Record<string, { name: string; kind: string; description: string | null }[]>;
+	occurrences: {
+		manual_version: string;
+		entry_id: string;
+		source_path: string;
+		inspect_path: string | null;
+		fields: { name: string; kind: string }[];
+	}[];
 };
 
+type ClaimKind = "input" | "query" | "output" | "mention";
 type Claim =
 	| { kind: "path"; path: string; line: number; raw: string }
-	| { kind: "prop"; prop: string; line: number; raw: string; menu: string | null };
+	| { kind: "prop"; prop: string; propKind: ClaimKind; line: number; raw: string; menu: string | null };
 
 const PATH_RE = /\/[A-Za-z][A-Za-z0-9_.${}*-]*(?:\/[A-Za-z0-9_.${}*-]+)*/g;
 const PATH_BOUNDARY = /[A-Za-z0-9_.$/-]/;
@@ -70,7 +112,7 @@ const ASSIGN_RE = /(^|[^A-Za-z0-9_.$~/-])([a-z][a-z0-9-]*)(=|~)(?![=~>])/g;
 const TABLE_CELL_RE = /`([a-z][a-z0-9-]*)`/g;
 const DOTTED_QUOTED_RE = /`\.([a-z][a-z0-9-]*)`/g;
 const BRACKET_INDEX_RE = /\["([a-z][a-z0-9-]*)"\]|"(\.[a-z][a-z0-9-]*)"/g;
-const COMMENT_WORD_RE = /#[^\n]*?([a-z][a-z0-9-]*-[a-z][a-z0-9-]*)/g;
+const COMMENT_WORD_RE = /([a-z][a-z0-9-]*-[a-z][a-z0-9-]*)/g;
 
 const normalizePath = (raw: string): string | null => {
 	const folded = raw
@@ -80,41 +122,106 @@ const normalizePath = (raw: string): string | null => {
 	return folded;
 };
 
-const extract = (file: string, text: string): Claim[] => {
-	const claims: Claim[] = [];
-	const lines = text.split("\n");
-	let inFence: string | null = null;
-	// First pass: collect path claims and remember path positions for attribution.
-	const pathAtLine = new Map<number, string[]>();
-	for (let i = 0; i < lines.length; i++) {
-		const line = lines[i];
-		const fence = line.match(/^```(\S*)\s*$/);
-		if (fence) {
-			inFence = inFence === null ? fence[1] || "plain" : null;
+type Fence = { lang: string; start: number; end: number };
+
+// True when s ends inside a double-quoted span. Backslash escapes are skipped,
+// so an escaped quote never flips the parity.
+const endsInQuotes = (s: string): boolean => {
+	let quoted = false;
+	for (let i = 0; i < s.length; i++) {
+		if (s[i] === "\\") {
+			i++;
 			continue;
 		}
-		if (i < 3 && (line === "---" || lines[0] === "---")) continue; // frontmatter fence lines
-		if (inFence === "text") continue;
+		if (s[i] === '"') quoted = !quoted;
+	}
+	return quoted;
+};
+
+// Blank double-quoted spans (escapes respected) with spaces, preserving columns,
+// so quote contents never steer classification.
+const stripQuotedSpans = (line: string): string => line.replace(/"(?:\\.|[^"\\])*"?/g, (m) => " ".repeat(m.length));
+
+// Blank HTML comment spans (fixture directives, generated-file markers): comment
+// text is never a content claim. Line numbers are preserved.
+const stripComments = (lines: string[]): string[] => {
+	let inside = false;
+	return lines.map((line) => {
+		let out = "";
+		let rest = line;
+		while (rest.length > 0) {
+			if (inside) {
+				const end = rest.indexOf("-->");
+				if (end < 0) return out;
+				inside = false;
+				rest = rest.slice(end + 3);
+			} else {
+				const start = rest.indexOf("<!--");
+				if (start < 0) return out + rest;
+				out += rest.slice(0, start);
+				rest = rest.slice(start + 4);
+				inside = true;
+			}
+		}
+		return out;
+	});
+};
+
+const scanFences = (lines: string[]): Fence[] => {
+	const fences: Fence[] = [];
+	let open: { lang: string; start: number } | null = null;
+	for (let i = 0; i < lines.length; i++) {
+		const m = lines[i].match(/^```(\S*)\s*$/);
+		if (!m) continue;
+		if (open === null) open = { lang: m[1] || "plain", start: i };
+		else {
+			fences.push({ lang: open.lang, start: open.start, end: i });
+			open = null;
+		}
+	}
+	return fences;
+};
+
+const fenceAt = (fences: Fence[], line: number): Fence | null =>
+	fences.find((f) => line > f.start && line < f.end) ?? null;
+
+const extract = (text: string): Claim[] => {
+	const claims: Claim[] = [];
+	const lines = stripComments(text.split("\n"));
+	const fences = scanFences(lines);
+	const frontmatter = new Set<number>();
+	if (lines[0] === "---") {
+		frontmatter.add(0);
+		let closed = false;
+		for (let i = 1; i < lines.length; i++) {
+			frontmatter.add(i);
+			if (lines[i] === "---") {
+				closed = true;
+				break;
+			}
+		}
+		// An unclosed block would otherwise silence the whole file: fail loud.
+		if (!closed) throw new Error("unclosed frontmatter block");
+	}
+	const inFrontmatter = (i: number): boolean => frontmatter.has(i);
+	// First pass: path claims with columns for same-line attribution.
+	const pathAtLine = new Map<number, { col: number; path: string }[]>();
+	for (let i = 0; i < lines.length; i++) {
+		const line = lines[i];
+		if (/^```(\S*)\s*$/.test(line) || inFrontmatter(i)) continue;
+		if (fenceAt(fences, i)?.lang === "text") continue;
 		PATH_RE.lastIndex = 0;
 		let m: RegExpExecArray | null;
 		while ((m = PATH_RE.exec(line)) !== null) {
-			const start = m.index;
-			if (start > 0 && PATH_BOUNDARY.test(line[start - 1])) continue;
+			if (m.index > 0 && PATH_BOUNDARY.test(line[m.index - 1])) continue;
 			const norm = normalizePath(m[0]);
 			if (norm === null) continue;
 			claims.push({ kind: "path", path: norm, line: i + 1, raw: m[0] });
 			if (PATH_DENYLIST.has(norm)) continue; // documented non-path: no attribution
-			pathAtLine.set(i, [...(pathAtLine.get(i) ?? []), norm]);
+			pathAtLine.set(i, [...(pathAtLine.get(i) ?? []), { col: m.index, path: norm }]);
 		}
 	}
-	// Second pass: prop claims with attribution.
-	inFence = null;
-	const docPaths: { line: number; path: string }[] = [];
-	for (const [ln, ps] of pathAtLine) for (const p of ps) docPaths.push({ line: ln, path: p });
-	docPaths.sort((a, b) => a.line - b.line);
-	// Table map: header rows contribute names in backticks; body first-column cells
-	// contribute only when the table's header first cell is "Property" (other
-	// tables hold values, e.g. arch names, in body cells).
+	// Table map for rule 3.
 	const isTableRow = lines.map((l) => l.trimStart().startsWith("|"));
 	const isDelimRow = lines.map((l) => /^\|[\s:|-]+\|\s*$/.test(l.trim()));
 	const headerFirstCell = new Map<number, string>();
@@ -128,135 +235,288 @@ const extract = (file: string, text: string): Claim[] => {
 			}
 		}
 	}
-	const propClaims: { prop: string; line: number; raw: string }[] = [];
+	// Second pass: prop claims with kinds; attribution after the loop.
+	type Raw = { prop: string; propKind: ClaimKind; line: number; col: number; raw: string };
+	const raw: Raw[] = [];
+	const pushProp = (prop: string, propKind: ClaimKind, line: number, col: number, rawText: string): void => {
+		raw.push({ prop, propKind, line: line + 1, col, raw: rawText });
+	};
 	for (let i = 0; i < lines.length; i++) {
 		const line = lines[i];
-		const fence = line.match(/^```(\S*)\s*$/);
-		if (fence) {
-			inFence = inFence === null ? fence[1] || "plain" : null;
-			continue;
-		}
-		if (i < 3 && (line === "---" || lines[0] === "---")) continue;
-		if (inFence === "text") continue;
-		const pushProp = (prop: string, raw: string): void => {
-			propClaims.push({ prop, line: i + 1, raw });
-		};
-		if (inFence === null && isTableRow[i]) {
+		if (/^```(\S*)\s*$/.test(line) || inFrontmatter(i)) continue;
+		const fence = fenceAt(fences, i);
+		if (fence?.lang === "text") continue;
+		if (fence === null && isTableRow[i]) {
 			if (isDelimRow[i + 1]) {
 				TABLE_CELL_RE.lastIndex = 0;
 				let m: RegExpExecArray | null;
-				while ((m = TABLE_CELL_RE.exec(line)) !== null) pushProp(m[1], m[0]);
+				while ((m = TABLE_CELL_RE.exec(line)) !== null) pushProp(m[1], "mention", i, m.index, m[0]);
 			} else if (!isDelimRow[i] && headerFirstCell.get(i) === "Property") {
 				const firstCell = line.split("|")[1] ?? "";
+				const offset = line.indexOf(firstCell);
 				TABLE_CELL_RE.lastIndex = 0;
 				let m: RegExpExecArray | null;
-				while ((m = TABLE_CELL_RE.exec(firstCell)) !== null) pushProp(m[1], m[0]);
-			}
-		}
-		if (inFence !== "sh") {
-			ASSIGN_RE.lastIndex = 0;
-			let m: RegExpExecArray | null;
-			while ((m = ASSIGN_RE.exec(line)) !== null) pushProp(m[2], `${m[2]}${m[3]}`);
-		}
-		DOTTED_QUOTED_RE.lastIndex = 0;
-		let dm: RegExpExecArray | null;
-		while ((dm = DOTTED_QUOTED_RE.exec(line)) !== null) pushProp(`.${dm[1]}`, dm[0]);
-		if (inFence !== null && inFence !== "text" && inFence !== "sh") {
-			BRACKET_INDEX_RE.lastIndex = 0;
-			let bm: RegExpExecArray | null;
-			while ((bm = BRACKET_INDEX_RE.exec(line)) !== null) {
-				pushProp(bm[1] ?? bm[2], bm[0]);
-			}
-		}
-		if (inFence === "routeros" && line.includes("#")) {
-			COMMENT_WORD_RE.lastIndex = 0;
-			let cm: RegExpExecArray | null;
-			while ((cm = COMMENT_WORD_RE.exec(line)) !== null) {
-				if (!/[0-9]/.test(cm[1])) pushProp(cm[1], cm[1]);
-			}
-		}
-	}
-	// Attribute each prop claim.
-	const blockOf = (lineNo: number): { line: number; path: string }[] => {
-		// Re-derive the fenced block containing lineNo by scanning fences.
-		let fence: string | null = null;
-		let start = 0;
-		for (let i = 0; i < lines.length; i++) {
-			const fm = lines[i].match(/^```(\S*)\s*$/);
-			if (fm) {
-				if (fence === null) {
-					fence = fm[1] || "plain";
-					start = i;
-				} else {
-					if (lineNo - 1 > start && lineNo - 1 < i) {
-						const out: { line: number; path: string }[] = [];
-						for (let j = start + 1; j < i; j++) {
-							for (const p of pathAtLine.get(j) ?? []) out.push({ line: j, path: p });
-						}
-						return out;
-					}
-					fence = null;
+				while ((m = TABLE_CELL_RE.exec(firstCell)) !== null) {
+					pushProp(m[1], "input", i, offset + m.index, m[0]);
 				}
 			}
 		}
-		return [];
-	};
-	for (const pc of propClaims) {
-		const inBlock = blockOf(pc.line);
-		let menu: string | null = null;
-		const preceding = inBlock.filter((b) => b.line < pc.line - 1);
-		if (preceding.length > 0) menu = preceding[preceding.length - 1].path;
-		else if (inBlock.length > 0) menu = inBlock[0].path;
-		else {
-			const docPre = docPaths.filter((d) => d.line < pc.line - 1);
-			if (docPre.length > 0) menu = docPre[docPre.length - 1].path;
+		if (fence?.lang !== "sh") {
+			ASSIGN_RE.lastIndex = 0;
+			let m: RegExpExecArray | null;
+			while ((m = ASSIGN_RE.exec(line)) !== null) {
+				const col = m.index + m[1].length;
+				const before = line.slice(0, col);
+				// Inside a double-quoted value span (e.g. mount="src=..,dst=..") the
+				// token is sub-syntax of another prop's value: mention at most.
+				if (endsInQuotes(before)) {
+					pushProp(m[2], "mention", i, col, `${m[2]}${m[3]}`);
+					continue;
+				}
+				if (m[3] === "~") {
+					pushProp(m[2], "query", i, col, `${m[2]}${m[3]}`);
+					continue;
+				}
+				// A `where` inside another prop's quoted value is not a clause.
+				if (/\bwhere\b/i.test(stripQuotedSpans(before))) {
+					pushProp(m[2], "query", i, col, `${m[2]}${m[3]}`);
+					continue;
+				}
+				const hash = stripQuotedSpans(line).indexOf("#");
+				const inComment = hash >= 0 && hash < col;
+				const commandContext = fence?.lang === "routeros" && !inComment && !isTableRow[i];
+				pushProp(m[2], commandContext ? "input" : "mention", i, col, `${m[2]}${m[3]}`);
+			}
 		}
-		claims.push({ kind: "prop", prop: pc.prop, line: pc.line, raw: pc.raw, menu });
+		DOTTED_QUOTED_RE.lastIndex = 0;
+		let dm: RegExpExecArray | null;
+		while ((dm = DOTTED_QUOTED_RE.exec(line)) !== null) pushProp(`.${dm[1]}`, "output", i, dm.index, dm[0]);
+		if (fence !== null && fence.lang !== "sh") {
+			BRACKET_INDEX_RE.lastIndex = 0;
+			let bm: RegExpExecArray | null;
+			while ((bm = BRACKET_INDEX_RE.exec(line)) !== null) {
+				pushProp(bm[1] ?? bm[2], "output", i, bm.index, bm[0]);
+			}
+		}
+		if (fence?.lang === "routeros" && stripQuotedSpans(line).includes("#")) {
+			const offset = stripQuotedSpans(line).indexOf("#");
+			const comment = stripQuotedSpans(line).slice(offset);
+			COMMENT_WORD_RE.lastIndex = 0;
+			let cm: RegExpExecArray | null;
+			while ((cm = COMMENT_WORD_RE.exec(comment)) !== null) {
+				if (!/[0-9]/.test(cm[1])) pushProp(cm[1], "mention", i, offset + cm.index, cm[1]);
+			}
+		}
+	}
+	// Attribution: same-line path first, then preceding in block, then preceding
+	// in document. Mentions are slice-scoped and skip attribution.
+	const docPaths: { line: number; path: string }[] = [];
+	for (const [ln, ps] of pathAtLine) for (const p of ps) docPaths.push({ line: ln, path: p.path });
+	docPaths.sort((a, b) => a.line - b.line);
+	for (const r of raw) {
+		if (r.propKind === "mention") {
+			claims.push({ kind: "prop", prop: r.prop, propKind: r.propKind, line: r.line, raw: r.raw, menu: null });
+			continue;
+		}
+		let menu: string | null = null;
+		const sameLine = (pathAtLine.get(r.line - 1) ?? []).filter((p) => p.col < r.col);
+		if (sameLine.length > 0) {
+			menu = sameLine[sameLine.length - 1].path;
+		} else {
+			const fence = fenceAt(fences, r.line - 1);
+			if (fence !== null) {
+				for (let j = r.line - 2; j > fence.start; j--) {
+					const ps = pathAtLine.get(j);
+					if (ps && ps.length > 0) {
+						menu = ps[ps.length - 1].path;
+						break;
+					}
+				}
+			}
+			if (menu === null) {
+				const docPre = docPaths.filter((d) => d.line < r.line - 1);
+				if (docPre.length > 0) menu = docPre[docPre.length - 1].path;
+			}
+		}
+		claims.push({ kind: "prop", prop: r.prop, propKind: r.propKind, line: r.line, raw: r.raw, menu });
 	}
 	return claims;
 };
 
-const propInMenu = (snap: Snapshot, menu: string, prop: string): boolean => {
-	const bare = prop.startsWith(".") ? prop.slice(1) : null;
-	const argName = bare !== null ? null : prop; // dotted fields never live in args
-	if (argName !== null) {
-		const entry = snap.paths[menu];
-		if (entry && Object.hasOwn(entry.args, argName)) return true;
-		if (!/\/(add|set|print|get|find|remove|enable|disable|start|stop)$/.test(menu)) {
-			for (const verb of ["add", "set"]) {
-				const e = snap.paths[`${menu}/${verb}`];
-				if (e && Object.hasOwn(e.args, argName)) return true;
-			}
-		}
-	}
-	const fields = snap.fields[menu];
-	if (fields && fields.some((f) => f.name === prop || (bare !== null && f.name === bare))) return true;
-	return false;
+// ── evidence indexes ─────────────────────────────────────────────────────────
+
+type Indexes = {
+	inspectArgs: Map<string, Set<string>>;
+	cmdType: Map<string, string>;
+	elementFields: Map<string, { name: string; kind: string }[]>;
+	sliceArgs: Set<string>;
+	sliceFields: Set<string>;
 };
 
-const propAnywhere = (snap: Snapshot, prop: string): boolean => {
+const buildIndexes = (snap: Snapshot): Indexes => {
+	const indexes: Indexes = {
+		inspectArgs: new Map(),
+		cmdType: new Map(),
+		elementFields: new Map(),
+		sliceArgs: new Set(),
+		sliceFields: new Set(),
+	};
+	for (const [p, entry] of Object.entries(snap.paths)) {
+		indexes.cmdType.set(p, entry.type);
+		const args = new Set(Object.keys(entry.args));
+		indexes.inspectArgs.set(p, args);
+		for (const a of args) indexes.sliceArgs.add(a);
+	}
+	for (const o of snap.occurrences) {
+		const key = o.inspect_path ?? `/${o.source_path}`;
+		const list = indexes.elementFields.get(key) ?? [];
+		for (const f of o.fields) {
+			list.push({ name: f.name, kind: f.kind });
+			indexes.sliceFields.add(f.name);
+		}
+		indexes.elementFields.set(key, list);
+	}
+	return indexes;
+};
+
+// Element walk-up: a command's fields live on its menu element
+// (/container/start -> /container). One hop; deeper hops would blur attribution.
+const elementChain = (menu: string): string[] => {
+	const parent = menu.slice(0, menu.lastIndexOf("/"));
+	return parent && parent !== menu ? [menu, parent] : [menu];
+};
+
+const commandChain = (indexes: Indexes, menu: string): string[] => {
+	if (indexes.cmdType.get(menu) === "cmd") return [menu];
+	const out = [menu];
+	for (const verb of ["add", "set"]) {
+		if (indexes.inspectArgs.has(`${menu}/${verb}`)) out.push(`${menu}/${verb}`);
+	}
+	return out;
+};
+
+// Built-in inputs are only plausible where the command takes inputs at all:
+// a zero-arg action (e.g. /system/reboot) takes no `disabled=` either.
+const menuTakesInputs = (indexes: Indexes, menu: string): boolean =>
+	commandChain(indexes, menu).some((c) => (indexes.inspectArgs.get(c)?.size ?? 0) > 0);
+
+type Verdict =
+	| { ok: true; class: string }
+	| { ok: false; reason: string };
+
+const verifyProp = (indexes: Indexes, prop: string, kind: ClaimKind, menu: string | null): Verdict => {
+	// Evidence first: exemptions are fallbacks, so a claim the export supports
+	// is reported as validated, never as exempt.
+	if (kind === "mention") {
+		if (indexes.sliceArgs.has(prop) || indexes.sliceFields.has(prop)) return { ok: true, class: "mention" };
+		if (UNIVERSAL_PROPS.has(prop)) return { ok: true, class: "exempt-universal" };
+		if (HISTORICAL_PROPS.has(prop)) return { ok: true, class: "exempt-historical" };
+		return { ok: false, reason: `unknown property \`${prop}\` (not in snapshot slice)` };
+	}
+	if (menu === null) return { ok: false, reason: `unresolved context for \`${prop}\` (no attributable menu)` };
+	if (kind === "input") {
+		for (const c of commandChain(indexes, menu)) {
+			if (indexes.inspectArgs.get(c)?.has(prop)) return { ok: true, class: "input" };
+		}
+		if (UNIVERSAL_PROPS.has(prop) && menuTakesInputs(indexes, menu)) {
+			return { ok: true, class: "exempt-universal" };
+		}
+		return { ok: false, reason: `unknown input \`${prop}\` for \`${menu}\` (not an inspect arg)` };
+	}
+	if (kind === "query") {
+		for (const c of commandChain(indexes, menu)) {
+			if (indexes.inspectArgs.get(c)?.has(prop)) return { ok: true, class: "query" };
+		}
+		for (const e of elementChain(menu)) {
+			if (indexes.elementFields.get(e)?.some((f) => f.name === prop)) return { ok: true, class: "query" };
+		}
+		if (UNIVERSAL_PROPS.has(prop) && menuTakesInputs(indexes, menu)) {
+			return { ok: true, class: "exempt-universal" };
+		}
+		return { ok: false, reason: `unknown query field \`${prop}\` for \`${menu}\` (not an arg or field)` };
+	}
+	// output
 	const bare = prop.startsWith(".") ? prop.slice(1) : prop;
-	for (const entry of Object.values(snap.paths)) {
-		if (!prop.startsWith(".") && Object.hasOwn(entry.args, prop)) return true;
+	for (const e of elementChain(menu)) {
+		if (indexes.elementFields.get(e)?.some((f) => f.name === prop || f.name === bare)) {
+			return { ok: true, class: "output" };
+		}
 	}
-	for (const list of Object.values(snap.fields)) {
-		if (list.some((f) => f.name === prop || f.name === bare)) return true;
+	if (UNIVERSAL_PROPS.has(bare) && menuTakesInputs(indexes, menu)) {
+		return { ok: true, class: "exempt-universal" };
 	}
-	return false;
+	for (const e of elementChain(menu)) {
+		if (OUTPUT_RUNTIME[e]?.[prop]) return { ok: true, class: "exempt-runtime" };
+		if (DOCUMENTED_ABSENT[e]?.[prop]) return { ok: true, class: "exempt-absent" };
+	}
+	return { ok: false, reason: `unknown output field \`${prop}\` for \`${menu}\` (not a manual field)` };
+};
+
+const verify = (
+	file: string,
+	text: string,
+	snapshot: Snapshot,
+	verbose: boolean,
+): { failures: string[]; counts: Record<string, number> } => {
+	const indexes = buildIndexes(snapshot);
+	const failures: string[] = [];
+	const counts: Record<string, number> = {
+		paths: 0,
+		denylisted: 0,
+		input: 0,
+		query: 0,
+		output: 0,
+		mention: 0,
+		exempt: 0,
+	};
+	let claims: Claim[];
+	try {
+		claims = extract(text);
+	} catch (e) {
+		return { failures: [`${file}: ${e instanceof Error ? e.message : String(e)}`], counts };
+	}
+	for (const c of claims) {
+		if (c.kind === "path") {
+			if (PATH_DENYLIST.has(c.path)) {
+				counts["denylisted"]++;
+				if (verbose) console.log(`${file}:${c.line}: path \`${c.raw}\` -> denylisted (documented non-path)`);
+				continue;
+			}
+			if (!Object.hasOwn(snapshot.paths, c.path)) {
+				failures.push(`${file}:${c.line}: unknown path \`${c.raw}\` (not in snapshot)`);
+			} else {
+				counts["paths"]++;
+				if (verbose) console.log(`${file}:${c.line}: path \`${c.raw}\` -> valid`);
+			}
+			continue;
+		}
+		const v = verifyProp(indexes, c.prop, c.propKind, c.menu);
+		if (!v.ok) {
+			failures.push(`${file}:${c.line}: ${v.reason}`);
+			continue;
+		}
+		if (verbose) {
+			console.log(
+				`${file}:${c.line}: ${c.propKind} \`${c.raw}\`` +
+					(c.menu !== null ? ` @ ${c.menu}` : "") +
+					` -> ${v.class}`,
+			);
+		}
+		if (v.class.startsWith("exempt")) counts["exempt"]++;
+		else counts[v.class]++;
+	}
+	return { failures, counts };
 };
 
 // ── main ─────────────────────────────────────────────────────────────────────
 
+const args = process.argv.slice(2);
+const selfTest = args.includes("--self-test");
+const verbose = args.includes("--verbose");
+
 const skillFile = `${PILOT_SKILL}/SKILL.md`;
 const snapshotFile = `${PILOT_SKILL}/references/rosetta-snapshot.json`;
 
-const skillText = await Bun.file(skillFile)
-	.text()
-	.catch(() => null);
-if (skillText === null) {
-	console.error(`✗ ${skillFile}: missing — run from the repo root`);
-	process.exit(1);
-}
 const snapshotText = await Bun.file(snapshotFile)
 	.text()
 	.catch(() => null);
@@ -265,34 +525,73 @@ if (snapshotText === null) {
 	process.exit(1);
 }
 const snapshot = JSON.parse(snapshotText) as Snapshot;
-const claims = extract(skillFile, skillText);
-
-let pathCount = 0;
-let propCount = 0;
-for (const c of claims) {
-	if (c.kind === "path") {
-		pathCount++;
-		const reason = PATH_DENYLIST.get(c.path);
-		if (reason) continue; // documented non-path example
-		if (!Object.hasOwn(snapshot.paths, c.path)) {
-			fail(`${skillFile}:${c.line}: unknown path \`${c.raw}\` (not in ${snapshotFile})`);
-		}
-		continue;
-	}
-	propCount++;
-	const p = c.prop;
-	if (UNIVERSAL_PROPS.has(p) || HISTORICAL_PROPS.has(p)) continue;
-	if (DOCUMENTED_ABSENT.has(p) || OUTPUT_FIELDS.has(p)) continue;
-	if (c.menu !== null && propInMenu(snapshot, c.menu, p)) continue;
-	if (propAnywhere(snapshot, p)) continue;
-	fail(
-		`${skillFile}:${c.line}: unknown property \`${c.raw}\`` +
-			(c.menu !== null ? ` (menu \`${c.menu}\`, not in snapshot)` : " (no menu context, not in snapshot)"),
-	);
-}
-
-if (failures > 0) {
-	console.error(`\n${failures} reference check error(s) (${pathCount} paths, ${propCount} props checked)`);
+if (snapshot.rosetta?.format !== "rosetta-datasets" || snapshot.rosetta?.format_version !== 2) {
+	console.error(`✗ ${snapshotFile}: unsupported snapshot contract (want rosetta-datasets v2)`);
 	process.exit(1);
 }
-console.log(`✓ ${PILOT_SKILL}: ${pathCount} paths, ${propCount} props resolve against the snapshot`);
+
+if (selfTest) {
+	const { Glob } = await import("bun");
+	const fixtures = (await Array.fromAsync(new Glob("*.md").scan(FIXTURE_DIR))).sort();
+	if (fixtures.length === 0) {
+		console.error(`✗ no fixtures in ${FIXTURE_DIR} — run from the repo root`);
+		process.exit(1);
+	}
+	let fixtureFailures = 0;
+	for (const f of fixtures) {
+		const text = await Bun.file(`${FIXTURE_DIR}/${f}`).text();
+		const expect = text.match(/<!--\s*expect:\s*(pass|fail)\s*-->/)?.[1];
+		const token = text.match(/<!--\s*expect-token:\s*(\S+)\s*-->/)?.[1];
+		const countsWant = text.match(/<!--\s*expect-counts:\s*([a-z0-9=,\s]+)\s*-->/)?.[1];
+		if (!expect) {
+			console.error(`✗ ${f}: missing <!-- expect: pass|fail --> directive`);
+			fixtureFailures++;
+			continue;
+		}
+		const { failures: diags, counts } = verify(f, text, snapshot, false);
+		const passed = diags.length === 0;
+		let failed = (expect === "pass") !== passed;
+		if (failed) {
+			console.error(`✗ ${f}: expected ${expect}, got ${passed ? "pass" : `fail:\n    ${diags.join("\n    ")}`}`);
+		} else if (expect === "fail" && token && !diags.some((d) => d.includes(token))) {
+			console.error(`✗ ${f}: failed without mentioning \`${token}\`:\n    ${diags.join("\n    ")}`);
+			failed = true;
+		} else if (countsWant) {
+			for (const pair of countsWant.split(",")) {
+				const [k, v] = pair.trim().split("=");
+				if ((counts[k] ?? 0) !== Number(v)) {
+					console.error(`✗ ${f}: expected ${k}=${v}, got ${k}=${counts[k] ?? 0}`);
+					failed = true;
+				}
+			}
+		}
+		if (failed) fixtureFailures++;
+		else console.log(`✓ ${f}: ${expect}${token ? ` (mentions ${token})` : ""}`);
+	}
+	if (fixtureFailures > 0) {
+		console.error(`\n${fixtureFailures} fixture failure(s)`);
+		process.exit(1);
+	}
+	console.log(`✓ ${fixtures.length} fixtures behave as expected`);
+	process.exit(0);
+}
+
+const skillText = await Bun.file(skillFile)
+	.text()
+	.catch(() => null);
+if (skillText === null) {
+	console.error(`✗ ${skillFile}: missing — run from the repo root`);
+	process.exit(1);
+}
+const { failures: diags, counts } = verify(skillFile, skillText, snapshot, verbose);
+for (const d of diags) console.error(`✗ ${d}`);
+const tally =
+	`${counts["paths"]} paths valid` +
+	(counts["denylisted"] > 0 ? `, ${counts["denylisted"]} denylisted non-paths` : "") +
+	`; ${counts["input"]} input, ${counts["query"]} query, ${counts["output"]} output, ` +
+	`${counts["mention"]} mention, ${counts["exempt"]} exempt`;
+if (diags.length > 0) {
+	console.error(`\n${diags.length} reference check error(s) (${tally})`);
+	process.exit(1);
+}
+console.log(`✓ ${PILOT_SKILL}: ${tally}`);

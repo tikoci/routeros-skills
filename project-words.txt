@@ -77,6 +77,7 @@ DTB
 duser
 ecam
 ECONNRESET
+envlist
 Ecsrp
 EDK
 EFI
@@ -116,6 +117,7 @@ Hac
 healthcheck
 HMAC
 hostfwd
+hotlock
 hotplug
 hotspot
 hotspots
@@ -185,6 +187,7 @@ mmips
 mndp
 MNDPTYPE
 modescript
+mountlist
 mountlists
 MPLS
 mtu
@@ -214,9 +217,12 @@ Nexthops
 NFSD
 NIC
 nlevel
+noexec
 nofile
 nohup
 nonorm
+nonterminal
+nosafe
 notrack
 nowait
 npk
@@ -298,6 +304,7 @@ rmvlan
 rndnum
 romon
 rootfs
+ros
 ROSVER
 routerboard
 routerboot
@@ -328,6 +335,7 @@ SLIRP
 smips
 smp
 snmp
+syscap
 sysres
 socat
 Socksify
@@ -369,6 +377,7 @@ traceroute
 tshark
 ttl
 TZSP
+ubit
 udevadm
 UDP
 UEFI
@@ -379,6 +388,7 @@ unconfigured
 undefines
 unprovisioned
 unref
+unsettable
 URLBASE
 userland
 userman
