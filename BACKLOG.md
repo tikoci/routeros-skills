@@ -299,7 +299,7 @@ interactions worth grounding.
 
 ### `routeros-zerotier`
 
-**Status: implemented initial skill** (`routeros-zerotier/SKILL.md` + `references/`, issue #26). Covers the `/zerotier` instance/interface/peer model, join→authorize via Central or `/zerotier/controller`, allow-gates, firewall checklist, and flow rules + RoMON with the legacy/new account-type split. Grounded on arm64 CHR (x86 CHR has no `zerotier.npk`) plus a legacy Central API authorize run.
+**Status: initial skill implemented** ([skill](./routeros-zerotier/SKILL.md), [issue #26](https://github.com/tikoci/routeros-skills/issues/26)). Covers native instances/interfaces/peers, private-network authorization via Central or a RouterOS controller, managed routes, firewall integration, and flow rules/RoMON/bridging guidance. [Grounding notes](./routeros-zerotier/references/grounding.md) attribute the arm64 CHR 7.25 and legacy Central lab results, record independent package/documentation checks, and bound untested integration paths. Private-root containers remain a reference pointer.
 
 ### `routeros-vrrp`
 

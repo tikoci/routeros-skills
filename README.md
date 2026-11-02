@@ -20,6 +20,7 @@ Custom instruction skills for [GitHub Copilot](https://docs.github.com/en/copilo
 | **routeros-quickchr** | Ground RouterOS config/scripts/API code against a real router with quickchr (`@tikoci/quickchr`) — boot a disposable CHR, apply config, read it back; networking recipes, integration-test harness patterns. |
 | **routeros-quickchr-cli** | The shell-first half of quickchr — boot a disposable CHR from the terminal and drive it with centrs. Lifecycle (`add` is not `start`), `--bg`, endpoints and credentials, L2 links between VMs, and the provisioning steps that only apply before first boot. |
 | **routeros-centrs** | Drive a real router or CHR with centrs (`@tikoci/centrs`) — target resolution from the WinBox CDB or a quickchr VM, RouterOS command validation before it runs, and one structured envelope over REST, native API, SSH/SFTP, MAC-Telnet, and MNDP. Use instead of hand-rolled `curl`/`ssh`. |
+| **routeros-zerotier** | Native ZeroTier on ARM/ARM64 — instances, network authorization, RouterOS controllers, managed routes, firewall integration, RoMON, and bridging. |
 | **routeros-webfig** | Link humans to RouterOS WebFig views — connections, addresses, VLANs, bridges, firewall rules and CMR; object URLs, login/session behavior, and native WebView integration guidance grounded on CHR browser checks. |
 | **routeros-netinstall** | `netinstall-cli` for automated RouterOS device flashing — etherboot, BOOTP/TFTP, modescript. |
 | **routeros-mndp** | MNDP (MikroTik Neighbor Discovery Protocol) — wire format, `/ip/neighbor`, WinBox discovery. |

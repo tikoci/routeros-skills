@@ -35,7 +35,6 @@ catvlan
 CCR
 CDB
 CDP
-centralv
 centrs
 changeme
 chardev

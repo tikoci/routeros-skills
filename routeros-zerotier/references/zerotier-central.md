@@ -1,41 +1,75 @@
-# ZeroTier Central: account types and API
+# ZeroTier Central: accounts and authorization
 
-Central-hosted networks authorize members in the console or over HTTPS. There are **two account generations** and the agent must know which one owns the network — the API surface and the flow-rule defaults differ.
+First identify the controller that owns the network. Central-hosted **private**
+networks authorize members in Central; a RouterOS-hosted network uses
+`/zerotier/controller/member` instead. Public networks do not require individual
+approval.[^routeros]
 
-## Legacy accounts (my.zerotier.com)
+Match the member by its **10-digit ZeroTier address**, taken from the joining
+instance's public identity in `/zerotier/print`. The interface's `MAC-ADDRESS`
+is a different identifier. Verify the network as well as the member before
+authorizing access.[^routeros][^api]
 
-- Account-level API tokens from the Account page. Base URL `https://api.zerotier.com/api/v1`, header `Authorization: token <key>`.
-- Authorize flow (grounded end-to-end against a private test network):
+## Legacy Central (my.zerotier.com)
+
+Use a personal API token from the account page. The legacy API base is
+`https://api.zerotier.com/api/v1`, with `Authorization: token <key>`.[^api]
+
+Run these in a host shell, not RouterOS. Supply `ZT_TOKEN` securely; set `NWID`
+to your network ID and `MEMBER_ID` to the verified member address. The listing
+returns a JSON array.[^api]
 
 ```sh
-# Member appears after the RouterOS join; note: members endpoint returns a JSON list
-curl -H "Authorization: token $TOKEN" \
-  https://api.zerotier.com/api/v1/network/D5E5FB653762BE63/member
-# [{"nodeId":"8905b352c9","config":{"authorized":false}, ...}]
+curl --fail-with-body -H "Authorization: token $ZT_TOKEN" \
+  "https://api.zerotier.com/api/v1/network/$NWID/member"
 
-curl -X POST -H "Authorization: token $TOKEN" -H 'Content-Type: application/json' \
+curl --fail-with-body -X POST \
+  -H "Authorization: token $ZT_TOKEN" -H 'Content-Type: application/json' \
   -d '{"config":{"authorized":true}}' \
-  https://api.zerotier.com/api/v1/network/D5E5FB653762BE63/member/8905b352c9
-# {"config":{"authorized":true,"ipAssignments":[]}, ...}
+  "https://api.zerotier.com/api/v1/network/$NWID/member/$MEMBER_ID"
 ```
 
-- The POST response carries **empty `ipAssignments`** — the assignment lands ~30 s later. Poll: re-read the member (or the RouterOS interface) until status is `OK` with a managed IP (`10.147.17.170/24` observed). Never trust the POST response alone.
-- Portal equivalent: open the network, find the member row (match Address/MAC against `/zerotier/interface/print`), check Authorize.
-- Rate limits: 100 req/s paid, 20 req/s free.
-- SDK pointers: [go-ztcentral](https://github.com/zerotier/go-ztcentral) (official Go; Central only, not self-hosted controllers), [zerotier-rust-api](https://github.com/zerotier/zerotier-rust-api), [terraform-provider-zerotier](https://github.com/zerotier/terraform-provider-zerotier), [pytier](https://github.com/rainmana/pytier) (community Python). Docs: `https://docs.zerotier.com/api/central/legacy/` (the old `openapi/centralv1.json` URL is dead).
-- Default flow rules allow only IPv4/ARP/IPv6 ethertypes — effectively **no L2** (RoMON, VLAN trunks blocked until accepted). Exact default ruleset quoted in [zerotier-romon-flow-rules.md](./zerotier-romon-flow-rules.md).
+The original 7.25 lab reported an authorization response with an empty
+`ipAssignments` array, followed about 30 seconds later by interface `OK` and a
+managed IP. Do not treat the immediate response as final convergence. Re-read
+the member and RouterOS interface with a bounded timeout. Check managed
+addresses only when assignment is configured, the member permits auto-assignment,
+and `allow-managed=yes`.[^lab]
 
-## New accounts (central.zerotier.com, organization-based)
+The portal equivalent is to open the network, locate that ZeroTier address,
+and authorize the member. API integrations include
+[go-ztcentral](https://github.com/zerotier/go-ztcentral),
+[zerotier-rust-api](https://github.com/zerotier/zerotier-rust-api),
+[terraform-provider-zerotier](https://github.com/zerotier/terraform-provider-zerotier),
+and community [pytier](https://github.com/rainmana/pytier).
+Check each integration's supported Central generation before choosing it.
 
-- Identity is organization-based; programmatic access uses **service accounts**, which require a paid plan. Without them, authorization is a manual portal click — there is no free API path.
-- New Central API v2 lives at `https://central.zerotier.com/api/v2` with `Authorization: Bearer <service-account-key>`. Docs: `https://docs.zerotier.com/api/central/new/`.
-- Default flow rules **allow all traffic, all L2** ("By default, all traffic is permitted"); the Layer 2 Protocol Filter toggle restricts to IPv4/IPv6/ARP when enabled — but editing any flow rules requires a paid plan tier. A new-account network passes RoMON and trunk tags with no rule changes.
-- SDK pointers for v2 are thinner than v1; the [open-connector provider](https://github.com/oomol-lab/open-connector/pull/605) documents the v2 surface (orgs, network groups, bulk member ops, IAM, webhooks).
+## New Central (central.zerotier.com)
 
-## Which controller owns this network?
+New Central uses organizations and service-account API tokens. The current
+[token guide](https://docs.zerotier.com/tokens/) requires Essential or above
+for service accounts and API access. Without that entitlement, use the portal's
+member authorization control.[^tokens]
 
-| Signal | Meaning |
-|--------|---------|
-| Network ID known, member visible in a Central console | Central-hosted — authorize there (portal or matching-generation API) |
-| `/zerotier/controller/print` on one of your routers shows the network | RouterOS-hosted — authorize under `/zerotier/controller/member/` |
-| Neither | Unknown controller — find it before doing anything else; authorizing in the wrong place silently does nothing |
+The documented v2 base is `https://central.zerotier.com/api/v2`, with
+`Authorization: Bearer <service-account-token>`. Follow the
+[New Central API reference](https://docs.zerotier.com/api/central/new/) for its
+organization and resource parameters. This skill's original lab did **not**
+exercise v2; the legacy examples above are not a verified v2 workflow.[^tokens][^lab]
+
+## Flow-rule defaults
+
+Legacy Central's common default filters out Ethernet types other than IPv4,
+IPv6, and ARP. New Central documents flow rules as disabled by default; its
+Layer 2 Protocol Filter restricts traffic to those same three types when
+enabled. Flow-rule editing currently requires Essential or above. Plan
+entitlements and templates can change: inspect the network's actual rules
+before using RoMON or a VLAN trunk.[^rules]
+
+See [Flow rules, RoMON, and bridging](./zerotier-romon-flow-rules.md).
+
+[^routeros]: MikroTik [ZeroTier](https://manual.mikrotik.com/docs/virtual-private-networks/zerotier) and [instance CLI reference](https://manual.mikrotik.com/docs/cli-reference/zerotier/).
+[^api]: ZeroTier [legacy API reference](https://docs.zerotier.com/api/central/legacy/) and [Central API examples](https://docs.zerotier.com/api-central-examples/).
+[^tokens]: ZeroTier [API tokens](https://docs.zerotier.com/tokens/), checked 2026-11-01.
+[^rules]: ZeroTier [Rules Engine](https://docs.zerotier.com/rules/), checked 2026-11-01.
+[^lab]: [Grounding](./grounding.md#reported-lab-results) links the original authorization run and records its limits.
