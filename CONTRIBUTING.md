@@ -43,7 +43,7 @@ Prerequisites: [Bun](https://bun.sh). Optional: [lychee](https://lychee.cli.rs/)
 
 ```sh
 bun install        # one-time: installs cspell + markdownlint-cli2
-make lint          # = bun run check: markdownlint + cspell + SKILL.md validator
+make lint          # = bun run check: markdownlint + cspell + SKILL.md validator + refs check
 make lint-links    # offline relative-link + #anchor check (needs lychee)
 ```
 
@@ -56,6 +56,7 @@ make lint-links    # offline relative-link + #anchor check (needs lychee)
 | `lint` → markdown | `markdownlint-cli2` | Structure: code-fence language tags, list/heading spacing, tables, bare URLs. Config: [`.markdownlint.yaml`](.markdownlint.yaml). |
 | `lint` → spelling | `cspell` | Typos. Real RouterOS/networking terms live in [`project-words.txt`](project-words.txt). |
 | `lint` → skills | [`scripts/check-skills.ts`](scripts/check-skills.ts) | Each `SKILL.md` has valid frontmatter, `name` matches the directory, `description` ≤ 1024 chars, and an H1. |
+| `lint` → refs | [`scripts/check-refs.ts`](scripts/check-refs.ts) + [`scripts/build-refs.ts`](scripts/build-refs.ts) `--check` | Every `/`-path and property named in the pilot `SKILL.md` exists in its vendored rosetta snapshot, and generated `references/` are fresh. Rebuild author-local: `bun run build:refs -- --export <dir>`. |
 | `links` | `lychee` (offline) | Broken **relative** links and `#anchors`. External URLs are skipped so a flaky network never fails the gate. |
 | `actionlint` | `actionlint` | Mistakes in the workflow YAML itself. |
 

@@ -22,6 +22,7 @@ BFD
 blackhole
 BLE
 BOOTX
+bpdu
 browsable
 BSR
 btest
@@ -35,11 +36,13 @@ catvlan
 CCR
 CDB
 CDP
+cef
 centrs
 changeme
 chardev
 chipset
 cli
+cliref
 cmr
 coderabbit
 connectivitycheck
@@ -63,6 +66,7 @@ defconf
 descr
 desynchronize
 dgram
+dhcpv
 dont
 dport
 dscp
@@ -70,6 +74,7 @@ DSR
 dstnat
 DSV
 DTB
+duser
 ecam
 ECONNRESET
 Ecsrp
@@ -173,6 +178,8 @@ misattributed
 misparses
 mktemp
 mkvlan
+mlag
+mld
 MMIO
 mmips
 mndp
@@ -182,6 +189,7 @@ mountlists
 MPLS
 mtu
 MTWEI
+multicore
 MVRP
 myapp
 mybridge
@@ -216,6 +224,7 @@ ntohs
 NVME
 OCI
 oflow
+oid
 openflow
 opkg
 Opti
@@ -269,6 +278,7 @@ QGA
 qos
 quickchr
 quickchr's
+randomise
 radvert
 RAML
 readconfig
@@ -277,6 +287,7 @@ recvfrom
 redirector
 Referer
 replayable
+repull
 requiredness
 restraml
 REUSEADDR
@@ -294,6 +305,7 @@ routeros
 RPKI
 rsc
 rstatus
+rstp
 rtt
 sameorigin
 sandboxed
@@ -334,6 +346,7 @@ SVE
 tarpit
 tarpitted
 TCG
+tcn
 tcpdump
 termopen
 Tik
@@ -344,10 +357,12 @@ tikbook
 tikoci
 Tilera
 TLV
+tmpfs
 toarray
 toh
 tonum
 toplevel
+tos
 tostr
 totime
 traceroute
@@ -392,6 +407,7 @@ webfig
 WEBPASSWORD
 Winbox
 Wireshark
+wiresage
 Wize
 WLAN
 WPS

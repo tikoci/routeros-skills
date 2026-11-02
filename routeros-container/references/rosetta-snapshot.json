@@ -1,0 +1,4350 @@
+{
+  "generator": "scripts/build-refs.ts",
+  "skill": "routeros-container",
+  "rosetta": {
+    "release_tag": "v0.12.0-next.123",
+    "schema_version": "12",
+    "source_commit": "84c890ddcb55c80176fc2bdb0d3db038fb73e22f",
+    "built_at": "2026-10-21T17:12:26.963Z",
+    "docs_manual_version": "7.26",
+    "cliref_tree": "7.26",
+    "cliref_rows_digest": "610ac4a0dde812fbaefcc35f7cf5c5ba3dacabe4883294999cf590b85a826d25"
+  },
+  "owned_prefixes": [
+    "/app",
+    "/console/inspect",
+    "/container",
+    "/interface/bridge/add",
+    "/interface/bridge/port",
+    "/interface/list/member",
+    "/interface/veth/add",
+    "/ip/address/add",
+    "/ip/firewall/nat/add",
+    "/log",
+    "/system/device-mode/update",
+    "/system/package/apply-changes",
+    "/system/package/enable",
+    "/system/package/print",
+    "/system/package/update",
+    "/system/reboot",
+    "/system/resource"
+  ],
+  "paths": {
+    "/app": {
+      "type": "dir",
+      "description": null,
+      "args": {}
+    },
+    "/app/add": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "auto-update": null,
+        "container-command-lines": "string value",
+        "copy-from": null,
+        "devices": null,
+        "disabled": null,
+        "environment": null,
+        "extra-mounts": "string value",
+        "firewall-redirects": null,
+        "network": null,
+        "network-outgoing-access": null,
+        "network-pvid": null,
+        "required-hw-devices": "string value",
+        "required-mounts": "string value",
+        "secrets": "string value",
+        "use-https": null,
+        "yaml": "string value, min length 1"
+      }
+    },
+    "/app/cleanup": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "numbers": null
+      }
+    },
+    "/app/disable": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "numbers": null
+      }
+    },
+    "/app/edit": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "number": null,
+        "value-name": null
+      }
+    },
+    "/app/enable": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "numbers": null
+      }
+    },
+    "/app/export": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "compact": null,
+        "file": null,
+        "hide-sensitive": null,
+        "path": null,
+        "show-sensitive": null,
+        "terse": null,
+        "verbose": null,
+        "where": null
+      }
+    },
+    "/app/find": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "where": null
+      }
+    },
+    "/app/get": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "as-string": null,
+        "as-string-value": null,
+        "number": null,
+        "value-name": null
+      }
+    },
+    "/app/network": {
+      "type": "dir",
+      "description": null,
+      "args": {}
+    },
+    "/app/network/find": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "where": null
+      }
+    },
+    "/app/network/get": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "as-string": null,
+        "as-string-value": null,
+        "number": null,
+        "value-name": null
+      }
+    },
+    "/app/network/print": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "append": null,
+        "as-value": null,
+        "brief": null,
+        "comments": null,
+        "count-only": null,
+        "detail": null,
+        "file": null,
+        "follow": null,
+        "follow-only": null,
+        "from": null,
+        "group-by": null,
+        "interval": "00:00:00.200..    (time interval)",
+        "on-event": "script",
+        "order-by": null,
+        "proplist": null,
+        "show-ids": null,
+        "terse": null,
+        "timestamp": null,
+        "value-list": null,
+        "where": null,
+        "without-paging": null
+      }
+    },
+    "/app/network/reset": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "allow-outgoing-access": null,
+        "name": "string value",
+        "numbers": null
+      }
+    },
+    "/app/print": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "append": null,
+        "as-value": null,
+        "brief": null,
+        "comments": null,
+        "count-only": null,
+        "detail": null,
+        "file": null,
+        "follow": null,
+        "follow-only": null,
+        "from": null,
+        "group-by": null,
+        "interval": "00:00:00.200..    (time interval)",
+        "on-event": "script",
+        "order-by": null,
+        "proplist": null,
+        "show-ids": null,
+        "show-sensitive": null,
+        "terse": null,
+        "timestamp": null,
+        "value-list": null,
+        "where": null,
+        "without-paging": null
+      }
+    },
+    "/app/remove": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "numbers": null
+      }
+    },
+    "/app/reset": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "auto-update": null,
+        "container-command-lines": "string value",
+        "devices": null,
+        "disabled": null,
+        "environment": null,
+        "extra-mounts": "string value",
+        "firewall-redirects": null,
+        "network": null,
+        "network-outgoing-access": null,
+        "network-pvid": null,
+        "numbers": null,
+        "required-hw-devices": "string value",
+        "required-mounts": "string value",
+        "secrets": "string value",
+        "use-https": null,
+        "yaml": "string value, min length 1"
+      }
+    },
+    "/app/restart": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "numbers": null
+      }
+    },
+    "/app/set": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "auto-update": null,
+        "container-command-lines": "string value",
+        "devices": null,
+        "disabled": null,
+        "environment": null,
+        "extra-mounts": "string value",
+        "firewall-redirects": null,
+        "network": null,
+        "network-outgoing-access": null,
+        "network-pvid": null,
+        "numbers": null,
+        "required-hw-devices": "string value",
+        "required-mounts": "string value",
+        "secrets": "string value",
+        "use-https": null,
+        "yaml": "string value, min length 1"
+      }
+    },
+    "/app/settings": {
+      "type": "dir",
+      "description": null,
+      "args": {}
+    },
+    "/app/settings/edit": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "value-name": null
+      }
+    },
+    "/app/settings/export": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "compact": null,
+        "file": null,
+        "hide-sensitive": null,
+        "path": null,
+        "show-sensitive": null,
+        "terse": null,
+        "verbose": null,
+        "where": null
+      }
+    },
+    "/app/settings/get": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "as-string": null,
+        "as-string-value": null,
+        "value-name": null
+      }
+    },
+    "/app/settings/print": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "as-value": null,
+        "comments": null,
+        "file": null,
+        "interval": "00:00:00.200..    (time interval)",
+        "without-paging": null
+      }
+    },
+    "/app/settings/reset": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "app-store-urls": "string value, min length 1",
+        "auto-update": null,
+        "disk": null,
+        "download-path": null,
+        "lan-bridge": null,
+        "media-path": null,
+        "registry-mirrors": "string value, min length 1",
+        "router-ip": "A.B.C.D    (IP address)",
+        "show-in-webfig": null
+      }
+    },
+    "/app/settings/set": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "app-store-urls": "string value, min length 1",
+        "auto-update": null,
+        "disk": null,
+        "download-path": null,
+        "lan-bridge": null,
+        "media-path": null,
+        "registry-mirrors": "string value, min length 1",
+        "router-ip": "A.B.C.D    (IP address)",
+        "show-in-webfig": null
+      }
+    },
+    "/app/setup": {
+      "type": "cmd",
+      "description": null,
+      "args": {}
+    },
+    "/app/unset": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "numbers": null,
+        "value-name": null
+      }
+    },
+    "/app/update": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "numbers": null
+      }
+    },
+    "/console/inspect": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "as-value": null,
+        "input": "string value",
+        "path": "string value",
+        "proplist": null,
+        "request": "self|child|completion|highlight|syntax|error[,Request*]",
+        "without-paging": null
+      }
+    },
+    "/container": {
+      "type": "dir",
+      "description": null,
+      "args": {}
+    },
+    "/container/add": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "check-certificate": null,
+        "cmd": "string value",
+        "comment": "string value",
+        "copy-from": null,
+        "cpu-list": null,
+        "default-dns": null,
+        "devices": null,
+        "dns": null,
+        "domain-name": "string value",
+        "entrypoint": "string value",
+        "env": null,
+        "envlists": null,
+        "file": null,
+        "healthcheck-cmd": "string value",
+        "healthcheck-interval": "1s..7w17h2m47s295ms    (time interval)",
+        "healthcheck-retries": null,
+        "healthcheck-start-interval": "1s..7w17h2m47s295ms    (time interval)",
+        "healthcheck-start-period": "time interval",
+        "healthcheck-status": "string value",
+        "healthcheck-timeout": "1s..7w17h2m47s295ms    (time interval)",
+        "hostname": "string value",
+        "hosts": "string value, min length 1",
+        "ignore-remote-image-change": null,
+        "interface": null,
+        "layer-dir": null,
+        "logging": null,
+        "memory-high": null,
+        "memory-max": null,
+        "mount": null,
+        "mountlists": null,
+        "name": "string value",
+        "privileged": null,
+        "remote-image": "string value",
+        "restart-interval": "time interval",
+        "restart-max-count": null,
+        "restart-policy": null,
+        "root-dir": null,
+        "shell": "string value",
+        "shm-size": null,
+        "start-on-boot": null,
+        "stop-on-unhealthy": null,
+        "stop-signal": null,
+        "stop-time": "time interval",
+        "swap-max": null,
+        "tmpfs": "string value, min length 1",
+        "user": "string value",
+        "workdir": "string value"
+      }
+    },
+    "/container/comment": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "comment": "string value",
+        "numbers": null
+      }
+    },
+    "/container/config": {
+      "type": "dir",
+      "description": null,
+      "args": {}
+    },
+    "/container/config/edit": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "value-name": null
+      }
+    },
+    "/container/config/export": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "compact": null,
+        "file": null,
+        "hide-sensitive": null,
+        "path": null,
+        "show-sensitive": null,
+        "terse": null,
+        "verbose": null,
+        "where": null
+      }
+    },
+    "/container/config/get": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "as-string": null,
+        "as-string-value": null,
+        "value-name": null
+      }
+    },
+    "/container/config/print": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "as-value": null,
+        "comments": null,
+        "file": null,
+        "interval": "00:00:00.200..    (time interval)",
+        "show-sensitive": null,
+        "without-paging": null
+      }
+    },
+    "/container/config/reset": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "layer-dir": null,
+        "memory-high": null,
+        "memory-max": null,
+        "password": "string value",
+        "registry-url": "string value",
+        "swap-max": null,
+        "tmpdir": null,
+        "username": "string value"
+      }
+    },
+    "/container/config/set": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "layer-dir": null,
+        "memory-high": null,
+        "memory-max": null,
+        "password": "string value",
+        "registry-url": "string value",
+        "swap-max": null,
+        "tmpdir": null,
+        "username": "string value"
+      }
+    },
+    "/container/edit": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "number": null,
+        "value-name": null
+      }
+    },
+    "/container/envs": {
+      "type": "dir",
+      "description": null,
+      "args": {}
+    },
+    "/container/envs/add": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "comment": "string value",
+        "copy-from": null,
+        "disabled": null,
+        "key": "string value",
+        "list": null,
+        "value": "string value"
+      }
+    },
+    "/container/envs/comment": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "comment": "string value",
+        "numbers": null
+      }
+    },
+    "/container/envs/disable": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "numbers": null
+      }
+    },
+    "/container/envs/edit": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "number": null,
+        "value-name": null
+      }
+    },
+    "/container/envs/enable": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "numbers": null
+      }
+    },
+    "/container/envs/export": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "compact": null,
+        "file": null,
+        "hide-sensitive": null,
+        "path": null,
+        "show-sensitive": null,
+        "terse": null,
+        "verbose": null,
+        "where": null
+      }
+    },
+    "/container/envs/find": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "where": null
+      }
+    },
+    "/container/envs/get": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "as-string": null,
+        "as-string-value": null,
+        "number": null,
+        "value-name": null
+      }
+    },
+    "/container/envs/print": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "append": null,
+        "as-value": null,
+        "brief": null,
+        "comments": null,
+        "count-only": null,
+        "detail": null,
+        "file": null,
+        "follow": null,
+        "follow-only": null,
+        "from": null,
+        "group-by": null,
+        "interval": "00:00:00.200..    (time interval)",
+        "on-event": "script",
+        "order-by": null,
+        "proplist": null,
+        "show-ids": null,
+        "terse": null,
+        "timestamp": null,
+        "value-list": null,
+        "where": null,
+        "without-paging": null
+      }
+    },
+    "/container/envs/remove": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "numbers": null
+      }
+    },
+    "/container/envs/reset": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "comment": "string value",
+        "disabled": null,
+        "key": "string value",
+        "list": null,
+        "numbers": null,
+        "value": "string value"
+      }
+    },
+    "/container/envs/set": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "comment": "string value",
+        "disabled": null,
+        "key": "string value",
+        "list": null,
+        "numbers": null,
+        "value": "string value"
+      }
+    },
+    "/container/export": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "compact": null,
+        "file": null,
+        "hide-sensitive": null,
+        "path": null,
+        "show-sensitive": null,
+        "terse": null,
+        "verbose": null,
+        "where": null
+      }
+    },
+    "/container/find": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "where": null
+      }
+    },
+    "/container/get": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "as-string": null,
+        "as-string-value": null,
+        "number": null,
+        "value-name": null
+      }
+    },
+    "/container/kill": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "as-value": null,
+        "number": null,
+        "signal": null
+      }
+    },
+    "/container/layers": {
+      "type": "dir",
+      "description": null,
+      "args": {}
+    },
+    "/container/layers/find": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "where": null
+      }
+    },
+    "/container/layers/get": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "as-string": null,
+        "as-string-value": null,
+        "number": null,
+        "value-name": null
+      }
+    },
+    "/container/layers/print": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "append": null,
+        "as-value": null,
+        "brief": null,
+        "comments": null,
+        "count-only": null,
+        "detail": null,
+        "file": null,
+        "follow": null,
+        "follow-only": null,
+        "from": null,
+        "group-by": null,
+        "interval": "00:00:00.200..    (time interval)",
+        "on-event": "script",
+        "order-by": null,
+        "proplist": null,
+        "show-ids": null,
+        "terse": null,
+        "timestamp": null,
+        "value-list": null,
+        "where": null,
+        "without-paging": null
+      }
+    },
+    "/container/log": {
+      "type": "dir",
+      "description": null,
+      "args": {}
+    },
+    "/container/log/find": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "where": null
+      }
+    },
+    "/container/log/get": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "as-string": null,
+        "as-string-value": null,
+        "number": null,
+        "value-name": null
+      }
+    },
+    "/container/log/print": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "append": null,
+        "as-value": null,
+        "brief": null,
+        "comments": null,
+        "count-only": null,
+        "detail": null,
+        "file": null,
+        "follow": null,
+        "follow-only": null,
+        "group-by": null,
+        "interval": "00:00:00.200..    (time interval)",
+        "on-event": "script",
+        "order-by": null,
+        "proplist": null,
+        "show-ids": null,
+        "terse": null,
+        "timestamp": null,
+        "value-list": null,
+        "where": null,
+        "without-paging": null
+      }
+    },
+    "/container/mounts": {
+      "type": "dir",
+      "description": null,
+      "args": {}
+    },
+    "/container/mounts/add": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "comment": "string value",
+        "copy-from": null,
+        "disabled": null,
+        "dst": "string value",
+        "list": null,
+        "mode": null,
+        "src": null
+      }
+    },
+    "/container/mounts/comment": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "comment": "string value",
+        "numbers": null
+      }
+    },
+    "/container/mounts/disable": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "numbers": null
+      }
+    },
+    "/container/mounts/edit": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "number": null,
+        "value-name": null
+      }
+    },
+    "/container/mounts/enable": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "numbers": null
+      }
+    },
+    "/container/mounts/export": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "compact": null,
+        "file": null,
+        "hide-sensitive": null,
+        "path": null,
+        "show-sensitive": null,
+        "terse": null,
+        "verbose": null,
+        "where": null
+      }
+    },
+    "/container/mounts/find": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "where": null
+      }
+    },
+    "/container/mounts/get": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "as-string": null,
+        "as-string-value": null,
+        "number": null,
+        "value-name": null
+      }
+    },
+    "/container/mounts/print": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "append": null,
+        "as-value": null,
+        "brief": null,
+        "comments": null,
+        "count-only": null,
+        "detail": null,
+        "file": null,
+        "follow": null,
+        "follow-only": null,
+        "from": null,
+        "group-by": null,
+        "interval": "00:00:00.200..    (time interval)",
+        "on-event": "script",
+        "order-by": null,
+        "proplist": null,
+        "show-ids": null,
+        "terse": null,
+        "timestamp": null,
+        "value-list": null,
+        "where": null,
+        "without-paging": null
+      }
+    },
+    "/container/mounts/remove": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "numbers": null
+      }
+    },
+    "/container/mounts/reset": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "comment": "string value",
+        "disabled": null,
+        "dst": "string value",
+        "list": null,
+        "mode": null,
+        "numbers": null,
+        "src": null
+      }
+    },
+    "/container/mounts/set": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "comment": "string value",
+        "disabled": null,
+        "dst": "string value",
+        "list": null,
+        "mode": null,
+        "numbers": null,
+        "src": null
+      }
+    },
+    "/container/print": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "append": null,
+        "as-value": null,
+        "brief": null,
+        "comments": null,
+        "count-only": null,
+        "detail": null,
+        "file": null,
+        "follow": null,
+        "follow-only": null,
+        "from": null,
+        "group-by": null,
+        "interval": "00:00:00.200..    (time interval)",
+        "json": null,
+        "on-event": "script",
+        "order-by": null,
+        "proplist": null,
+        "show-ids": null,
+        "terse": null,
+        "timestamp": null,
+        "value-list": null,
+        "where": null,
+        "without-paging": null
+      }
+    },
+    "/container/remove": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "numbers": null
+      }
+    },
+    "/container/repull": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "as-value": null,
+        "file": null,
+        "number": null,
+        "remote-image": "string value"
+      }
+    },
+    "/container/reset": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "check-certificate": null,
+        "cmd": "string value",
+        "comment": "string value",
+        "cpu-list": null,
+        "default-dns": null,
+        "devices": null,
+        "dns": null,
+        "domain-name": "string value",
+        "entrypoint": "string value",
+        "env": null,
+        "envlists": null,
+        "file": null,
+        "healthcheck-cmd": "string value",
+        "healthcheck-interval": "1s..7w17h2m47s295ms    (time interval)",
+        "healthcheck-retries": null,
+        "healthcheck-start-interval": "1s..7w17h2m47s295ms    (time interval)",
+        "healthcheck-start-period": "time interval",
+        "healthcheck-status": "string value",
+        "healthcheck-timeout": "1s..7w17h2m47s295ms    (time interval)",
+        "hostname": "string value",
+        "hosts": "string value, min length 1",
+        "ignore-remote-image-change": null,
+        "interface": null,
+        "layer-dir": null,
+        "logging": null,
+        "memory-high": null,
+        "memory-max": null,
+        "mount": null,
+        "mountlists": null,
+        "name": "string value",
+        "numbers": null,
+        "privileged": null,
+        "remote-image": "string value",
+        "restart-interval": "time interval",
+        "restart-max-count": null,
+        "restart-policy": null,
+        "root-dir": null,
+        "shell": "string value",
+        "shm-size": null,
+        "start-on-boot": null,
+        "stop-on-unhealthy": null,
+        "stop-signal": null,
+        "stop-time": "time interval",
+        "swap-max": null,
+        "tmpfs": "string value, min length 1",
+        "user": "string value",
+        "workdir": "string value"
+      }
+    },
+    "/container/restart": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "as-value": null,
+        "number": null
+      }
+    },
+    "/container/run": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "as-value": null,
+        "cmd": "string value",
+        "detach": null,
+        "entrypoint": "string value",
+        "interactive": null,
+        "line-separator": "string value",
+        "number": null,
+        "tty": null,
+        "user": "string value",
+        "workdir": "string value"
+      }
+    },
+    "/container/save": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "commit": null,
+        "file": null,
+        "name": "string value",
+        "number": null
+      }
+    },
+    "/container/set": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "check-certificate": null,
+        "cmd": "string value",
+        "comment": "string value",
+        "cpu-list": null,
+        "default-dns": null,
+        "devices": null,
+        "dns": null,
+        "domain-name": "string value",
+        "entrypoint": "string value",
+        "env": null,
+        "envlists": null,
+        "file": null,
+        "healthcheck-cmd": "string value",
+        "healthcheck-interval": "1s..7w17h2m47s295ms    (time interval)",
+        "healthcheck-retries": null,
+        "healthcheck-start-interval": "1s..7w17h2m47s295ms    (time interval)",
+        "healthcheck-start-period": "time interval",
+        "healthcheck-status": "string value",
+        "healthcheck-timeout": "1s..7w17h2m47s295ms    (time interval)",
+        "hostname": "string value",
+        "hosts": "string value, min length 1",
+        "ignore-remote-image-change": null,
+        "interface": null,
+        "layer-dir": null,
+        "logging": null,
+        "memory-high": null,
+        "memory-max": null,
+        "mount": null,
+        "mountlists": null,
+        "name": "string value",
+        "numbers": null,
+        "privileged": null,
+        "remote-image": "string value",
+        "restart-interval": "time interval",
+        "restart-max-count": null,
+        "restart-policy": null,
+        "root-dir": null,
+        "shell": "string value",
+        "shm-size": null,
+        "start-on-boot": null,
+        "stop-on-unhealthy": null,
+        "stop-signal": null,
+        "stop-time": "time interval",
+        "swap-max": null,
+        "tmpfs": "string value, min length 1",
+        "user": "string value",
+        "workdir": "string value"
+      }
+    },
+    "/container/shell": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "as-value": null,
+        "cmd": "string value",
+        "line-separator": "string value",
+        "no-sh": null,
+        "number": null,
+        "timeout": null,
+        "user": "string value",
+        "workdir": "string value"
+      }
+    },
+    "/container/start": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "numbers": null
+      }
+    },
+    "/container/stop": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "numbers": null
+      }
+    },
+    "/container/unset": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "numbers": null,
+        "value-name": null
+      }
+    },
+    "/container/update": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "as-value": null,
+        "number": null
+      }
+    },
+    "/interface/bridge/add": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "admin-mac": "AB[:|-|.]CD[:|-|.]EF[:|-|.]GH[:|-|.]IJ[:|-|.]KL    (MAC address)",
+        "ageing-time": "10s..1w4d13h46m40s    (time interval)",
+        "arp": null,
+        "arp-timeout": null,
+        "auto-mac": null,
+        "comment": "string value",
+        "copy-from": null,
+        "dhcp-agent-circuit-id": "string value",
+        "dhcp-agent-remote-id": "string value",
+        "dhcp-snooping": null,
+        "dhcpv6-agent-circuit-id": "string value",
+        "dhcpv6-agent-remote-id": "string value",
+        "dhcpv6-snooping": null,
+        "disabled": null,
+        "ether-type": null,
+        "fast-forward": null,
+        "forward-delay": "4s..30s    (time interval)",
+        "forward-reserved-addresses": null,
+        "frame-types": null,
+        "igmp-snooping": null,
+        "igmp-version": null,
+        "ingress-filtering": null,
+        "last-member-interval": "1s..71w2h27m52s950ms    (time interval)",
+        "last-member-query-count": null,
+        "max-hops": null,
+        "max-learned-entries": null,
+        "max-message-age": "6s..40s    (time interval)",
+        "membership-interval": "1s..71w2h27m52s950ms    (time interval)",
+        "mlag-heartbeat": null,
+        "mlag-peer-port": null,
+        "mlag-priority": null,
+        "mld-version": null,
+        "mtu": null,
+        "multicast-querier": null,
+        "multicast-router": null,
+        "mvrp": null,
+        "name": "string value",
+        "port-cost-mode": null,
+        "priority": null,
+        "protocol-mode": null,
+        "pvid": null,
+        "querier-interval": "1s..71w2h27m52s950ms    (time interval)",
+        "querier-uses-bridge-address": null,
+        "query-interval": "1s..71w2h27m52s950ms    (time interval)",
+        "query-response-interval": "1s..71w2h27m52s950ms    (time interval)",
+        "ra-guard": null,
+        "region-name": "string value",
+        "region-revision": null,
+        "startup-query-count": null,
+        "startup-query-interval": "1s..71w2h27m52s950ms    (time interval)",
+        "transmit-hold-count": null,
+        "vlan-filtering": null
+      }
+    },
+    "/interface/bridge/port": {
+      "type": "dir",
+      "description": null,
+      "args": {}
+    },
+    "/interface/bridge/port/add": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "auto-isolate": null,
+        "bpdu-guard": null,
+        "bridge": null,
+        "broadcast-flood": null,
+        "comment": "string value",
+        "copy-from": null,
+        "disabled": null,
+        "edge": null,
+        "fast-leave": null,
+        "frame-types": null,
+        "horizon": null,
+        "hw": null,
+        "ingress-filtering": null,
+        "interface": null,
+        "internal-path-cost": null,
+        "learn": null,
+        "multicast-router": null,
+        "mvrp-applicant-state": null,
+        "mvrp-registrar-state": null,
+        "path-cost": null,
+        "place-before": null,
+        "point-to-point": null,
+        "priority": null,
+        "pvid": null,
+        "restricted-role": null,
+        "restricted-tcn": null,
+        "tag-stacking": null,
+        "trusted": null,
+        "trusted-dhcpv6": null,
+        "trusted-ra": null,
+        "unknown-multicast-flood": null,
+        "unknown-unicast-flood": null
+      }
+    },
+    "/interface/bridge/port/comment": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "comment": "string value",
+        "numbers": null
+      }
+    },
+    "/interface/bridge/port/disable": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "numbers": null
+      }
+    },
+    "/interface/bridge/port/edit": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "number": null,
+        "value-name": null
+      }
+    },
+    "/interface/bridge/port/enable": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "numbers": null
+      }
+    },
+    "/interface/bridge/port/export": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "compact": null,
+        "file": null,
+        "hide-sensitive": null,
+        "path": null,
+        "show-sensitive": null,
+        "terse": null,
+        "verbose": null,
+        "where": null
+      }
+    },
+    "/interface/bridge/port/find": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "where": null
+      }
+    },
+    "/interface/bridge/port/get": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "as-string": null,
+        "as-string-value": null,
+        "number": null,
+        "value-name": null
+      }
+    },
+    "/interface/bridge/port/monitor": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "append": null,
+        "as-value": null,
+        "do": "script",
+        "duration": "time interval",
+        "file": null,
+        "freeze-frame-interval": "00:00:00.020..00:00:30    (time interval)",
+        "interval": "00:00:00.020..00:00:05    (time interval)",
+        "numbers": null,
+        "once": null,
+        "proplist": null,
+        "without-paging": null
+      }
+    },
+    "/interface/bridge/port/move": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "destination": null,
+        "numbers": null
+      }
+    },
+    "/interface/bridge/port/mst-override": {
+      "type": "dir",
+      "description": null,
+      "args": {}
+    },
+    "/interface/bridge/port/mst-override/add": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "comment": "string value",
+        "copy-from": null,
+        "disabled": null,
+        "identifier": null,
+        "interface": null,
+        "internal-path-cost": null,
+        "priority": null
+      }
+    },
+    "/interface/bridge/port/mst-override/comment": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "comment": "string value",
+        "numbers": null
+      }
+    },
+    "/interface/bridge/port/mst-override/disable": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "numbers": null
+      }
+    },
+    "/interface/bridge/port/mst-override/edit": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "number": null,
+        "value-name": null
+      }
+    },
+    "/interface/bridge/port/mst-override/enable": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "numbers": null
+      }
+    },
+    "/interface/bridge/port/mst-override/export": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "compact": null,
+        "file": null,
+        "hide-sensitive": null,
+        "path": null,
+        "show-sensitive": null,
+        "terse": null,
+        "verbose": null,
+        "where": null
+      }
+    },
+    "/interface/bridge/port/mst-override/find": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "where": null
+      }
+    },
+    "/interface/bridge/port/mst-override/get": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "as-string": null,
+        "as-string-value": null,
+        "number": null,
+        "value-name": null
+      }
+    },
+    "/interface/bridge/port/mst-override/monitor": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "append": null,
+        "as-value": null,
+        "do": "script",
+        "duration": "time interval",
+        "file": null,
+        "freeze-frame-interval": "00:00:00.020..00:00:30    (time interval)",
+        "interval": "00:00:00.020..00:00:05    (time interval)",
+        "numbers": null,
+        "once": null,
+        "proplist": null,
+        "without-paging": null
+      }
+    },
+    "/interface/bridge/port/mst-override/print": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "append": null,
+        "as-value": null,
+        "brief": null,
+        "comments": null,
+        "count-only": null,
+        "debug": null,
+        "detail": null,
+        "file": null,
+        "follow": null,
+        "follow-only": null,
+        "from": null,
+        "group-by": null,
+        "interval": "00:00:00.200..    (time interval)",
+        "on-event": "script",
+        "order-by": null,
+        "proplist": null,
+        "show-ids": null,
+        "terse": null,
+        "timestamp": null,
+        "value-list": null,
+        "where": null,
+        "without-paging": null
+      }
+    },
+    "/interface/bridge/port/mst-override/remove": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "numbers": null
+      }
+    },
+    "/interface/bridge/port/mst-override/reset": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "comment": "string value",
+        "disabled": null,
+        "identifier": null,
+        "interface": null,
+        "internal-path-cost": null,
+        "numbers": null,
+        "priority": null
+      }
+    },
+    "/interface/bridge/port/mst-override/set": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "comment": "string value",
+        "disabled": null,
+        "identifier": null,
+        "interface": null,
+        "internal-path-cost": null,
+        "numbers": null,
+        "priority": null
+      }
+    },
+    "/interface/bridge/port/mst-override/unset": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "numbers": null,
+        "value-name": null
+      }
+    },
+    "/interface/bridge/port/print": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "append": null,
+        "as-value": null,
+        "brief": null,
+        "comments": null,
+        "count-only": null,
+        "debug": null,
+        "detail": null,
+        "file": null,
+        "follow": null,
+        "follow-only": null,
+        "from": null,
+        "group-by": null,
+        "interval": "00:00:00.200..    (time interval)",
+        "on-event": "script",
+        "order-by": null,
+        "proplist": null,
+        "show-ids": null,
+        "stats": null,
+        "terse": null,
+        "timestamp": null,
+        "value-list": null,
+        "where": null,
+        "without-paging": null
+      }
+    },
+    "/interface/bridge/port/remove": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "numbers": null
+      }
+    },
+    "/interface/bridge/port/reset": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "auto-isolate": null,
+        "bpdu-guard": null,
+        "bridge": null,
+        "broadcast-flood": null,
+        "comment": "string value",
+        "disabled": null,
+        "edge": null,
+        "fast-leave": null,
+        "frame-types": null,
+        "horizon": null,
+        "hw": null,
+        "ingress-filtering": null,
+        "interface": null,
+        "internal-path-cost": null,
+        "learn": null,
+        "multicast-router": null,
+        "mvrp-applicant-state": null,
+        "mvrp-registrar-state": null,
+        "numbers": null,
+        "path-cost": null,
+        "point-to-point": null,
+        "priority": null,
+        "pvid": null,
+        "restricted-role": null,
+        "restricted-tcn": null,
+        "tag-stacking": null,
+        "trusted": null,
+        "trusted-dhcpv6": null,
+        "trusted-ra": null,
+        "unknown-multicast-flood": null,
+        "unknown-unicast-flood": null
+      }
+    },
+    "/interface/bridge/port/set": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "auto-isolate": null,
+        "bpdu-guard": null,
+        "bridge": null,
+        "broadcast-flood": null,
+        "comment": "string value",
+        "disabled": null,
+        "edge": null,
+        "fast-leave": null,
+        "frame-types": null,
+        "horizon": null,
+        "hw": null,
+        "ingress-filtering": null,
+        "interface": null,
+        "internal-path-cost": null,
+        "learn": null,
+        "multicast-router": null,
+        "mvrp-applicant-state": null,
+        "mvrp-registrar-state": null,
+        "numbers": null,
+        "path-cost": null,
+        "point-to-point": null,
+        "priority": null,
+        "pvid": null,
+        "restricted-role": null,
+        "restricted-tcn": null,
+        "tag-stacking": null,
+        "trusted": null,
+        "trusted-dhcpv6": null,
+        "trusted-ra": null,
+        "unknown-multicast-flood": null,
+        "unknown-unicast-flood": null
+      }
+    },
+    "/interface/bridge/port/unset": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "numbers": null,
+        "value-name": null
+      }
+    },
+    "/interface/list/member": {
+      "type": "dir",
+      "description": null,
+      "args": {}
+    },
+    "/interface/list/member/add": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "comment": "string value",
+        "copy-from": null,
+        "disabled": null,
+        "interface": null,
+        "list": null
+      }
+    },
+    "/interface/list/member/comment": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "comment": "string value",
+        "numbers": null
+      }
+    },
+    "/interface/list/member/disable": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "numbers": null
+      }
+    },
+    "/interface/list/member/edit": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "number": null,
+        "value-name": null
+      }
+    },
+    "/interface/list/member/enable": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "numbers": null
+      }
+    },
+    "/interface/list/member/export": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "compact": null,
+        "file": null,
+        "hide-sensitive": null,
+        "path": null,
+        "show-sensitive": null,
+        "terse": null,
+        "verbose": null,
+        "where": null
+      }
+    },
+    "/interface/list/member/find": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "where": null
+      }
+    },
+    "/interface/list/member/get": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "as-string": null,
+        "as-string-value": null,
+        "number": null,
+        "value-name": null
+      }
+    },
+    "/interface/list/member/print": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "append": null,
+        "as-value": null,
+        "brief": null,
+        "comments": null,
+        "count-only": null,
+        "detail": null,
+        "file": null,
+        "follow": null,
+        "follow-only": null,
+        "from": null,
+        "group-by": null,
+        "interval": "00:00:00.200..    (time interval)",
+        "on-event": "script",
+        "order-by": null,
+        "proplist": null,
+        "show-ids": null,
+        "terse": null,
+        "timestamp": null,
+        "value-list": null,
+        "where": null,
+        "without-paging": null
+      }
+    },
+    "/interface/list/member/remove": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "numbers": null
+      }
+    },
+    "/interface/list/member/reset": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "comment": "string value",
+        "disabled": null,
+        "interface": null,
+        "list": null,
+        "numbers": null
+      }
+    },
+    "/interface/list/member/set": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "comment": "string value",
+        "disabled": null,
+        "interface": null,
+        "list": null,
+        "numbers": null
+      }
+    },
+    "/interface/veth/add": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "address": null,
+        "comment": "string value",
+        "container-mac-address": "AB[:|-|.]CD[:|-|.]EF[:|-|.]GH[:|-|.]IJ[:|-|.]KL    (MAC address)",
+        "copy-from": null,
+        "dhcp": null,
+        "disabled": null,
+        "gateway": null,
+        "gateway6": null,
+        "mac-address": "AB[:|-|.]CD[:|-|.]EF[:|-|.]GH[:|-|.]IJ[:|-|.]KL    (MAC address)",
+        "name": "string value"
+      }
+    },
+    "/ip/address/add": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "address": "A.B.C.D    (IP address)",
+        "broadcast": "A.B.C.D    (IP address)",
+        "comment": "string value",
+        "copy-from": null,
+        "disabled": null,
+        "interface": null,
+        "netmask": "A.B.C.D    (IP address)",
+        "network": "A.B.C.D    (IP address)"
+      }
+    },
+    "/ip/firewall/nat/add": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "action": null,
+        "address-list": null,
+        "address-list-timeout": null,
+        "chain": null,
+        "comment": "string value",
+        "connection-bytes": null,
+        "connection-limit": null,
+        "connection-mark": null,
+        "connection-rate": null,
+        "connection-type": null,
+        "content": null,
+        "copy-from": null,
+        "disabled": null,
+        "dscp": null,
+        "dst-address": null,
+        "dst-address-list": null,
+        "dst-address-type": null,
+        "dst-limit": null,
+        "dst-port": null,
+        "fragment": null,
+        "hotspot": null,
+        "icmp-options": null,
+        "in-bridge-port": null,
+        "in-bridge-port-list": null,
+        "in-interface": null,
+        "in-interface-list": null,
+        "ingress-priority": null,
+        "ipsec-policy": null,
+        "ipv4-options": null,
+        "jump-target": null,
+        "layer7-protocol": null,
+        "limit": null,
+        "log": null,
+        "log-prefix": "string value, max length 31",
+        "nth": null,
+        "out-bridge-port": null,
+        "out-bridge-port-list": null,
+        "out-interface": null,
+        "out-interface-list": null,
+        "packet-mark": null,
+        "packet-size": null,
+        "per-connection-classifier": null,
+        "place-before": null,
+        "port": null,
+        "priority": null,
+        "protocol": null,
+        "psd": null,
+        "random": null,
+        "randomise-ports": null,
+        "realm": null,
+        "routing-mark": null,
+        "same-not-by-dst": null,
+        "socks5-port": null,
+        "socks5-server": "A.B.C.D    (IP address)",
+        "socksify-service": null,
+        "src-address": null,
+        "src-address-list": null,
+        "src-address-type": null,
+        "src-mac-address": null,
+        "src-port": null,
+        "tcp-mss": null,
+        "time": null,
+        "to-addresses": "A.B.C.D[-A.B.C.D |0..32 |/A.B.C.D ]    (IP address range)",
+        "to-ports": null,
+        "tos": null,
+        "ttl": null
+      }
+    },
+    "/log": {
+      "type": "dir",
+      "description": null,
+      "args": {}
+    },
+    "/log/debug": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "message": "string value"
+      }
+    },
+    "/log/error": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "message": "string value"
+      }
+    },
+    "/log/find": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "where": null
+      }
+    },
+    "/log/get": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "as-string": null,
+        "as-string-value": null,
+        "number": null,
+        "value-name": null
+      }
+    },
+    "/log/info": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "message": "string value"
+      }
+    },
+    "/log/print": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "append": null,
+        "as-value": null,
+        "brief": null,
+        "comments": null,
+        "count-only": null,
+        "detail": null,
+        "file": null,
+        "follow": null,
+        "follow-only": null,
+        "group-by": null,
+        "interval": "00:00:00.200..    (time interval)",
+        "on-event": "script",
+        "order-by": null,
+        "proplist": null,
+        "show-ids": null,
+        "terse": null,
+        "timestamp": null,
+        "value-list": null,
+        "where": null,
+        "with-extra-info": null,
+        "without-paging": null
+      }
+    },
+    "/log/warning": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "message": "string value"
+      }
+    },
+    "/system/device-mode/update": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "activation-timeout": "10s..1d    (time interval)",
+        "append": null,
+        "as-value": null,
+        "bandwidth-test": null,
+        "container": null,
+        "do": "script",
+        "duration": "time interval",
+        "email": null,
+        "fetch": null,
+        "file": null,
+        "flagged": null,
+        "flagging-enabled": null,
+        "freeze-frame-interval": "00:00:00.020..00:00:30    (time interval)",
+        "hotspot": null,
+        "install-any-version": null,
+        "interval": "00:00:00.020..00:00:05    (time interval)",
+        "ipsec": null,
+        "l2tp": null,
+        "mode": null,
+        "once": null,
+        "partitions": null,
+        "pptp": null,
+        "proxy": null,
+        "romon": null,
+        "routerboard": null,
+        "scheduler": null,
+        "smb": null,
+        "sniffer": null,
+        "socks": null,
+        "traffic-gen": null,
+        "without-paging": null,
+        "zerotier": null
+      }
+    },
+    "/system/package/apply-changes": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "ignore-missing": null
+      }
+    },
+    "/system/package/enable": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "numbers": null
+      }
+    },
+    "/system/package/print": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "append": null,
+        "as-value": null,
+        "brief": null,
+        "comments": null,
+        "count-only": null,
+        "detail": null,
+        "file": null,
+        "follow": null,
+        "follow-only": null,
+        "from": null,
+        "group-by": null,
+        "interval": "00:00:00.200..    (time interval)",
+        "on-event": "script",
+        "order-by": null,
+        "proplist": null,
+        "show-ids": null,
+        "terse": null,
+        "timestamp": null,
+        "value-list": null,
+        "where": null,
+        "without-paging": null
+      }
+    },
+    "/system/package/update": {
+      "type": "dir",
+      "description": null,
+      "args": {}
+    },
+    "/system/package/update/cancel": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "as-value": null
+      }
+    },
+    "/system/package/update/check-for-updates": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "append": null,
+        "as-value": null,
+        "do": "script",
+        "duration": "time interval",
+        "fetch-changelog": null,
+        "file": null,
+        "freeze-frame-interval": "00:00:00.020..00:00:30    (time interval)",
+        "interval": "00:00:00.020..00:00:05    (time interval)",
+        "once": null,
+        "proplist": null,
+        "without-paging": null
+      }
+    },
+    "/system/package/update/download": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "append": null,
+        "as-value": null,
+        "do": "script",
+        "duration": "time interval",
+        "file": null,
+        "freeze-frame-interval": "00:00:00.020..00:00:30    (time interval)",
+        "ignore-missing": null,
+        "interval": "00:00:00.020..00:00:05    (time interval)",
+        "once": null,
+        "proplist": null,
+        "without-paging": null
+      }
+    },
+    "/system/package/update/edit": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "value-name": null
+      }
+    },
+    "/system/package/update/export": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "compact": null,
+        "file": null,
+        "hide-sensitive": null,
+        "path": null,
+        "show-sensitive": null,
+        "terse": null,
+        "verbose": null,
+        "where": null
+      }
+    },
+    "/system/package/update/get": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "as-string": null,
+        "as-string-value": null,
+        "value-name": null
+      }
+    },
+    "/system/package/update/install": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "append": null,
+        "as-value": null,
+        "do": "script",
+        "duration": "time interval",
+        "file": null,
+        "freeze-frame-interval": "00:00:00.020..00:00:30    (time interval)",
+        "ignore-missing": null,
+        "interval": "00:00:00.020..00:00:05    (time interval)",
+        "once": null,
+        "proplist": null,
+        "without-paging": null
+      }
+    },
+    "/system/package/update/print": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "as-value": null,
+        "comments": null,
+        "file": null,
+        "interval": "00:00:00.200..    (time interval)",
+        "without-paging": null
+      }
+    },
+    "/system/package/update/reset": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "channel": null,
+        "check-certificate": null,
+        "ip-version": null,
+        "mode": null
+      }
+    },
+    "/system/package/update/set": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "channel": null,
+        "check-certificate": null,
+        "ip-version": null,
+        "mode": null
+      }
+    },
+    "/system/reboot": {
+      "type": "cmd",
+      "description": null,
+      "args": {}
+    },
+    "/system/resource": {
+      "type": "dir",
+      "description": null,
+      "args": {}
+    },
+    "/system/resource/cpu": {
+      "type": "dir",
+      "description": null,
+      "args": {}
+    },
+    "/system/resource/cpu/find": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "where": null
+      }
+    },
+    "/system/resource/cpu/get": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "as-string": null,
+        "as-string-value": null,
+        "number": null,
+        "value-name": null
+      }
+    },
+    "/system/resource/cpu/print": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "append": null,
+        "as-value": null,
+        "brief": null,
+        "comments": null,
+        "count-only": null,
+        "detail": null,
+        "file": null,
+        "follow": null,
+        "follow-only": null,
+        "from": null,
+        "group-by": null,
+        "interval": "00:00:00.200..    (time interval)",
+        "oid": null,
+        "on-event": "script",
+        "order-by": null,
+        "proplist": null,
+        "show-ids": null,
+        "terse": null,
+        "timestamp": null,
+        "value-list": null,
+        "where": null,
+        "without-paging": null
+      }
+    },
+    "/system/resource/export": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "compact": null,
+        "file": null,
+        "hide-sensitive": null,
+        "path": null,
+        "show-sensitive": null,
+        "terse": null,
+        "verbose": null,
+        "where": null
+      }
+    },
+    "/system/resource/get": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "as-string": null,
+        "as-string-value": null,
+        "value-name": null
+      }
+    },
+    "/system/resource/hardware": {
+      "type": "dir",
+      "description": null,
+      "args": {}
+    },
+    "/system/resource/hardware/authorize": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "allow": null,
+        "numbers": null
+      }
+    },
+    "/system/resource/hardware/export": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "compact": null,
+        "file": null,
+        "hide-sensitive": null,
+        "path": null,
+        "show-sensitive": null,
+        "terse": null,
+        "verbose": null,
+        "where": null
+      }
+    },
+    "/system/resource/hardware/find": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "where": null
+      }
+    },
+    "/system/resource/hardware/get": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "as-string": null,
+        "as-string-value": null,
+        "number": null,
+        "value-name": null
+      }
+    },
+    "/system/resource/hardware/print": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "append": null,
+        "as-value": null,
+        "brief": null,
+        "comments": null,
+        "count-only": null,
+        "detail": null,
+        "file": null,
+        "follow": null,
+        "follow-only": null,
+        "from": null,
+        "group-by": null,
+        "interval": "00:00:00.200..    (time interval)",
+        "on-event": "script",
+        "order-by": null,
+        "proplist": null,
+        "show-ids": null,
+        "terse": null,
+        "timestamp": null,
+        "value-list": null,
+        "where": null,
+        "without-paging": null
+      }
+    },
+    "/system/resource/hardware/usb-power-reset": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "bus": null,
+        "duration": "time interval",
+        "slot": null
+      }
+    },
+    "/system/resource/hardware/usb-settings": {
+      "type": "dir",
+      "description": null,
+      "args": {}
+    },
+    "/system/resource/hardware/usb-settings/edit": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "value-name": null
+      }
+    },
+    "/system/resource/hardware/usb-settings/export": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "compact": null,
+        "file": null,
+        "hide-sensitive": null,
+        "path": null,
+        "show-sensitive": null,
+        "terse": null,
+        "verbose": null,
+        "where": null
+      }
+    },
+    "/system/resource/hardware/usb-settings/get": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "as-string": null,
+        "as-string-value": null,
+        "value-name": null
+      }
+    },
+    "/system/resource/hardware/usb-settings/print": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "as-value": null,
+        "comments": null,
+        "file": null,
+        "interval": "00:00:00.200..    (time interval)",
+        "without-paging": null
+      }
+    },
+    "/system/resource/hardware/usb-settings/reset": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "authorization": null
+      }
+    },
+    "/system/resource/hardware/usb-settings/set": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "authorization": null
+      }
+    },
+    "/system/resource/irq": {
+      "type": "dir",
+      "description": null,
+      "args": {}
+    },
+    "/system/resource/irq/edit": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "number": null,
+        "value-name": null
+      }
+    },
+    "/system/resource/irq/export": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "compact": null,
+        "file": null,
+        "hide-sensitive": null,
+        "path": null,
+        "show-sensitive": null,
+        "terse": null,
+        "verbose": null,
+        "where": null
+      }
+    },
+    "/system/resource/irq/find": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "where": null
+      }
+    },
+    "/system/resource/irq/get": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "as-string": null,
+        "as-string-value": null,
+        "number": null,
+        "value-name": null
+      }
+    },
+    "/system/resource/irq/print": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "append": null,
+        "as-value": null,
+        "brief": null,
+        "comments": null,
+        "count-only": null,
+        "detail": null,
+        "file": null,
+        "follow": null,
+        "follow-only": null,
+        "from": null,
+        "group-by": null,
+        "interval": "00:00:00.200..    (time interval)",
+        "on-event": "script",
+        "order-by": null,
+        "per-cpu-count": null,
+        "proplist": null,
+        "show-ids": null,
+        "terse": null,
+        "timestamp": null,
+        "value-list": null,
+        "where": null,
+        "without-paging": null
+      }
+    },
+    "/system/resource/irq/reset": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "cpu": null,
+        "numbers": null
+      }
+    },
+    "/system/resource/irq/set": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "cpu": null,
+        "numbers": null
+      }
+    },
+    "/system/resource/monitor": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "append": null,
+        "as-value": null,
+        "do": "script",
+        "duration": "time interval",
+        "file": null,
+        "freeze-frame-interval": "00:00:00.020..00:00:30    (time interval)",
+        "interval": "00:00:00.020..00:00:05    (time interval)",
+        "once": null,
+        "proplist": null,
+        "without-paging": null
+      }
+    },
+    "/system/resource/print": {
+      "type": "cmd",
+      "description": null,
+      "args": {
+        "as-value": null,
+        "comments": null,
+        "file": null,
+        "interval": "00:00:00.200..    (time interval)",
+        "oid": null,
+        "without-paging": null
+      }
+    }
+  },
+  "fields": {
+    "/app/network": [
+      {
+        "name": "allow-outgoing-access",
+        "kind": "Argument",
+        "description": ""
+      },
+      {
+        "name": "bridge-interface",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "cmds",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "ip",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "name",
+        "kind": "Argument",
+        "description": ""
+      },
+      {
+        "name": "network",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "status",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "used-ips",
+        "kind": "Read-only Argument",
+        "description": ""
+      }
+    ],
+    "/app/settings": [
+      {
+        "name": "app-store-urls",
+        "kind": "Argument",
+        "description": "URL to a custom app store. Must point to a YAML array where each application is an element"
+      },
+      {
+        "name": "assumed-download-path",
+        "kind": "Read-only Argument",
+        "description": "Default download directory path, typically located within the media storage area"
+      },
+      {
+        "name": "assumed-lan-bridge",
+        "kind": "Read-only Argument",
+        "description": "Automatically detected bridge interface used for LAN connectivity"
+      },
+      {
+        "name": "assumed-media-path",
+        "kind": "Read-only Argument",
+        "description": "Default media storage path, typically located on the system disk"
+      },
+      {
+        "name": "assumed-router-ip",
+        "kind": "Read-only Argument",
+        "description": "Automatically detected network IP address of the RouterOS device"
+      },
+      {
+        "name": "auto-update",
+        "kind": "Argument",
+        "description": "Global setting that enables automatic updates for all installed applications packages"
+      },
+      {
+        "name": "certificate",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "certificate-status",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "disk",
+        "kind": "Argument",
+        "description": "Global setting that specifies which disk will be used for storage operations"
+      },
+      {
+        "name": "download-path",
+        "kind": "Argument",
+        "description": "Manually specifies the directory path where all downloaded content will be stored"
+      },
+      {
+        "name": "lan-bridge",
+        "kind": "Argument",
+        "description": "Manually specifies the bridge interface that represents the local area network"
+      },
+      {
+        "name": "media-path",
+        "kind": "Argument",
+        "description": "Manually specifies the directory path where all media files will be stored"
+      },
+      {
+        "name": "registry-mirrors",
+        "kind": "Argument",
+        "description": "Specifies one or more registry mirror URLs for container image retrieval"
+      },
+      {
+        "name": "router-ip",
+        "kind": "Argument",
+        "description": "Manually specifies the IP address at which the current RouterOS device can be reached"
+      },
+      {
+        "name": "show-in-webfig",
+        "kind": "Argument",
+        "description": "Controls whether links to enabled applications are displayed on the WebFig login page"
+      }
+    ],
+    "/app/setup": [
+      {
+        "name": "disk",
+        "kind": "Read-only Argument",
+        "description": "Selected storage disk for application installation"
+      },
+      {
+        "name": "lan-bridge",
+        "kind": "Read-only Argument",
+        "description": "Selected LAN bridge interface for container networking"
+      },
+      {
+        "name": "router-ip-alt",
+        "kind": "Read-only Argument",
+        "description": "Manual IP address override for the RouterOS device"
+      }
+    ],
+    "/console/inspect": [
+      {
+        "name": "completion",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "highlight",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "input",
+        "kind": "Argument",
+        "description": ""
+      },
+      {
+        "name": "name",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "nested",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "node-type",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "nonorm",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "offset",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "path",
+        "kind": "Argument",
+        "description": ""
+      },
+      {
+        "name": "preference",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "request",
+        "kind": "Argument",
+        "description": ""
+      },
+      {
+        "name": "show",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "style",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "symbol",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "symbol-type",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "text",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "type",
+        "kind": "Read-only Argument",
+        "description": ""
+      }
+    ],
+    "/container": [
+      {
+        "name": "arch",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "check-certificate",
+        "kind": "Argument",
+        "description": ""
+      },
+      {
+        "name": "cmd",
+        "kind": "Argument",
+        "description": ""
+      },
+      {
+        "name": "config-json",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "container-size",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "cpu-list",
+        "kind": "Argument",
+        "description": ""
+      },
+      {
+        "name": "cpu-usage",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "data-size",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "default-cmd",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "default-dns",
+        "kind": "Argument",
+        "description": ""
+      },
+      {
+        "name": "default-entrypoint",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "default-healthcheck-cmd",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "default-healthcheck-interval",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "default-healthcheck-retries",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "default-healthcheck-start-interval",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "default-healthcheck-start-period",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "default-healthcheck-timeout",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "default-shell",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "default-stop-signal",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "default-user",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "default-workdir",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "devices",
+        "kind": "Argument",
+        "description": ""
+      },
+      {
+        "name": "dns",
+        "kind": "Argument",
+        "description": ""
+      },
+      {
+        "name": "domain-name",
+        "kind": "Argument",
+        "description": ""
+      },
+      {
+        "name": "entrypoint",
+        "kind": "Argument",
+        "description": ""
+      },
+      {
+        "name": "env",
+        "kind": "Argument",
+        "description": ""
+      },
+      {
+        "name": "env-current",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "envlists",
+        "kind": "Argument",
+        "description": ""
+      },
+      {
+        "name": "file",
+        "kind": "Argument",
+        "description": ""
+      },
+      {
+        "name": "healthcheck-cmd",
+        "kind": "Argument",
+        "description": ""
+      },
+      {
+        "name": "healthcheck-interval",
+        "kind": "Argument",
+        "description": ""
+      },
+      {
+        "name": "healthcheck-retries",
+        "kind": "Argument",
+        "description": ""
+      },
+      {
+        "name": "healthcheck-start-interval",
+        "kind": "Argument",
+        "description": ""
+      },
+      {
+        "name": "healthcheck-start-period",
+        "kind": "Argument",
+        "description": ""
+      },
+      {
+        "name": "healthcheck-status",
+        "kind": "Argument",
+        "description": ""
+      },
+      {
+        "name": "healthcheck-timeout",
+        "kind": "Argument",
+        "description": ""
+      },
+      {
+        "name": "hostname",
+        "kind": "Argument",
+        "description": ""
+      },
+      {
+        "name": "hosts",
+        "kind": "Argument",
+        "description": ""
+      },
+      {
+        "name": "ignore-remote-image-change",
+        "kind": "Argument",
+        "description": ""
+      },
+      {
+        "name": "image-id",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "interface",
+        "kind": "Argument",
+        "description": ""
+      },
+      {
+        "name": "layer-dir",
+        "kind": "Argument",
+        "description": ""
+      },
+      {
+        "name": "layers",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "logging",
+        "kind": "Argument",
+        "description": ""
+      },
+      {
+        "name": "memory-current",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "memory-high",
+        "kind": "Argument",
+        "description": ""
+      },
+      {
+        "name": "memory-max",
+        "kind": "Argument",
+        "description": ""
+      },
+      {
+        "name": "mount",
+        "kind": "Argument",
+        "description": ""
+      },
+      {
+        "name": "mountlists",
+        "kind": "Argument",
+        "description": ""
+      },
+      {
+        "name": "name",
+        "kind": "Argument",
+        "description": ""
+      },
+      {
+        "name": "os",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "privileged",
+        "kind": "Argument",
+        "description": ""
+      },
+      {
+        "name": "remote-image",
+        "kind": "Argument",
+        "description": ""
+      },
+      {
+        "name": "restart-count",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "restart-interval",
+        "kind": "Argument",
+        "description": ""
+      },
+      {
+        "name": "restart-max-count",
+        "kind": "Argument",
+        "description": ""
+      },
+      {
+        "name": "restart-policy",
+        "kind": "Argument",
+        "description": ""
+      },
+      {
+        "name": "root-dir",
+        "kind": "Argument",
+        "description": ""
+      },
+      {
+        "name": "shell",
+        "kind": "Argument",
+        "description": ""
+      },
+      {
+        "name": "shm-size",
+        "kind": "Argument",
+        "description": ""
+      },
+      {
+        "name": "start-on-boot",
+        "kind": "Argument",
+        "description": ""
+      },
+      {
+        "name": "stop-on-unhealthy",
+        "kind": "Argument",
+        "description": ""
+      },
+      {
+        "name": "stop-signal",
+        "kind": "Argument",
+        "description": ""
+      },
+      {
+        "name": "stop-time",
+        "kind": "Argument",
+        "description": ""
+      },
+      {
+        "name": "swap-current",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "swap-max",
+        "kind": "Argument",
+        "description": ""
+      },
+      {
+        "name": "tag",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "tmpfs",
+        "kind": "Argument",
+        "description": ""
+      },
+      {
+        "name": "user",
+        "kind": "Argument",
+        "description": ""
+      },
+      {
+        "name": "workdir",
+        "kind": "Argument",
+        "description": ""
+      }
+    ],
+    "/container/config": [
+      {
+        "name": "assumed-registry-url",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "layer-dir",
+        "kind": "Argument",
+        "description": ""
+      },
+      {
+        "name": "memory-current",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "memory-high",
+        "kind": "Argument",
+        "description": ""
+      },
+      {
+        "name": "memory-max",
+        "kind": "Argument",
+        "description": ""
+      },
+      {
+        "name": "password",
+        "kind": "Argument",
+        "description": ""
+      },
+      {
+        "name": "registry-url",
+        "kind": "Argument",
+        "description": ""
+      },
+      {
+        "name": "swap-current",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "swap-max",
+        "kind": "Argument",
+        "description": ""
+      },
+      {
+        "name": "tmpdir",
+        "kind": "Argument",
+        "description": ""
+      },
+      {
+        "name": "username",
+        "kind": "Argument",
+        "description": ""
+      }
+    ],
+    "/container/envs": [
+      {
+        "name": "key",
+        "kind": "Argument",
+        "description": ""
+      },
+      {
+        "name": "list",
+        "kind": "Argument",
+        "description": ""
+      },
+      {
+        "name": "value",
+        "kind": "Argument",
+        "description": ""
+      }
+    ],
+    "/container/kill": [
+      {
+        "name": "signal",
+        "kind": "Argument",
+        "description": ""
+      }
+    ],
+    "/container/layers": [
+      {
+        "name": "containers",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "layer-dir",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "name",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "size",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "type",
+        "kind": "Read-only Argument",
+        "description": ""
+      }
+    ],
+    "/container/log": [
+      {
+        "name": "container",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "message",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "time",
+        "kind": "Read-only Argument",
+        "description": ""
+      }
+    ],
+    "/container/mounts": [
+      {
+        "name": "dst",
+        "kind": "Argument",
+        "description": ""
+      },
+      {
+        "name": "list",
+        "kind": "Argument",
+        "description": ""
+      },
+      {
+        "name": "mode",
+        "kind": "Argument",
+        "description": ""
+      },
+      {
+        "name": "src",
+        "kind": "Argument",
+        "description": ""
+      }
+    ],
+    "/container/repull": [
+      {
+        "name": "file",
+        "kind": "Argument",
+        "description": ""
+      },
+      {
+        "name": "remote-image",
+        "kind": "Argument",
+        "description": ""
+      }
+    ],
+    "/container/save": [
+      {
+        "name": "commit",
+        "kind": "Argument",
+        "description": ""
+      },
+      {
+        "name": "file",
+        "kind": "Argument",
+        "description": ""
+      },
+      {
+        "name": "name",
+        "kind": "Argument",
+        "description": ""
+      }
+    ],
+    "/interface/bridge/port": [
+      {
+        "name": "actual-path-cost",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "auto-isolate",
+        "kind": "Argument",
+        "description": ""
+      },
+      {
+        "name": "bpdu-guard",
+        "kind": "Argument",
+        "description": ""
+      },
+      {
+        "name": "bridge",
+        "kind": "Argument",
+        "description": ""
+      },
+      {
+        "name": "broadcast-flood",
+        "kind": "Argument",
+        "description": ""
+      },
+      {
+        "name": "debug-info",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "declared-vlan-ids",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "designated-bridge-id",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "designated-cost",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "designated-port-id",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "discard-transitions",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "edge",
+        "kind": "Argument",
+        "description": ""
+      },
+      {
+        "name": "edge-port",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "edge-port-discovery",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "external-fdb-status",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "fast-leave",
+        "kind": "Argument",
+        "description": ""
+      },
+      {
+        "name": "forward-transitions",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "forwarding",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "frame-types",
+        "kind": "Argument",
+        "description": ""
+      },
+      {
+        "name": "horizon",
+        "kind": "Argument",
+        "description": ""
+      },
+      {
+        "name": "hw",
+        "kind": "Argument",
+        "description": ""
+      },
+      {
+        "name": "hw-offload",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "hw-offload-group",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "ingress-filtering",
+        "kind": "Argument",
+        "description": ""
+      },
+      {
+        "name": "interface",
+        "kind": "Argument",
+        "description": ""
+      },
+      {
+        "name": "internal-path-cost",
+        "kind": "Argument",
+        "description": ""
+      },
+      {
+        "name": "internal-root-path-cost",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "last-topology-change",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "learn",
+        "kind": "Argument",
+        "description": ""
+      },
+      {
+        "name": "learning",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "multicast-router",
+        "kind": "Argument",
+        "description": ""
+      },
+      {
+        "name": "multicast-router",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "mvrp-applicant-state",
+        "kind": "Argument",
+        "description": ""
+      },
+      {
+        "name": "mvrp-registrar-state",
+        "kind": "Argument",
+        "description": ""
+      },
+      {
+        "name": "parent",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "path-cost",
+        "kind": "Argument",
+        "description": ""
+      },
+      {
+        "name": "point-to-point",
+        "kind": "Argument",
+        "description": ""
+      },
+      {
+        "name": "point-to-point-port",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "port-id",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "priority",
+        "kind": "Argument",
+        "description": ""
+      },
+      {
+        "name": "pvid",
+        "kind": "Argument",
+        "description": ""
+      },
+      {
+        "name": "registered-vlan-ids",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "restricted-role",
+        "kind": "Argument",
+        "description": ""
+      },
+      {
+        "name": "restricted-tcn",
+        "kind": "Argument",
+        "description": ""
+      },
+      {
+        "name": "role",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "root-path-cost",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "rx-bpdu",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "rx-tc",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "sending-rstp",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "status",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "tag-stacking",
+        "kind": "Argument",
+        "description": ""
+      },
+      {
+        "name": "topology-changes",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "trusted",
+        "kind": "Argument",
+        "description": ""
+      },
+      {
+        "name": "trusted-arp",
+        "kind": "Argument",
+        "description": ""
+      },
+      {
+        "name": "trusted-dhcpv6",
+        "kind": "Argument",
+        "description": ""
+      },
+      {
+        "name": "trusted-ra",
+        "kind": "Argument",
+        "description": ""
+      },
+      {
+        "name": "tx-bpdu",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "tx-tc",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "unknown-multicast-flood",
+        "kind": "Argument",
+        "description": ""
+      },
+      {
+        "name": "unknown-unicast-flood",
+        "kind": "Argument",
+        "description": ""
+      }
+    ],
+    "/interface/bridge/port/monitor": [
+      {
+        "name": "actual-path-cost",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "declared-vlan-ids",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "designated-bridge-id",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "designated-cost",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "designated-internal-cost",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "designated-max-age",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "designated-message-age",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "designated-port-id",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "designated-remaining-hops",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "discard-transitions",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "edge-port",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "edge-port-discovery",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "external-fdb",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "forward-transitions",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "forwarding",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "hw-offload-group",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "interface",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "internal-root-path-cost",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "last-topology-change",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "learning",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "multicast-router",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "point-to-point-port",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "port-id",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "registered-vlan-ids",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "role",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "root-path-cost",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "sending-rstp",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "status",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "topology-changes",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "tx-rx-bpdu",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "tx-rx-tc",
+        "kind": "Read-only Argument",
+        "description": ""
+      }
+    ],
+    "/interface/bridge/port/mst-override": [
+      {
+        "name": "debug-info",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "identifier",
+        "kind": "Argument",
+        "description": ""
+      },
+      {
+        "name": "interface",
+        "kind": "Argument",
+        "description": ""
+      },
+      {
+        "name": "internal-path-cost",
+        "kind": "Argument",
+        "description": ""
+      },
+      {
+        "name": "priority",
+        "kind": "Argument",
+        "description": ""
+      }
+    ],
+    "/interface/bridge/port/mst-override/monitor": [
+      {
+        "name": "designated-bridge-id",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "designated-cost",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "designated-internal-cost",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "designated-port-id",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "designated-remaining-hops",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "discard-transitions",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "forward-transitions",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "forwarding",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "identifier",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "internal-root-path-cost",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "last-topology-change",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "learning",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "port",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "port-id",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "role",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "status",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "topology-changes",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "tx-rx-bpdu",
+        "kind": "Read-only Argument",
+        "description": ""
+      },
+      {
+        "name": "tx-rx-tc",
+        "kind": "Read-only Argument",
+        "description": ""
+      }
+    ],
+    "/interface/list/member": [
+      {
+        "name": "dynamic",
+        "kind": "Read-only Argument",
+        "description": "Whether the member was added dynamically."
+      },
+      {
+        "name": "interface",
+        "kind": "Argument",
+        "description": "Name of the interface that is a member of the list."
+      },
+      {
+        "name": "list",
+        "kind": "Argument",
+        "description": "Name of the interface list to which the member belongs."
+      }
+    ],
+    "/log": [
+      {
+        "name": "buffer",
+        "kind": "Read-only Argument",
+        "description": "Buffer the entry belongs to: `memory` for the default buffer, or the name of another memory action or of a disk action. A disk action's newest entries show here, and after a reboot the entries of its active file. `/log/print` without a filter lists every buffer, so a message passed to several actions shows once per action."
+      },
+      {
+        "name": "extra-info",
+        "kind": "Read-only Argument",
+        "description": "Extra `key=value` fields that some messages carry, for example a login: `app=ssh duser=admin outcome=success src=192.0.2.1`. `print with-extra-info` appends them to the message, and the `cef` remote log format sends them after `msg=`."
+      },
+      {
+        "name": "message",
+        "kind": "Read-only Argument",
+        "description": "Text of the entry, with the rule's `prefix` in front when the rule has one."
+      },
+      {
+        "name": "time",
+        "kind": "Read-only Argument",
+        "description": "Date and time the entry was added."
+      },
+      {
+        "name": "topics",
+        "kind": "Read-only Argument",
+        "description": "Topics of the entry, for example `system,info,account`. The rules in [`/system/logging`](system/logging/) select messages by these topics."
+      }
+    ],
+    "/system/device-mode/update": [
+      {
+        "name": "activation-timeout",
+        "kind": "Argument",
+        "description": "How long to wait for the physical confirmation (button press or power cycle) before the update is canceled. Also sets the length of the `attempt-count` reset window when an update is refused after three unsuccessful attempts. Range: 00:00:10 to 1d00:00:00. Default: 5m."
+      },
+      {
+        "name": "bandwidth-test",
+        "kind": "Argument",
+        "description": "Allow or block `/tool/bandwidth-test`, `/tool/bandwidth-server` and `/tool/speed-test`."
+      },
+      {
+        "name": "container",
+        "kind": "Argument",
+        "description": "Allow or block container functionality."
+      },
+      {
+        "name": "email",
+        "kind": "Argument",
+        "description": "Allow or block `/tool/e-mail`."
+      },
+      {
+        "name": "fetch",
+        "kind": "Argument",
+        "description": "Allow or block `/tool/fetch`."
+      },
+      {
+        "name": "flagged",
+        "kind": "Argument",
+        "description": "Set to `no` to clear the flagged state, after inspecting the configuration for unauthorized changes. Requires physical confirmation."
+      },
+      {
+        "name": "flagging-enabled",
+        "kind": "Argument",
+        "description": "Enable or disable the configuration analysis for signs of unauthorized access. Default: yes."
+      },
+      {
+        "name": "hotspot",
+        "kind": "Argument",
+        "description": "Allow or block `/ip/hotspot`."
+      },
+      {
+        "name": "install-any-version",
+        "kind": "Argument",
+        "description": "Allow or block downgrading to RouterOS versions outside the allowed-versions list."
+      },
+      {
+        "name": "ipsec",
+        "kind": "Argument",
+        "description": "Allow or block `/ip/ipsec`."
+      },
+      {
+        "name": "l2tp",
+        "kind": "Argument",
+        "description": "Allow or block L2TP client and server interfaces."
+      },
+      {
+        "name": "mode",
+        "kind": "Argument",
+        "description": "Device mode to apply. Specifying `mode` replaces the entire device-mode configuration except the other parameters given in the same command; omitted features get the new mode's defaults.\n- `advanced` - Previously called `enterprise`.\n- `basic` - For most other devices.\n- `home` - For home routers.\n- `rose` - For RDS and similar devices with wide disk use."
+      },
+      {
+        "name": "partitions",
+        "kind": "Argument",
+        "description": "Allow or block changing partition count."
+      },
+      {
+        "name": "pptp",
+        "kind": "Argument",
+        "description": "Allow or block PPTP client and server interfaces."
+      },
+      {
+        "name": "proxy",
+        "kind": "Argument",
+        "description": "Allow or block `/ip/proxy`."
+      },
+      {
+        "name": "romon",
+        "kind": "Argument",
+        "description": "Allow or block `/tool/romon`."
+      },
+      {
+        "name": "routerboard",
+        "kind": "Argument",
+        "description": "Allow or block `/system/routerboard/settings` (except auto-upgrade) and SwOS/RouterOS transition on dual-boot devices."
+      },
+      {
+        "name": "scheduler",
+        "kind": "Argument",
+        "description": "Allow or block `/system/scheduler`."
+      },
+      {
+        "name": "smb",
+        "kind": "Argument",
+        "description": "Allow or block `/ip/smb`."
+      },
+      {
+        "name": "sniffer",
+        "kind": "Argument",
+        "description": "Allow or block `/tool/sniffer`."
+      },
+      {
+        "name": "socks",
+        "kind": "Argument",
+        "description": "Allow or block `/ip/socks`."
+      },
+      {
+        "name": "traffic-gen",
+        "kind": "Argument",
+        "description": "Allow or block `/tool/traffic-generator`, `/tool/flood-ping`, and `/tool/ping-speed`."
+      },
+      {
+        "name": "update",
+        "kind": "Read-only Argument",
+        "description": "Status of a pending update with the time left to confirm it; empty when no update is pending."
+      },
+      {
+        "name": "zerotier",
+        "kind": "Argument",
+        "description": "Allow or block `/zerotier`."
+      }
+    ],
+    "/system/package/apply-changes": [
+      {
+        "name": "ignore-missing",
+        "kind": "Argument",
+        "description": "Upgrade only the RouterOS main package, omitting packages that are missing or not uploaded."
+      }
+    ],
+    "/system/package/update": [
+      {
+        "name": "channel",
+        "kind": "Argument",
+        "description": "Upgrade [channel](#channel) to use when checking for new versions."
+      },
+      {
+        "name": "check-certificate",
+        "kind": "Argument",
+        "description": "Whether and how to validate the server SSL certificate. Always use `yes` to ensure a secure connection. `yes-without-crl` can be used to skip CRL validation."
+      },
+      {
+        "name": "installed-version",
+        "kind": "Read-only Argument",
+        "description": "Currently installed RouterOS version."
+      },
+      {
+        "name": "ip-version",
+        "kind": "Argument",
+        "description": "IP version preference for connecting to the MikroTik download server."
+      },
+      {
+        "name": "latest-version",
+        "kind": "Read-only Argument",
+        "description": "Latest available RouterOS version in the selected [channel](#channel)."
+      },
+      {
+        "name": "mode",
+        "kind": "Argument",
+        "description": "Protocol for connecting to the MikroTik download server. Use `http` only if your network blocks HTTPS. HTTPS is recommended."
+      },
+      {
+        "name": "status",
+        "kind": "Read-only Argument",
+        "description": "Current status of the update process (for example, `New version is available`)."
+      }
+    ],
+    "/system/package/update/check-for-updates": [
+      {
+        "name": "changelog",
+        "kind": "Read-only Argument",
+        "description": "Changelog text for the latest available version."
+      },
+      {
+        "name": "fetch-changelog",
+        "kind": "Argument",
+        "description": "Whether to fetch the changelog along with the update check."
+      }
+    ],
+    "/system/package/update/download": [
+      {
+        "name": "ignore-missing",
+        "kind": "Argument",
+        "description": "Download only the RouterOS main package, omitting packages that are missing or not uploaded."
+      }
+    ],
+    "/system/package/update/install": [
+      {
+        "name": "ignore-missing",
+        "kind": "Argument",
+        "description": "Install only the RouterOS main package, omitting packages that are missing or not uploaded."
+      }
+    ],
+    "/system/resource": [
+      {
+        "name": "architecture-name",
+        "kind": "Read-only Argument",
+        "description": "CPU architecture of this build (arm, arm64, x86, tile ...)"
+      },
+      {
+        "name": "bad-blocks",
+        "kind": "Read-only Argument",
+        "description": "Percentage of bad blocks on the NAND"
+      },
+      {
+        "name": "board-name",
+        "kind": "Read-only Argument",
+        "description": "RouterBOARD model name"
+      },
+      {
+        "name": "build-time",
+        "kind": "Read-only Argument",
+        "description": "Installed RouterOS version build-time"
+      },
+      {
+        "name": "cpu",
+        "kind": "Read-only Argument",
+        "description": "CPU model that is on the board"
+      },
+      {
+        "name": "cpu-count",
+        "kind": "Read-only Argument",
+        "description": "Number of CPUs present on the system; each core is a separate CPU, Intel HT also counts as one CPU"
+      },
+      {
+        "name": "cpu-frequency",
+        "kind": "Read-only Argument",
+        "description": "Current CPU frequency"
+      },
+      {
+        "name": "cpu-load",
+        "kind": "Read-only Argument",
+        "description": "Percentage of used CPU resources, combined for all CPUs; per-core values are in [`/system/resource/cpu`](cpu)"
+      },
+      {
+        "name": "free-hdd-space",
+        "kind": "Read-only Argument",
+        "description": "Free space on the hard drive or NAND"
+      },
+      {
+        "name": "free-memory",
+        "kind": "Read-only Argument",
+        "description": "The unused amount of RAM"
+      },
+      {
+        "name": "minimum-version",
+        "kind": "Read-only Argument",
+        "description": "Minimum RouterOS version the board allows downgrading to (was factory-software)"
+      },
+      {
+        "name": "platform",
+        "kind": "Read-only Argument",
+        "description": "Platform name"
+      },
+      {
+        "name": "total-hdd-space",
+        "kind": "Read-only Argument",
+        "description": "Size of the hard drive or NAND"
+      },
+      {
+        "name": "total-memory",
+        "kind": "Read-only Argument",
+        "description": "Amount of installed RAM"
+      },
+      {
+        "name": "uptime",
+        "kind": "Read-only Argument",
+        "description": "Time interval passed since boot-up"
+      },
+      {
+        "name": "version",
+        "kind": "Read-only Argument",
+        "description": "Installed RouterOS version number"
+      },
+      {
+        "name": "write-sect-since-reboot",
+        "kind": "Read-only Argument",
+        "description": "The number of sector writes to the drive/NAND since the router was last rebooted"
+      },
+      {
+        "name": "write-sect-total",
+        "kind": "Read-only Argument",
+        "description": "The number of sector writes in total"
+      }
+    ],
+    "/system/resource/cpu": [
+      {
+        "name": "cpu",
+        "kind": "Read-only Argument",
+        "description": "Identification number of the CPU whose usage is shown"
+      },
+      {
+        "name": "disk",
+        "kind": "Read-only Argument",
+        "description": "Disk usage in percent"
+      },
+      {
+        "name": "irq",
+        "kind": "Read-only Argument",
+        "description": "IRQ usage in percent"
+      },
+      {
+        "name": "load",
+        "kind": "Read-only Argument",
+        "description": "CPU usage in percent"
+      }
+    ],
+    "/system/resource/hardware": [
+      {
+        "name": "category",
+        "kind": "Read-only Argument",
+        "description": "Device category"
+      },
+      {
+        "name": "device-id",
+        "kind": "Read-only Argument",
+        "description": "Device identifier (PID / Device ID)"
+      },
+      {
+        "name": "device-name",
+        "kind": "Read-only Argument",
+        "description": "Name of the device as reported by its firmware (name column refinement)"
+      },
+      {
+        "name": "device-path",
+        "kind": "Read-only Argument",
+        "description": "Device path from root bus to endpoint"
+      },
+      {
+        "name": "io",
+        "kind": "Read-only Argument",
+        "description": "I/O window assigned to the device"
+      },
+      {
+        "name": "irq",
+        "kind": "Read-only Argument",
+        "description": "Assigned interrupt number"
+      },
+      {
+        "name": "location",
+        "kind": "Read-only Argument",
+        "description": "Device location in the system topology"
+      },
+      {
+        "name": "manufacturer-reported-max-power",
+        "kind": "Read-only Argument",
+        "description": "Maximum power draw reported by the device (for example a USB modem)"
+      },
+      {
+        "name": "memory",
+        "kind": "Read-only Argument",
+        "description": "Memory window assigned to the device"
+      },
+      {
+        "name": "name",
+        "kind": "Read-only Argument",
+        "description": "Device name or model"
+      },
+      {
+        "name": "owner",
+        "kind": "Read-only Argument",
+        "description": "Subsystem or driver owning the device"
+      },
+      {
+        "name": "parent",
+        "kind": "Read-only Argument",
+        "description": "Parent bus or controller"
+      },
+      {
+        "name": "ports",
+        "kind": "Read-only Argument",
+        "description": "Number of ports provided by the device"
+      },
+      {
+        "name": "serial-number",
+        "kind": "Read-only Argument",
+        "description": "Device serial number"
+      },
+      {
+        "name": "speed",
+        "kind": "Read-only Argument",
+        "description": "Negotiated device speed"
+      },
+      {
+        "name": "type",
+        "kind": "Read-only Argument",
+        "description": "Bus type of the device: `usb`, `pci`, `scsi` or `serial`"
+      },
+      {
+        "name": "usb-version",
+        "kind": "Read-only Argument",
+        "description": "Supported USB version"
+      },
+      {
+        "name": "vendor",
+        "kind": "Read-only Argument",
+        "description": "Device vendor name"
+      },
+      {
+        "name": "vendor-id",
+        "kind": "Read-only Argument",
+        "description": "Vendor identifier (VID)"
+      }
+    ],
+    "/system/resource/hardware/authorize": [
+      {
+        "name": "allow",
+        "kind": "Argument",
+        "description": "Authorize the USB device (`yes`) or keep it unusable (`no`)"
+      }
+    ],
+    "/system/resource/hardware/usb-power-reset": [
+      {
+        "name": "bus",
+        "kind": "Argument",
+        "description": "USB bus number (as shown by `/system/resource/hardware`)"
+      },
+      {
+        "name": "duration",
+        "kind": "Argument",
+        "description": "Power-off duration before re-enabling USB"
+      },
+      {
+        "name": "slot",
+        "kind": "Argument",
+        "description": "USB slot number on the bus"
+      }
+    ],
+    "/system/resource/hardware/usb-settings": [
+      {
+        "name": "authorization",
+        "kind": "Argument",
+        "description": "Require per-device authorization before USB devices become usable (`authorization=yes`)"
+      }
+    ],
+    "/system/resource/irq": [
+      {
+        "name": "active-cpu",
+        "kind": "Read-only Argument",
+        "description": "The CPU currently serving the IRQ on multicore systems"
+      },
+      {
+        "name": "count",
+        "kind": "Read-only Argument",
+        "description": "The number of interrupts handled (on ethernet interfaces interrupt = packet)"
+      },
+      {
+        "name": "cpu",
+        "kind": "Argument",
+        "description": "The CPU the IRQ is pinned to; `auto` lets the scheduler balance by interrupt counts"
+      },
+      {
+        "name": "irq",
+        "kind": "Read-only Argument",
+        "description": "IRQ identification number"
+      },
+      {
+        "name": "per-cpu-count",
+        "kind": "Read-only Argument",
+        "description": "Per-CPU interrupt counts as a list"
+      },
+      {
+        "name": "users",
+        "kind": "Read-only Argument",
+        "description": "Process/driver bound to the IRQ"
+      }
+    ],
+    "/system/resource/monitor": [
+      {
+        "name": "cpu-used",
+        "kind": "Read-only Argument",
+        "description": "Total CPU usage across cores"
+      },
+      {
+        "name": "cpu-used-per-core",
+        "kind": "Read-only Argument",
+        "description": "One line per core with its percent usage"
+      },
+      {
+        "name": "free-memory",
+        "kind": "Read-only Argument",
+        "description": "Free memory in KiB"
+      }
+    ]
+  }
+}

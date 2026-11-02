@@ -8,7 +8,8 @@
 		".git",
 		"bun.lock",
 		"cspell.json",
-		"project-words.txt"
+		"project-words.txt",
+		"**/rosetta-snapshot.json"
 	],
 	"useGitignore": true,
 	"minWordLength": 3,

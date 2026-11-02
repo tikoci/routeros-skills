@@ -33,7 +33,7 @@ install-hooks:
 	git -C "$(REPO)" config core.hooksPath hooks && \
 	echo "install-hooks: core.hooksPath -> hooks (post-merge/post-checkout run 'make link')"
 
-# Same gate CI runs: markdownlint-cli2 + cspell + the SKILL.md validator.
+# Same gate CI runs: markdownlint-cli2 + cspell + the SKILL.md validator + refs check.
 # Requires Bun + a one-time `bun install` (devDeps: cspell, markdownlint-cli2).
 lint:
 	@cd "$(REPO)" && bun run check

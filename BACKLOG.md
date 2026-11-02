@@ -1,5 +1,24 @@
 # Skill Backlog
 
+## Decided triage (2026-11-01 — do not re-triage)
+
+The config-skill triage is decided and recorded in
+[#47](https://github.com/tikoci/routeros-skills/issues/47).
+Reopen only with evidence of an agent failure, not coverage symmetry.
+
+| Verdict | Items |
+|---|---|
+| ACCEPTED (step 2, each its own issue) | `routeros-wifi` (#48), `routeros-bridge-vlan` (#49), `routeros-routing-v7` (#50), `routeros-users-aaa` (#51), `routeros-certificates` (#52) |
+| Second-wave | Queues (`routeros-queues-qos`) |
+| DEFERRED as standalone skills | DHCP, DNS, VPN, IPsec |
+| REFERENCE-ONLY (fold in, no new skill) | `tools`, `logging`, `files-and-backup`, `interface-lists` (→ `routeros-firewall`) |
+| DECLINED | Mirroring wiresage/routeros-skills' catalog; a meta skill-discovery skill |
+| FOLD-IN, no new skill | #39's API facts → `routeros-centrs` / `routeros-fundamentals`; CAPsMAN → `routeros-wifi` (#19 is not separate) |
+
+All five accepted skills are blocked by the #38 references pipeline.
+Sections below marked **Decided:** keep their content as scoping input for the
+linked issues.
+
 This file tracks proposed new `routeros-*` skills and improvements to existing ones.
 
 It is organized by **how weak an LLM's pretraining is likely to be** on each topic
@@ -105,6 +124,9 @@ scripting skill.
 
 ### `routeros-wifi`
 
+**Decided:** accepted as new skill — see #48. Blocked by #38 pipeline.
+Section below is scoping input.
+
 The "new" wifi package (7.13+), which displaces legacy `wireless`. This is the
 single biggest area where LLM training data is wrong, because (a) it's recent
 and (b) there's a parallel legacy system most training data describes.
@@ -126,6 +148,9 @@ Grounding: MikroTik docs "WiFi" top-level page, `/console/inspect` for
 rosetta's device lookup.
 
 ### `routeros-routing-v7`
+
+**Decided:** accepted as new skill — see #50. Blocked by #38 pipeline.
+Section below is scoping input.
 
 Routing was reorganized for v7. Key changes LLMs often miss:
 
@@ -166,6 +191,9 @@ Grounding: MikroTik "Firewall" help pages, rosetta MCP, anchor examples in
 a future `test/firewall/` inside tikoci tooling.
 
 ### `routeros-bridge-vlan`
+
+**Decided:** accepted as new skill — see #49. Blocked by #38 pipeline.
+Section below is scoping input.
 
 Bridge VLAN filtering is where real-world RouterOS configs break most often,
 and where LLMs most often give answers that "look right" but don't work on
@@ -241,6 +269,9 @@ and related topics).
 
 ### `routeros-certificates`
 
+**Decided:** accepted as new skill — see #52. Blocked by #38 pipeline.
+Section below is scoping input.
+
 Certificates touch IPsec, HTTPS (WebFig/REST), WireGuard (indirectly), SSTP,
 OpenVPN. The model often mixes OpenSSL semantics with RouterOS's.
 
@@ -262,6 +293,8 @@ Grounding: MikroTik "Certificates" help page; CHR lab examples.
 
 ### `routeros-queues-qos`
 
+**Decided:** second-wave (after the five accepted skills). Not filed yet.
+
 Simple queues vs queue tree vs CAKE vs HTB. Mangle marking patterns
 (`packet-mark` + `connection-mark` flow). Interface queue types.
 `pcq-rate`, `pcq-classifier`. Bufferbloat and CAKE (7.x+).
@@ -270,6 +303,8 @@ LLMs tend to recommend queue-tree + mangle for everything even when a simple
 queue would work, because queue-tree looks more like tc.
 
 ### `routeros-tools`
+
+**Decided:** reference-only — fold into existing skills, no new skill.
 
 `/tool/fetch` (the go-to HTTP client inside RouterOS), `/tool/traceroute`,
 `/tool/bandwidth-test`, `/tool/torch`, `/tool/ping-speed`, `/tool/profile`,
@@ -280,10 +315,14 @@ queue would work, because queue-tree looks more like tc.
 
 ### `routeros-interface-lists`
 
+**Decided:** reference-only — folds into `routeros-firewall`, no new skill.
+
 `/interface/list` + `/interface/list/member` is a foundational RouterOS
 pattern for firewall/policy that LLMs rarely surface. Worth a short skill.
 
 ### `routeros-logging`
+
+**Decided:** reference-only — fold into existing skills, no new skill.
 
 `/system/logging` topics and actions (memory, disk, remote syslog, email).
 Log file rotation and retrieval. Which topics matter for which subsystem
@@ -318,6 +357,8 @@ Key:
 Grounding: MikroTik "VRRP" help page, `/console/inspect` at `/interface/vrrp`.
 
 ### `routeros-files-and-backup`
+
+**Decided:** reference-only — fold into existing skills, no new skill.
 
 `/file` system, upload/download mechanisms (SCP, FTP, REST PUT, Winbox, WebFig),
 `/export` (plaintext config), `/system/backup/save` (binary), `.rsc` vs

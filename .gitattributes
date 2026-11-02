@@ -1,1 +1,2 @@
 .gitignore merge=ours
+routeros-*/references/cli-reference.md linguist-generated
