@@ -81,6 +81,8 @@ envlists
 epan
 eperm
 etherboot
+ethertype
+ethertypes
 evl
 fasttrack
 fasttracked
@@ -135,6 +137,7 @@ Keymat
 keypair
 killpg
 KVM
+larsa
 lastuser
 LDP
 licences
@@ -198,6 +201,7 @@ netmap
 Netwatch
 newpass
 nexthop
+nwid
 Nexthops
 NFSD
 NIC
@@ -258,6 +262,7 @@ PTR
 ptype
 putmessage
 pvid
+pytier
 PWR
 QCOW
 QGA
@@ -267,6 +272,7 @@ quickchr's
 radvert
 RAML
 readconfig
+recvd
 recvfrom
 redirector
 Referer
@@ -395,3 +401,4 @@ XEN
 xzf
 zerotier
 Zmen
+ztcentral

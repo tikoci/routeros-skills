@@ -297,6 +297,10 @@ vs manual). Allowed-address and routing interactions. Preshared-keys.
 WireGuard on RouterOS has a few idiosyncrasies around `mtu` and firewall
 interactions worth grounding.
 
+### `routeros-zerotier`
+
+**Status: initial skill implemented** ([skill](./routeros-zerotier/SKILL.md), [issue #26](https://github.com/tikoci/routeros-skills/issues/26)). Covers native instances/interfaces/peers, private-network authorization via Central or a RouterOS controller, managed routes, firewall integration, and flow rules/RoMON/bridging guidance. [Grounding notes](./routeros-zerotier/references/grounding.md) attribute the arm64 CHR 7.25 and legacy Central lab results, record independent package/documentation checks, and bound untested integration paths. Private-root containers remain a reference pointer.
+
 ### `routeros-vrrp`
 
 VRRP (Virtual Router Redundancy Protocol) on RouterOS. LLMs often suggest Linux
