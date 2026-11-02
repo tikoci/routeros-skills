@@ -10,8 +10,9 @@
 // entries/fields/flags, and commits only that slice (rosetta-snapshot.json) with
 // the generated markdown. --check needs no export dir: it re-renders the markdown
 // from the committed snapshot and fails on drift, re-serializes the snapshot to
-// catch formatting drift, and recomputes the slice hash to catch semantic
-// hand-edits (recomputing a valid hash requires the tool, i.e. a rebuild).
+// catch formatting drift, recomputes the slice hash to catch semantic hand-edits
+// (recomputing a valid hash requires the tool, i.e. a rebuild), and compares the
+// snapshot's owned scope against OWNED_PREFIXES so scope edits also require a rebuild.
 // The snapshot slice is defined by OWNED_PREFIXES below (authored per skill),
 // never by what the SKILL.md happens to mention — otherwise
 // scripts/check-refs.ts (SKILL.md claims must exist in the snapshot) would be
@@ -451,6 +452,7 @@ const serializeSnapshot = (s: Snapshot): string => {
 
 const oneLine = (s: string | null): string =>
 	(s ?? "—")
+		.replace(/\\/g, "\\\\") // escape first, so a literal backslash survives the pipe escape below
 		.replace(/\s+/g, " ")
 		.replace(/\[([^\]]*)\]\([^)]*\)/g, "$1") // manual links have no anchor here; keep the text
 		.replace(/\|/g, "\\|")
@@ -479,6 +481,13 @@ const renderMarkdown = (s: Snapshot): string => {
 		`| cliref_rows_digest | \`${s.rosetta.cliref_rows_digest.slice(0, 16)}…\` (whole-tree digest, not a slice checksum) |`,
 		`| slice_sha256 | \`${s.rosetta.slice_sha256.slice(0, 16)}…\` (checksum of this slice's paths and occurrences) |`,
 		"",
+		"## How to use this reference",
+		"",
+		"- Command sections below are sorted by path; each lists the settable inputs from the inspect layer.",
+		"- Occurrences carry manual-layer details: field kinds (settable vs read-only), `Syscap`/`Package`/`Conditions` restrictions, and official-source links.",
+		"- Inspect data and manual data carry different versions (see provenance): a property present in one layer may be absent from the other.",
+		"- This reference covers names and kinds only; runtime behavior needs a device.",
+		"",
 		"## Authored scope (not export data)",
 		"",
 		"The slice covers these owned menu prefixes, authored in `scripts/build-refs.ts`:",
@@ -489,9 +498,13 @@ const renderMarkdown = (s: Snapshot): string => {
 	for (const p of Object.keys(s.paths).sort()) {
 		const entry = s.paths[p];
 		const argNames = Object.keys(entry.args).sort();
-		if (argNames.length === 0) continue;
+		if (argNames.length === 0 && entry.type !== "cmd") continue;
 		lines.push(`## \`${p}\` (inspect ${s.rosetta.inspect_versions.join(", ")})`, "");
 		if (entry.description) lines.push(oneLine(entry.description), "");
+		if (argNames.length === 0) {
+			lines.push("No settable inputs.", "");
+			continue;
+		}
 		lines.push("| Property | Description |", "|---|---|");
 		for (const a of argNames) lines.push(`| \`${a}\` | ${oneLine(entry.args[a])} |`);
 		lines.push("");
@@ -565,6 +578,9 @@ if (checkMode) {
 			}
 			if (serializeSnapshot(parsed) !== diskSnapshot) {
 				fail(`${snapshotPath}: formatting drift (re-run --export and commit)`);
+			}
+			if (JSON.stringify([...parsed.owned_prefixes].sort()) !== JSON.stringify([...OWNED_PREFIXES].sort())) {
+				fail(`${snapshotPath}: owned scope differs from scripts/build-refs.ts (re-run --export and commit)`);
 			}
 			if (hashSlice(canonicalPayload(parsed)) !== parsed.rosetta.slice_sha256) {
 				fail(`${snapshotPath}: content hash mismatch — hand-edited or corrupt (re-run --export and commit)`);

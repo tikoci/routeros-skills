@@ -135,6 +135,7 @@ IGMP
 INSPECTFILE
 Interworking
 ipc
+irq
 iscsi
 jsproxy
 kbd
@@ -310,6 +311,7 @@ routerboard
 routerboot
 routeros
 RPKI
+rps
 rsc
 rstatus
 rstp

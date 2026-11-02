@@ -124,7 +124,7 @@ scripting skill.
 
 ### `routeros-wifi`
 
-**Decided:** accepted as new skill — see #48. Blocked by #38 pipeline.
+**Decided:** accepted as new skill — see #48. Not blocked by #38 pipeline — proceed on direct grounding; pipeline adoption optional.
 Section below is scoping input.
 
 The "new" wifi package (7.13+), which displaces legacy `wireless`. This is the
@@ -149,7 +149,7 @@ rosetta's device lookup.
 
 ### `routeros-routing-v7`
 
-**Decided:** accepted as new skill — see #50. Blocked by #38 pipeline.
+**Decided:** accepted as new skill — see #50. Not blocked by #38 pipeline — proceed on direct grounding; pipeline adoption optional.
 Section below is scoping input.
 
 Routing was reorganized for v7. Key changes LLMs often miss:
@@ -192,7 +192,7 @@ a future `test/firewall/` inside tikoci tooling.
 
 ### `routeros-bridge-vlan`
 
-**Decided:** accepted as new skill — see #49. Blocked by #38 pipeline.
+**Decided:** accepted as new skill — see #49. Not blocked by #38 pipeline — proceed on direct grounding; pipeline adoption optional.
 Section below is scoping input.
 
 Bridge VLAN filtering is where real-world RouterOS configs break most often,
@@ -269,7 +269,7 @@ and related topics).
 
 ### `routeros-certificates`
 
-**Decided:** accepted as new skill — see #52. Blocked by #38 pipeline.
+**Decided:** accepted as new skill — see #52. Not blocked by #38 pipeline — proceed on direct grounding; pipeline adoption optional.
 Section below is scoping input.
 
 Certificates touch IPsec, HTTPS (WebFig/REST), WireGuard (indirectly), SSTP,

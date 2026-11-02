@@ -18,6 +18,13 @@ Layers: command paths and settable inputs come from the inspect layer (`commands
 | cliref_rows_digest | `610ac4a0dde812fb…` (whole-tree digest, not a slice checksum) |
 | slice_sha256 | `d6f6afb6bb71de56…` (checksum of this slice's paths and occurrences) |
 
+## How to use this reference
+
+- Command sections below are sorted by path; each lists the settable inputs from the inspect layer.
+- Occurrences carry manual-layer details: field kinds (settable vs read-only), `Syscap`/`Package`/`Conditions` restrictions, and official-source links.
+- Inspect data and manual data carry different versions (see provenance): a property present in one layer may be absent from the other.
+- This reference covers names and kinds only; runtime behavior needs a device.
+
 ## Authored scope (not export data)
 
 The slice covers these owned menu prefixes, authored in `scripts/build-refs.ts`:
@@ -308,6 +315,10 @@ The slice covers these owned menu prefixes, authored in `scripts/build-refs.ts`:
 | `registry-mirrors` | string value, min length 1 |
 | `router-ip` | A.B.C.D (IP address) |
 | `show-in-webfig` | — |
+
+## `/app/setup` (inspect 7.24.5)
+
+No settable inputs.
 
 ## `/app/unset` (inspect 7.24.5)
 
@@ -1930,6 +1941,10 @@ The slice covers these owned menu prefixes, authored in `scripts/build-refs.ts`:
 | `check-certificate` | — |
 | `ip-version` | — |
 | `mode` | — |
+
+## `/system/reboot` (inspect 7.24.5)
+
+No settable inputs.
 
 ## `/system/resource/cpu/find` (inspect 7.24.5)
 

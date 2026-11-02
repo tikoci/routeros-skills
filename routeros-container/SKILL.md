@@ -329,6 +329,14 @@ Use manual `/container` setup when you need full VETH/bridge/L2 control, such as
 
 ## Additional Resources
 
+**Generated reference:**
+
+- Property and path details live in [`references/cli-reference.md`](references/cli-reference.md),
+  generated from a pinned rosetta export (inspect data 7.24.5, manual tree 7.26).
+  Consult it for exact property names, settable-vs-read-only kinds, and platform
+  restrictions (`Syscap`/`Package`/`Conditions` on each occurrence) — then verify
+  runtime behavior on a device before relying on it.
+
 **Related skills:**
 
 - For netinstall and device-mode automation: see the `routeros-netinstall` skill
