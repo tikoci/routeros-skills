@@ -3,8 +3,8 @@
 ## Check the actual flow rules
 
 ZeroTier's rules engine is distributed and stateless. Ethernet-type filtering
-can allow IP while blocking RoMON or a VLAN trunk. A common legacy Central
-ruleset is equivalent to:[^rules]
+can allow IP while blocking RoMON or a VLAN trunk. A common ruleset used with
+Legacy Central is equivalent to:[^rules]
 
 ```text
 drop
@@ -31,6 +31,11 @@ RoMON uses EtherType `0x88bf` and forwards management discovery/data hop by hop
 on permitted RoMON ports. It can reach RouterOS devices beyond the ZeroTier
 members where those devices are connected through additional permitted RoMON
 ports. Reachability is bounded by that topology and policy.[^romon]
+
+The custom EtherType rules in this reference (RoMON `0x88bf` and VLAN trunks
+`0x8100`) use the raw rules editor. In **New Central**, that editor requires
+**Scale or Enterprise**; Essential offers templated rules only. **Legacy
+Central** provides the full custom rules engine to all users.[^rules]
 
 If the network's flow rules reject that EtherType, insert this **ZeroTier rule**
 before the rule that drops non-IP traffic. Save the rules in Central; this is
@@ -87,7 +92,8 @@ configuration:[^vlan]
 /interface/bridge/port/add bridge=bridge1 interface=zt-lan pvid=10
 ```
 
-For a tagged-only trunk, permit `0x8100` in the ZeroTier rules where needed,
+For a tagged-only trunk, permit `0x8100` in the ZeroTier rules where needed
+(with the custom-editor access described above),
 enable Ethernet bridging on each member forwarding the trunk, and configure
 the intended tagged VLAN membership at both ends. A hybrid port also needs
 explicit untagged/PVID handling. Use a deliberate DHCP design per VLAN;

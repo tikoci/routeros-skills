@@ -32,9 +32,10 @@ curl --fail-with-body -X POST \
 The original 7.25 lab reported an authorization response with an empty
 `ipAssignments` array, followed about 30 seconds later by interface `OK` and a
 managed IP. Do not treat the immediate response as final convergence. Re-read
-the member and RouterOS interface with a bounded timeout. Check managed
-addresses only when assignment is configured, the member permits auto-assignment,
-and `allow-managed=yes`.[^lab]
+the member and RouterOS interface with a bounded timeout. With
+`allow-managed=yes`, check for addresses assigned explicitly through
+`ipAssignments` or automatically from an applicable pool. `noAutoAssignIps`
+exempts a member from the pool; it does not cancel explicit assignments.[^lab][^member]
 
 The portal equivalent is to open the network, locate that ZeroTier address,
 and authorize the member. API integrations include
@@ -57,14 +58,18 @@ The documented v2 base is `https://central.zerotier.com/api/v2`, with
 organization and resource parameters. This skill's original lab did **not**
 exercise v2; the legacy examples above are not a verified v2 workflow.[^tokens][^lab]
 
-## Flow-rule defaults
+## Flow-rule policy and plan requirements
 
-Legacy Central's common default filters out Ethernet types other than IPv4,
+A common Legacy Central ruleset filters out Ethernet types other than IPv4,
 IPv6, and ARP. New Central documents flow rules as disabled by default; its
 Layer 2 Protocol Filter restricts traffic to those same three types when
-enabled. Flow-rule editing currently requires Essential or above. Plan
-entitlements and templates can change: inspect the network's actual rules
-before using RoMON or a VLAN trunk.[^rules]
+enabled.[^rules]
+
+New Central provides templated rules on Essential or above; **custom rules
+require Scale or Enterprise**. Legacy Central provides the full custom rules
+engine to all users. Plan entitlements and templates can change: inspect the
+network's actual rules and available editor before using RoMON or a VLAN
+trunk.[^rules]
 
 See [Flow rules, RoMON, and bridging](./zerotier-romon-flow-rules.md).
 
@@ -73,3 +78,4 @@ See [Flow rules, RoMON, and bridging](./zerotier-romon-flow-rules.md).
 [^tokens]: ZeroTier [API tokens](https://docs.zerotier.com/tokens/), checked 2026-11-01.
 [^rules]: ZeroTier [Rules Engine](https://docs.zerotier.com/rules/), checked 2026-11-01.
 [^lab]: [Grounding](./grounding.md#reported-lab-results) links the original authorization run and records its limits.
+[^member]: ZeroTier's published [Central MemberConfig schema](https://github.com/zerotier/go-ztcentral/blob/main/spec.json) defines `ipAssignments` separately from the pool exemption `noAutoAssignIps`.

@@ -134,10 +134,10 @@ Also review these independent controls:[^services]
 
 ZeroTier flow rules add distributed, stateless filtering. A ruleset that admits
 only IPv4, IPv6, and ARP blocks RoMON (`0x88bf`) and VLAN-tagged frames (`0x8100`).
-Legacy Central commonly starts with that ruleset. New Central documents flow
+That is a common ruleset on Legacy Central. New Central documents flow
 rules as disabled initially, with all traffic allowed; enabling its Layer 2
 Protocol Filter restricts Ethernet types. **Inspect the actual network policy**
-before relying on either default.[^rules]
+before assuming which Ethernet types pass.[^rules]
 
 RoMON can extend management through ZeroTier and onward through explicitly
 permitted RoMON ports. Restrict its default `all` port policy before enabling
