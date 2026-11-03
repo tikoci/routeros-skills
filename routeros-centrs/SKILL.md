@@ -26,21 +26,21 @@ or the `routeros-fundamentals` skill), or when you need to *create* the router i
 (use `routeros-quickchr-cli` from a shell, or `routeros-quickchr` for the TypeScript
 library — centrs consumes a quickchr VM, it does not boot one).
 
-> **Status and version.** Checked against centrs **0.1.8** (npm `latest`) and
-> **0.1.9-next** (npm `next`, `main` as of 2026-11-02). Items marked **(0.1.9)** are
-> `@next` only until 0.1.9 is cut; a few of them (marked †) landed on `main` after
-> `0.1.9-next.24`, so confirm with `centrs <command> --help`. Run
-> `npm view @tikoci/centrs dist-tags` to see what each tag points at, and
-> `centrs --version` (0.1.9) to see what you are running. Expect breaking changes
-> before 1.0 and exercise writes on lab or disposable targets first.
+> **Status and version.** Written for centrs **0.1.9** (checked on
+> `0.1.9-next.27`). Older builds differ in places this skill relies on — error
+> codes, where text-mode warnings print, `--match`, live `explain` — so run
+> `centrs --version` and, if it is older, upgrade rather than work around it.
+> `npm view @tikoci/centrs dist-tags` shows what `latest` and `next` point at;
+> `@next` is the leading edge. Expect breaking changes before 1.0 and exercise
+> writes on lab or disposable targets first.
 > [`docs/MATRIX.md`](https://github.com/tikoci/centrs/blob/main/docs/MATRIX.md) is
 > the single source of truth for what works today.
 
 ## Install and first call
 
 ```sh
-bun x @tikoci/centrs@next --help                # no install
-bun add @tikoci/centrs@next                     # library + local CLI
+bun x @tikoci/centrs --help                     # no install
+bun add @tikoci/centrs                          # library + local CLI
 ```
 
 `bun x` works wherever `bunx` does, including sandboxes that ship Bun without the
@@ -48,7 +48,7 @@ bun add @tikoci/centrs@next                     # library + local CLI
 cheapest way to confirm centrs works at all:
 
 ```sh
-bun x @tikoci/centrs@next explain '/ip/address print' --json
+bun x @tikoci/centrs explain '/ip/address print' --json
 ```
 
 ## Flag spelling
@@ -61,8 +61,7 @@ form is accepted. Boolean flags have explicit negatives: `--no-validate`,
 number.
 
 With `execute`, put centrs flags **before** `--`. Everything after `--` is the
-RouterOS command; a centrs flag found there is refused before anything dials
-(0.1.9):
+RouterOS command; a centrs flag found there is refused before anything dials:
 
 ```console
 $ centrs execute lab -- '/system/resource/print' --json
@@ -96,7 +95,7 @@ piped stdin. It exits **2** when the verdict reaches `--fail-on` (`error` by
 default; `warning` or `never`), so it works as a pre-commit or CI gate for `.rsc`
 snippets.
 
-**Live `explain <router> '<input>'`** (0.1.9; REST and native API, `CHR-passed`)
+**Live `explain <router> '<input>'`** (REST and native API, `CHR-passed`)
 adds read-only device evidence: RouterOS's own `:parse` verdict, its syntax
 highlighting, and argument names. The analyzed input never executes. Two flags are
 live-only:
@@ -122,22 +121,21 @@ Every router-facing command resolves a **target**:
 |---|---|
 | A CHR booted by quickchr | `--quickchr <name>` — host, port and credentials from the live VM; no credential plumbing |
 | A router saved in WinBox | the positional `<router>` — centrs reads `~/.config/tikoci/winbox.cdb` (the WinBox address book **is** the device registry) |
-| An address, no CDB record | the positional `<ip>` / `http(s)://host[:port]`, or `--host <host\|url>` with no positional (0.1.8; no CDB lookup), plus `--username` / `--password` or `CENTRS_USERNAME` / `CENTRS_PASSWORD` |
+| An address, no CDB record | the positional `<ip>` / `http(s)://host[:port]`, or `--host <host\|url>` with no positional (no CDB lookup), plus `--username` / `--password` or `CENTRS_USERNAME` / `CENTRS_PASSWORD` |
 | Nothing yet | `centrs discover` over MNDP; `--save` writes found neighbors into the CDB |
 
 - `--quickchr` is exclusive of positional targets, CDB selectors and
   `--host`/`--port`/`--username`/`--password`; pick one mechanism per call.
 - **Never put credentials in the target.** `admin:pass@host` (or a URL with
-  `user:pass@`) is refused as `input/invalid-target` (0.1.9), with the password
+  `user:pass@`) is refused as `input/invalid-target`, with the password
   masked as `***@`.
 - One address saved under two users is ambiguous: pick the record with
-  `--match user=<name>` (or `target=<addr>`, or a record type) (0.1.9†).
+  `--match user=<name>` (or `target=<addr>`, or a record type).
 - `centrs devices init` creates an empty CDB (`--cdb-file` for a custom path); it
   never overwrites an existing one, so bootstrap scripts can run it
   unconditionally. Other subcommands: `list`, `show`, `groups`, `add`, `edit`,
   `set`, `remove`; `devices` is the only command that writes the CDB.
-  `devices init --encrypt` / `devices encrypt` create or convert an encrypted CDB
-  (0.1.9†).
+  `devices init --encrypt` / `devices encrypt` create or convert an encrypted CDB.
 
 ### Fan out instead of looping
 
@@ -155,7 +153,7 @@ Selectors: `--group <name>`, `--all`, `--where <attr>=<value>`, `--near`, `--bbo
 `data` is `{ summary: { total, ok, failed }, targets: [...] }`; each target
 inherits any `meta` it does not repeat from the outer envelope.
 
-An **empty selection** behaves differently for reads and writes (0.1.9): a read
+An **empty selection** behaves differently for reads and writes: a read
 over a group that matches nothing is `ok: true` with a `cdb/empty-group` warning,
 but a write (`execute`, mutating `api`, `transfer upload|remove|mkdir|copy`) exits 1
 — a typo in a group name no longer passes for a successful bulk write.
@@ -167,7 +165,7 @@ but a write (`execute`, mutating `api`, `transfer upload|remove|mkdir|copy`) exi
 | `retrieve <router> <path>` | Read a menu; `--query`, `--wait`, `--follow`, `--sample` | shipped (REST, native API) |
 | `execute <router> '<cli>'` | Run a RouterOS CLI-shaped read/write | shipped (REST, native API, SSH, MAC-Telnet) |
 | `api <router> <endpoint>` | Structured passthrough, `gh api` style: `-X PUT`, `-f k=v`, `--query`, `--stream` | shipped (REST, native API) |
-| `explain [<router>] '<input>'` | Analyze a command; live evidence with a router | shipped (offline; live REST + native API in 0.1.9) |
+| `explain [<router>] '<input>'` | Analyze a command; live evidence with a router | shipped (offline; live over REST + native API) |
 | `transfer <router> upload\|download\|list\|remove\|mkdir\|copy` | Device files | shipped (REST, native API, SFTP) |
 | `terminal <router>` | Interactive console | shipped (SSH, MAC-Telnet) |
 | `discover` | MNDP neighbor discovery, `--save` into the CDB | shipped |
@@ -186,7 +184,7 @@ CLI-shaped writes ride `execute`.
 `retrieve` and `api` paths must be plain menu names — letters, digits and hyphens
 between slashes. Anything else (`/system/reboot#`, `?`) is refused as
 `input/invalid-routeros-path` before anything dials, even with `--no-validate`
-(0.1.9†). Filter with `--query`, never with characters in the path.
+Filter with `--query`, never with characters in the path.
 
 ## Read the envelope, not the text
 
@@ -215,9 +213,9 @@ A failure has `ok: false` and an `error` with `code`, `summary`, `remediation`,
 
 **Pass `--json` (or `--format json`).** `retrieve`, `execute` and `transfer` default
 to `--format text`, and text stdout is data only: warnings and the `Tips:` footer
-go to **stderr**, and `meta` shows only as the `--verbose` header (0.1.9; before
-that, `execute` dropped warnings and tips entirely and `retrieve`/`transfer` mixed
-them into stdout). Parsing the text default can appear to work while you never see
+go to **stderr**, and `meta` shows only as the `--verbose` header (before 0.1.9,
+`execute` dropped warnings and tips entirely and `retrieve`/`transfer` mixed them
+into stdout). Parsing the text default can appear to work while you never see
 a warning such as `transport/write-outcome-unknown`. (`api` already defaults to
 JSON.)
 
@@ -256,7 +254,7 @@ problem; do not treat a non-empty `tips` array as a failure.
 
 ## Reading state: query, wait, follow, sample
 
-All four are `retrieve` flags (0.1.8).
+All four are `retrieve` flags.
 
 ```sh
 # Filter on the router, written as after `print where`; repeats are AND-ed.
@@ -364,10 +362,10 @@ Fix: Pass `--yes` in non-interactive automation, or answer `yes` at the TTY prom
   a *separate* gate: `transfer --force` / `--overwrite`.
 - Reads stay reads: a bare menu path (`/system/identity`) and pure script functions
   (`:put [:serialize to=json [/system/resource/print as-value]]`, `:convert`,
-  `:timestamp`, …) need no `--yes` (0.1.9). Commands nested inside their arguments
+  `:timestamp`, …) need no `--yes`. Commands nested inside their arguments
   are still checked, and an output file (`file=`, `file-name=`) makes it a write.
-- **Never blindly retry a write.** centrs never replays a write it already sent
-  (0.1.9). When the connection drops after sending, the envelope carries
+- **Never blindly retry a write.** centrs never replays a write it already sent.
+  When the connection drops after sending, the envelope carries
   `transport/write-outcome-unknown`: the write **may have run**. Read the state back
   before trying again. The same warning rides a permission refusal partway through a
   multi-statement script, because the statements before it already ran.
@@ -376,7 +374,7 @@ Fix: Pass `--yes` in non-interactive automation, or answer `yes` at the TTY prom
 
 ### CMR fleets
 
-`execute <controller> --cmr --labels <expr> -- '<command>'` (0.1.9, RouterOS
+`execute <controller> --cmr --labels <expr> -- '<command>'` (RouterOS
 7.26beta1+ with the `cmr` package) runs one validated command on the CMR clients a
 controller manages. Only the controller is dialed; each client checks the command
 with `:parse` first, and a client that rejects it is not sent it. One `--yes` covers
@@ -403,7 +401,7 @@ carry a large upload. With no `--via` pinned, centrs notices the size and
 auto-selects SFTP. The SSH clients run with `BatchMode=yes`, so SFTP never sends a
 password: on a device with no SSH key installed, the auto-hop fails on
 authentication rather than on size. A CDB record's `via=ssh` now selects SFTP, and
-`--via ssh` is accepted as an alias for `sftp` (0.1.9†). `download` replaces an
+`--via ssh` is accepted as an alias for `sftp`. `download` replaces an
 existing local file, like `curl -o`.
 
 ## When a command is rejected
@@ -418,7 +416,7 @@ diagnosis:
 
 `--no-validate` disables both. A clean offline pass is necessary, never sufficient.
 
-Every command renders errors the same way (0.1.8), and shows the router's own words
+Every command renders errors the same way, and shows the router's own words
 without `--verbose`:
 
 ```text
@@ -437,14 +435,14 @@ Branch on the code:
 | `validation/menu-unavailable` | Gated by hardware, build or version (`error.context.gates`) | Not fixable by editing the command |
 | `validation/unknown-path` | No published RouterOS build has this path | Check spelling with `explain` or rosetta |
 | `validation/syntax` | A real syntax fault, or a rejection centrs could not pin to one segment | Run `centrs explain '<command>'` and read `At:` |
-| `routeros/permission-denied` | The RouterOS user's group lacks the policy (0.1.9) | Fix the user's group; never retried |
+| `routeros/permission-denied` | The RouterOS user's group lacks the policy | Fix the user's group; never retried |
 | `transport/auth-failed` | RouterOS refused the login | Check credentials |
-| `transport/edge-auth-failed` | A 401/403 from something in front of RouterOS — proxy, tunnel, WAF (0.1.9) | Fix the edge, not RouterOS |
+| `transport/edge-auth-failed` | A 401/403 from something in front of RouterOS — proxy, tunnel, WAF | Fix the edge, not RouterOS |
 
-Before 0.1.8, an absent menu or missing package came back as `validation/syntax`
-with "fix the quotes" advice; on 0.1.8+ treat `validation/syntax` as a real syntax
-problem, and use `explain` to find it rather than re-quoting by guesswork. Before
-0.1.9, a REST permission refusal was reported as `transport/connection-closed`.
+Treat `validation/syntax` as a real syntax problem, and use `explain` to find it
+rather than re-quoting by guesswork. (Before 0.1.8, an absent menu or missing
+package also came back as `validation/syntax`; before 0.1.9, a REST permission
+refusal came back as `transport/connection-closed`.)
 
 ## Known rough edges
 
@@ -495,7 +493,7 @@ reach for before `centrs_execute`. `centrs_explain` needs neither CDB nor device
   [`commands/`](https://github.com/tikoci/centrs/tree/main/commands) (per-command
   contract and worked examples) ·
   [`CHANGELOG.md`](https://github.com/tikoci/centrs/blob/main/CHANGELOG.md) (what
-  `@next` adds over `@latest`)
+  each release changed)
 - **routeros-quickchr-cli** / **routeros-quickchr** — boot the CHR that `--quickchr`
   then targets: the `-cli` skill for the shell path, the other for TypeScript
   harnesses. The pair is the normal grounding loop: quickchr creates the router,
