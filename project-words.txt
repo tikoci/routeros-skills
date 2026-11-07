@@ -58,6 +58,7 @@ Customisation
 CWMP
 datagram
 datapath
+DDNS
 DECID
 defconf
 descr
@@ -121,6 +122,7 @@ htonl
 HVF
 HVM
 HYPERV
+ICCP
 idempotently
 iface
 ifaces
@@ -173,6 +175,7 @@ misattributed
 misparses
 mktemp
 mkvlan
+MLAG
 MMIO
 mmips
 mndp
@@ -201,6 +204,7 @@ netmap
 Netwatch
 newpass
 nexthop
+NStreme
 nwid
 Nexthops
 NFSD
@@ -331,6 +335,7 @@ subshell
 Subvolume
 Supout
 SVE
+TamoSoft
 tarpit
 tarpitted
 TCG

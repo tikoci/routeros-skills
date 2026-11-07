@@ -226,7 +226,7 @@ set streaming-enabled=no streaming-server=0.0.0.0 file-name=""
 
 ## Additional Resources
 
-- For interpreting MikroTik-specific captures, including WinBox/M2 and research gaps: [routeros-proprietary-protocols](../routeros-proprietary-protocols/SKILL.md).
+- To identify MikroTik-specific traffic in a capture (by port or EtherType) and find decoding references: [routeros-proprietary-protocols](../routeros-proprietary-protocols/SKILL.md).
 
 **Reference files:**
 

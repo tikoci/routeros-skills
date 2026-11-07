@@ -1,104 +1,113 @@
 ---
 name: routeros-proprietary-protocols
-description: "Navigate MikroTik-specific protocols and file formats: WinBox/M2/nova IPC, MAC-WinBox, RoMON, MAC-Telnet, MNDP, native API, EoIP, bandwidth test (btest), IP packing, and RouterOS binary files. Use to identify an unfamiliar MikroTik artifact, find protocol research or implementation pointers, interpret captures, investigate WinBox compatibility, or plan a native configuration backend. A background index with explicit knowledge gaps; use existing specialist skills for operations."
+description: "Navigate MikroTik-specific protocols and file formats: WinBox/M2/nova IPC, MAC-WinBox, MAC-Telnet, RoMON, MNDP, native API, btest, EoIP, IP packing, CAPsMAN, CMR, MLAG ICCP, Nv2, cloud services, The Dude, and RouterOS binary files. Use to identify unfamiliar MikroTik traffic or files by port, EtherType, or artifact; find vendor docs, research, or implementations; or learn what is still unknown. A background index; specialist skills handle operations."
 ---
 
 # RouterOS Proprietary Protocols and File Formats
 
-Use this inventory to find existing knowledge about MikroTik-specific wire
-protocols and files. It includes documented vendor protocols, partial reverse
-engineering, and topics with only leads. Coverage below describes the linked
-resources, not everything anyone knows. Follow their current status before
-implementing.
+An index of MikroTik-specific wire protocols and files. Each row gives a
+fingerprint, where to read, and how much is known. The linked docs and code
+hold the details; read them before implementing anything.
 
-## Start with WinBox and the configuration system
+**Knowledge levels used below:**
 
-WinBox is an entrypoint into RouterOS's internal management system. The
-[`nv::message` / M2 grammar][m2-grammar] and [WinBox profile guide][winbox-guide]
-connect typed messages, process/handler routing, authentication, and configuration
-access. This is useful background for understanding how the router represents
-configuration, beyond the WinBox GUI.
+- **vendor docs**: MikroTik documents configuration and behavior, not the wire format.
+- **spec**: MikroTik publishes the wire format.
+- **implemented**: working tikoci code you can read and run.
+- **research**: partial, version-scoped reverse engineering in m2ir.
+- **leads**: public sources are listed, but nobody has studied them yet.
+- **gap**: nothing useful is linked yet.
 
-MAC-WinBox, RoMON, and terminal access belong on that reading map, but keep their
-transport and session layers distinct. Shared authentication or saved RoMON
-records alone do not establish a shared wire format. MNDP has a separate grammar;
-the native API is another configuration interface, with its own framing.
+## WinBox first
 
-For deeper work, use m2ir's [agent reading map][m2ir-map]: it routes capture
-interpretation, patched WinBox client compatibility, and native configuration
-backend development. Use the [format and research index][m2ir-index] for other
-artifacts. These are maintained entrypoints; field tables and research inventories
-stay upstream.
+WinBox talks to RouterOS's internal M2 (`nv::message`) / nova IPC system. That
+makes WinBox the main entry point for understanding how the router represents
+configuration. Start with m2ir's [agent reading map][m2ir-map]. It routes capture
+decoding, patched WinBox clients, and native configuration backends to canonical
+YAML. For other formats, use the [format and research index][m2ir-index].
 
-## Protocol inventory
+## Protocols
 
-| Protocol or mechanism | What to read | Knowledge and boundary |
+Ports and EtherTypes come from MikroTik's [Services][services] page and the
+linked protocol pages.
+
+| Protocol | On the wire | Read | Known |
+|---|---|---|---|
+| **WinBox / M2 / nova IPC** | TCP 8291 (also the mobile app and The Dude) | [m2ir map][m2ir-map], [WinBox guide][winbox-guide] | research: framing, auth, crypto, selected handlers |
+| **MAC-WinBox** | UDP 20561 ([MAC server][mac-server]) | [m2ir index][m2ir-index] → source inventory | vendor docs, leads |
+| **MAC-Telnet / MAC-Ping** | UDP 20561 | [routeros-mac-telnet](../routeros-mac-telnet/SKILL.md) | implemented (centrs); MAC-Ping payload only sketched |
+| **RoMON** | EtherType 0x88bf, dst 01:80:c2:00:88:bf | [RoMON][romon] | vendor docs; centrs support not started |
+| **MNDP** | UDP 5678 | [routeros-mndp](../routeros-mndp/SKILL.md), [centrs codec][centrs-mndp] | implemented; some values unknown ([m2ir#3][m2ir-mndp]) |
+| **API / API-SSL** | TCP 8728 / 8729 | [API][api], [routeros-centrs](../routeros-centrs/SKILL.md) | spec, implemented ([centrs][centrs-api]) |
+| **Bandwidth test** | TCP/UDP 2000 | [Bandwidth test][btest], [centrs btest][centrs-btest] | implemented: client and server, tested against CHR |
+| **EoIP / EoIPv6** | EoIP: GRE, IP protocol 47 | [EoIP][eoip] | vendor docs; no wire reference |
+| **IP packing** | EtherType 0x9000; MNDP TLV 14 advertises unpacking | [IP packing][packing], [m2ir#3][m2ir-mndp] | vendor docs; frame and compression formats are a gap |
+| **CAPsMAN** | UDP 5246 control; UDP 5247 legacy data; or Layer 2 | [WiFi CAPsMAN][capsman] | vendor docs |
+| **CMR** | TCP 54321 | [routeros-cmr](../routeros-cmr/SKILL.md) | vendor docs, lab-tested operation; no wire reference |
+| **MLAG ICCP** | EtherType 0x88b5, dst 01:80:c2:00:00:0e | [MLAG][mlag] | vendor docs |
+| **Nv2 / NStreme** | Wireless MAC layer (legacy `wireless` package) | [Nv2][nv2] | vendor docs |
+| **MikroTik cloud** | `cloud2.mikrotik.com` UDP 15252 (DDNS), TCP 15252 (backup) | [Cloud server communication][cloud-comm] | vendor docs; payloads are a gap |
+| **The Dude client/server** | Via the WinBox service | [Dude][dude] (discontinued) | gap; `dude.db` files are under Files |
+| **Netinstall / Etherboot** | BOOTP/DHCP ports, TFTP | [routeros-netinstall](../routeros-netinstall/SKILL.md) | workflow docs; no wire reference |
+
+For what centrs implements today, check its [capability matrix][centrs-matrix].
+
+## Files
+
+Routes and boundaries are maintained in the [m2ir format and research index][m2ir-index].
+
+| Artifact | Start | Known |
 |---|---|---|
-| **WinBox over IP; M2 / nova IPC** | [WinBox guide][winbox-guide] → [agent map][m2ir-map] → canonical YAML and its evidence | Substantial but partial research: framing, authentication, crypto, routing, and selected configuration handlers. Exact version and handler scope matter. |
-| **MAC-WinBox** | [MikroTik MAC server docs][mac-server]; [m2ir index][m2ir-index] → source inventory | Layer-2 WinBox access. Public implementation leads exist; m2ir has no populated canonical profile. Keep separate from MAC-Telnet. |
-| **RoMON** | [MikroTik RoMON docs][romon]; [m2ir index][m2ir-index] → CDB guide / source leads | Vendor management overlay used for WinBox and other management access. Operational docs and saved-record evidence exist; those records do not specify the tunnel wire protocol. |
-| **MAC-Telnet; MAC-Ping** | [routeros-mac-telnet](../routeros-mac-telnet/SKILL.md) → upstream C implementation and centrs | Detailed MAC-Telnet framing/authentication references and implemented client. MAC-Ping payload semantics are only sketched there. Shared EC-SRP evidence does not make this WinBox session encryption. |
-| **MNDP** | [routeros-mndp](../routeros-mndp/SKILL.md); [centrs codec][centrs-mndp]; [m2ir index][m2ir-index] | Existing codec/dissector references cover discovery TLVs. m2ir's MNDP profile is a placeholder; use the specialist skill and implementation. Includes packing-related advertisements. |
-| **RouterOS native API / API-SSL** | [Official API specification][api]; [centrs native API implementation][centrs-api]; [routeros-centrs](../routeros-centrs/SKILL.md) | Publicly documented vendor sentence/word protocol. Separate from WinBox/M2 and from REST; TLS does not change the underlying API grammar. |
-| **EoIP** | [MikroTik EoIP docs][eoip] | MikroTik Ethernet tunneling using GRE. Configuration and encapsulation overview available; GRE ancestry alone does not establish interoperability with another Ethernet-over-GRE implementation. No detailed wire reference curated here. |
-| **Bandwidth test / btest** | [MikroTik bandwidth-test docs][btest]; [WinBox guide's implementation trail][winbox-guide] → centrs authentication, protocol code, and tests | Operational docs and implementation evidence exist. Shared EC-SRP5 findings cover authentication use; they are not a complete m2ir btest profile. |
-| **IP packing (`/ip/packing`)** | [MikroTik IP packing docs][packing]; [routeros-mndp](../routeros-mndp/SKILL.md) → packing TLVs | Poorly understood here. Documented aggregation/compression requires neighbor discovery; MNDP exposes packing information. No complete packing/compression wire grammar or decoder is linked here. Advertisement fields do not explain the data format. |
-| **Netinstall / Etherboot** | [routeros-netinstall](../routeros-netinstall/SKILL.md) | Existing workflow and BOOTP/TFTP references. Distinguish standard boot transports from MikroTik-specific installation exchanges and artifacts. |
+| WinBox `.cdb` saved connections | [centrs reader][centrs-cdb] | implemented; m2ir profile is a placeholder |
+| WinBox `.wbx` saved sessions | m2ir source inventory | leads |
+| The Dude `dude.db` object blobs | m2ir Dude profile → donny, TheDudeToHuman | research: initial schema |
+| `.x3` metadata, `/rw/store/cfg.*` | m2ir CHR extraction notes; SYS_OWNER findings | research, version-scoped |
+| NPK, binary `.backup`, user database, `supout.rif` | m2ir source inventory | leads |
 
-For implemented centrs capabilities, check its current [capability matrix][centrs-matrix]
-and follow the relevant source/tests. An authentication implementation does not
-prove native WinBox configuration retrieval, notifications, or RoMON support.
+## Looks proprietary, is not
 
-## File-format inventory
+- **[Back To Home][bth]**: the VPN data plane is plain WireGuard and works with
+  standard clients. MikroTik adds provisioning, DNS naming, and an optional relay.
+- **REST / WebFig** run over HTTP(S); the endpoints and semantics are RouterOS's own.
+  See [routeros-fundamentals](../routeros-fundamentals/SKILL.md) and
+  [routeros-webfig](../routeros-webfig/SKILL.md).
+- **`.rsc` exports** are script text; see [routeros-scripting](../routeros-scripting/SKILL.md).
+- **TZSP** sniffer streaming is TamoSoft's format; see [routeros-sniffer](../routeros-sniffer/SKILL.md).
 
-Start with the [m2ir format and research index][m2ir-index], which maintains the
-following routes and their upstream sources:
+## Conclusions not to draw
 
-| Artifact | Reading route and current boundary |
-|---|---|
-| **WinBox CDB saved connections; WBX saved sessions** | CDB guide → [centrs reader][centrs-cdb] and tests; source inventory → WBX/conversion leads. CDB's m2ir profile is a placeholder; WBX has no canonical grammar there. |
-| **The Dude `dude.db` object blobs** | Dude profile → object classes / fields → `tikoci/donny` and `german77/TheDudeToHuman`. Initial populated schema; not a complete database specification. |
-| **RouterOS `.x3` metadata; internal store files** | CHR extraction notes / experimental decoder; WinBox system keys / persistence findings for `/rw/store/cfg.*`. Selected version-scoped research, not general file grammars. |
-| **NPK packages, binary backups, user databases, supout** | Source inventory → extraction/tooling leads. Coverage varies; a listed lead does not establish a complete decoder. |
+- WinBox, MAC-Telnet, and btest share EC-SRP5 login. A working login proves that
+  login, not a shared session format or native WinBox config access.
+- A saved RoMON record in a CDB is not a RoMON wire specification.
+- A port or EtherType identifies traffic; it says nothing about the payload.
+- An m2ir placeholder profile ranks below a working implementation and its specialist skill.
+- m2ir findings are version-scoped. Read each entry's confidence, evidence, and
+  version range, and record the RouterOS/client versions you used.
 
-## Vendor branding and standard protocols
+When only docs or leads exist, say so instead of inventing a grammar. Report
+observations, unknown TLVs, and negative results through m2ir's
+[discovery guidance][discoveries], with sanitized evidence.
 
-- **[Back To Home VPN][bth]** uses real WireGuard, with MikroTik provisioning,
-  DNS naming, and optional relay service around it. Exported configurations work
-  with standard WireGuard clients. Distinguish that VPN data plane from the
-  vendor's discovery/control/relay mechanisms when investigating behavior.
-- **REST / WebFig** use HTTP(S); RouterOS endpoints and configuration semantics
-  remain vendor-specific. Use [routeros-fundamentals](../routeros-fundamentals/SKILL.md)
-  and [routeros-webfig](../routeros-webfig/SKILL.md) for those interfaces.
-- **`.rsc` exports** are RouterOS script text, distinct from binary backups.
-  Use [routeros-scripting](../routeros-scripting/SKILL.md).
-
-## Follow the evidence and return discoveries
-
-Read the selected m2ir YAML entry's confidence, evidence, revision history, and
-version scope. Preserve unknown tags and distinguish observed bytes from inferred
-meanings. Record the repository revision and exact RouterOS/client versions for
-technical conclusions; a working login or one decoded message proves only that
-operation. Use [routeros-sniffer](../routeros-sniffer/SKILL.md) for capture acquisition.
-
-If only documentation or an implementation lead exists, say so. If no useful
-reference is indexed, report that gap rather than inventing a grammar. Send new
-observations, unknown TLVs, negative results, or corrections through m2ir's
-[discovery submission guidance][discoveries], with sanitized evidence and scope.
-
-[m2-grammar]: https://raw.githubusercontent.com/tikoci/m2ir/main/physical/nv-message.yaml
-[winbox-guide]: https://raw.githubusercontent.com/tikoci/m2ir/main/profiles/winbox-ipc/README.md
 [m2ir-map]: https://raw.githubusercontent.com/tikoci/m2ir/main/llms.txt
 [m2ir-index]: https://raw.githubusercontent.com/tikoci/m2ir/main/profiles/README.md
+[winbox-guide]: https://raw.githubusercontent.com/tikoci/m2ir/main/profiles/winbox-ipc/README.md
+[m2ir-mndp]: https://github.com/tikoci/m2ir/issues/3
 [discoveries]: https://github.com/tikoci/m2ir/blob/main/README.md#submit-a-discovery
 [centrs-mndp]: https://github.com/tikoci/centrs/blob/main/src/data/mndp.ts
 [centrs-api]: https://github.com/tikoci/centrs/blob/main/src/protocols/native-api.ts
+[centrs-btest]: https://github.com/tikoci/centrs/blob/main/commands/btest/README.md
 [centrs-cdb]: https://github.com/tikoci/centrs/blob/main/src/data/winbox-cdb.ts
 [centrs-matrix]: https://github.com/tikoci/centrs/blob/main/docs/MATRIX.md
-[mac-server]: https://help.mikrotik.com/docs/spaces/ROS/pages/98795539/MAC+server
-[romon]: https://help.mikrotik.com/docs/spaces/ROS/pages/8978569/RoMON
-[api]: https://help.mikrotik.com/docs/spaces/ROS/pages/47579160/API
-[eoip]: https://help.mikrotik.com/docs/spaces/ROS/pages/24805521/EoIP
-[btest]: https://help.mikrotik.com/docs/spaces/ROS/pages/7962644/Bandwidth+Test
-[packing]: https://help.mikrotik.com/docs/spaces/ROS/pages/139526171/IP+packing
-[bth]: https://help.mikrotik.com/docs/spaces/ROS/pages/197984280/Back+To+Home
+[services]: https://manual.mikrotik.com/docs/system-information-and-utilities/services/
+[mac-server]: https://manual.mikrotik.com/docs/management-tools/mac-server/
+[romon]: https://manual.mikrotik.com/docs/management-tools/romon/
+[api]: https://manual.mikrotik.com/docs/developer-guides/api/
+[btest]: https://manual.mikrotik.com/docs/diagnostics-monitoring-and-troubleshooting/bandwidth-test/
+[eoip]: https://manual.mikrotik.com/docs/virtual-private-networks/eoip/
+[packing]: https://manual.mikrotik.com/docs/system-information-and-utilities/ip-packing/
+[capsman]: https://manual.mikrotik.com/docs/wireless/wifi/capsman/
+[mlag]: https://manual.mikrotik.com/docs/high-availability-solutions/multi-chassis-link-aggregation-group/
+[nv2]: https://manual.mikrotik.com/docs/wireless/abgn/nv2/
+[cloud-comm]: https://manual.mikrotik.com/docs/network-management/cloud/communication-mikrotik-cloud-servers/
+[dude]: https://manual.mikrotik.com/docs/management-tools/dude/
+[bth]: https://manual.mikrotik.com/docs/network-management/cloud/back-to-home/
