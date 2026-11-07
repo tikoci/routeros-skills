@@ -18,7 +18,7 @@
 - What the 0.5.0 re-check did *not* cover
 - quickchr 0.5.2 package review
 
-Live runs behind the claims in `routeros-quickchr-cli/SKILL.md`, so a
+Live runs behind the claims in `routeros-tikoci-quickchr-cli/SKILL.md`, so a
 reviewer can re-run any of them. Every section up to "What was *not*
 re-verified in this run" is the 0.4.8 pass; the 0.5.0 pass is its own
 section at the end. Environment of the 0.4.8 pass: macOS Intel x64 host,

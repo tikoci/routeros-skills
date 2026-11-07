@@ -1,5 +1,5 @@
 ---
-name: routeros-quickchr
+name: routeros-tikoci-quickchr
 description: "Ground RouterOS config/scripts/API code against a REAL router using quickchr (@tikoci/quickchr) — a CLI + Bun/TS library that downloads, boots, and manages MikroTik CHR VMs on QEMU. Use when: validating generated RouterOS config or scripts against real RouterOS before trusting them; spinning up a disposable CHR for REST/CLI/API iteration; writing integration/lab tests against CHR; needing host↔guest networking for a CHR (port-forward, L2/MNDP capture, guest→host UDP); driving an external RouterOS tool against a live CHR. For raw QEMU/CHR boot mechanics (VirtIO, UEFI vs SeaBIOS, acceleration) without quickchr, use routeros-qemu-chr instead."
 ---
 
@@ -83,7 +83,7 @@ See also [`references/quickchr-api.md`](./references/quickchr-api.md) in this sk
 | Change device-mode after boot | `instance.setDeviceMode(opts)` (power-cycles the VM) |
 | Tear down | `instance.stop()` (power cut) / `instance.shutdown()` (guest shutdown first) / `instance.remove()` / `instance.destroy()` |
 
-Shell-first agents (terminal, forum answers): the **routeros-quickchr-cli**
+Shell-first agents (terminal, forum answers): the **routeros-tikoci-quickchr-cli**
 skill owns the CLI lifecycle (`add`, `start`, `networks`, `cache`)
 and the `centrs --quickchr` driving pattern — this skill does not repeat
 it. Library dependency patterns (npm / `file:` / `bun link`):
@@ -168,7 +168,7 @@ Once created, machines can run side by side.
 - **Provisioning floor:** managed login, package install, and `exec`-write
   provisioning need RouterOS **7.20.8+**; older 7.x is boot-only. quickchr
   also boots RouterOS 6 (x86, CLI only, no REST, no provisioning): see
-  **routeros-quickchr-cli**.
+  **routeros-tikoci-quickchr-cli**.
 - **Provisioning runs once, at first boot.** Provisioning
   options passed to `start()` on a machine that has booted throw
   `PROVISIONING_WINDOW_CLOSED`, which
@@ -190,7 +190,7 @@ Once created, machines can run side by side.
   group rides the default multicast interface). Prefer `dgram` (the
   default) or `socket:listen:`/`socket:connect:` for two machines; use
   `mcast` only for N-way with a group of your own. Shell-first agents:
-  see the **routeros-quickchr-cli** skill for the CLI lifecycle.
+  see the **routeros-tikoci-quickchr-cli** skill for the CLI lifecycle.
 - **Cross-arch TCG x86-on-arm64 is not viable** (x86 I/O emulation is too slow);
   aarch64-on-x86 is fine. KVM/HVF require host/guest arch match.
 - **Free CHR is rate-limited to 1 Mbps** — fine for config/API grounding, not
@@ -220,12 +220,12 @@ Once created, machines can run side by side.
 [^versions]: quickchr
     [`CHANGELOG.md`](https://github.com/tikoci/quickchr/blob/v0.5.2/CHANGELOG.md)
     `[0.5.0]` through `[0.5.2]`;
-    [0.5.2 package review](../routeros-quickchr-cli/references/cli-grounding.md#quickchr-052-package-review). The 0.5.0 behavior here was re-run against the published
-    package (`routeros-quickchr-cli/references/cli-grounding.md`
+    [0.5.2 package review](../routeros-tikoci-quickchr-cli/references/cli-grounding.md#quickchr-052-package-review). The 0.5.0 behavior here was re-run against the published
+    package (`routeros-tikoci-quickchr-cli/references/cli-grounding.md`
     §quickchr 0.5.0 re-check).
 [^window]: quickchr MANUAL.md §5 "Provisioning pipeline"; CHANGELOG
     `[0.5.0]` Fixed (#176). 0.4.8's silent drop is reproduced in
-    `routeros-quickchr-cli/references/cli-grounding.md` §Device-mode.
+    `routeros-tikoci-quickchr-cli/references/cli-grounding.md` §Device-mode.
 [^boot-timeout]: 0.5.0: quickchr MANUAL.md §"Auto-cleanup on boot
     timeout" and CHANGELOG `[0.5.0]` (#182, #189). 0.4.8:
     `cleanupAfterBootFailure()` in `src/lib/quickchr.ts` at tag

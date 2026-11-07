@@ -36,7 +36,7 @@ from MikroTik's [Services][services] page, the bridge filter
 | **MAC-Telnet / MAC-Ping** | UDP 20561 | [routeros-mac-telnet](../routeros-mac-telnet/SKILL.md) | code (centrs); MAC-Ping payload only sketched |
 | **RoMON** | EtherType 0x88bf, dst 01:80:c2:00:88:bf | [RoMON][romon] | docs; centrs support not started |
 | **MNDP** | UDP 5678 | [routeros-mndp](../routeros-mndp/SKILL.md), [centrs codec][centrs-mndp] | code; some values unknown ([m2ir#3][m2ir-mndp]) |
-| **API / API-SSL** | TCP 8728 / 8729 | [API][api], [routeros-centrs](../routeros-centrs/SKILL.md) | spec, code ([centrs][centrs-api]) |
+| **API / API-SSL** | TCP 8728 / 8729 | [API][api], [routeros-tikoci-centrs](../routeros-tikoci-centrs/SKILL.md) | spec, code ([centrs][centrs-api]) |
 | **Bandwidth test** | TCP 2000; UDP allocated from 2000 upward | [Bandwidth test][btest], [centrs btest][centrs-btest] | code: client and server, tested against CHR |
 | **EoIP / EoIPv6** | EoIP: GRE, IP protocol 47 | [EoIP][eoip] | docs; no wire reference |
 | **IP packing** | EtherType 0x9000 simple / 0x9001 compressed; MNDP TLV 14 advertises unpacking | [IP packing][packing], [m2ir#3][m2ir-mndp] | docs; frame and compression formats are a gap |

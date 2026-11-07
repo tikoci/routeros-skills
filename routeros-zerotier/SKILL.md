@@ -1,6 +1,6 @@
 ---
 name: routeros-zerotier
-description: "Configure and troubleshoot native ZeroTier on MikroTik RouterOS: ARM/ARM64 extra package, device-mode, instances/interfaces/peers, private-network authorization in ZeroTier Central or /zerotier/controller, managed addresses and routes, firewall integration, flow rules, RoMON, and bridging. Use when joining a ZeroTier network, hosting a RouterOS controller, debugging ACCESS_DENIED or NOT_FOUND, or working with /zerotier, ZeroTier Central, or RoMON over ZeroTier. Use routeros-centrs for device operations and routeros-quickchr for a disposable ARM64 CHR lab."
+description: "Configure and troubleshoot native ZeroTier on MikroTik RouterOS: ARM/ARM64 extra package, device-mode, instances/interfaces/peers, private-network authorization in ZeroTier Central or /zerotier/controller, managed addresses and routes, firewall integration, flow rules, RoMON, and bridging. Use when joining a ZeroTier network, hosting a RouterOS controller, debugging ACCESS_DENIED or NOT_FOUND, or working with /zerotier, ZeroTier Central, or RoMON over ZeroTier. Use routeros-tikoci-centrs for device operations and routeros-tikoci-quickchr for a disposable ARM64 CHR lab."
 ---
 
 # RouterOS ZeroTier
@@ -166,8 +166,8 @@ pool planning.
 - [RouterOS controller](./references/zerotier-controller.md)
 - [Central accounts and API](./references/zerotier-central.md)
 - [Flow rules, RoMON, and bridging](./references/zerotier-romon-flow-rules.md)
-- `routeros-centrs` — validated device operations
-- `routeros-quickchr` — disposable CHR labs
+- `routeros-tikoci-centrs` — validated device operations
+- `routeros-tikoci-quickchr` — disposable CHR labs
 - `routeros-container` — container deployment when investigating upstream ZeroTier
 - `routeros-firewall` — interface lists and rule ordering
 
