@@ -452,6 +452,7 @@ Captured deliberately, with confidence noted:
 
 ## Related Skills
 
+- [routeros-proprietary-protocols](../routeros-proprietary-protocols/SKILL.md) — MAC-WinBox, RoMON, WinBox/M2, and other MikroTik protocols and files.
 - `routeros-mndp` — discover the device and MAC to connect to (UDP 5678).
 - `routeros-fundamentals` — RouterOS CLI/REST basics for what you do once
   connected.

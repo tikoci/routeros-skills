@@ -226,6 +226,8 @@ set streaming-enabled=no streaming-server=0.0.0.0 file-name=""
 
 ## Additional Resources
 
+- To identify MikroTik-specific traffic in a capture (by port or EtherType) and find decoding references: [routeros-proprietary-protocols](../routeros-proprietary-protocols/SKILL.md).
+
 **Reference files:**
 
 - For TZSP receiver setup (Wireshark, tshark, tcpdump): see [TZSP receivers reference](./references/tzsp-receivers.md)

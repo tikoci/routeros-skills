@@ -108,7 +108,7 @@ multi-byte is big-endian/raw.
 | 10   | 0x000a | Uptime         | 4 bytes **LE** uint32 | Seconds since boot — the only little-endian value |
 | 11   | 0x000b | Software ID    | UTF-8 string | License identifier |
 | 12   | 0x000c | Board          | UTF-8 string | e.g. `RB4011iGS+5HacQ2HnD`, `CHR` |
-| 14   | 0x000e | Unpack         | 1 byte | Firmware compression flag (some parsers treat as IPv6-present flag) |
+| 14   | 0x000e | Unpack         | 1 byte | Neighbor's `/ip/packing` unpacking setting, shown as `unpack=` in `/ip/neighbor`[^packing]; byte values not grounded[^m2ir-mndp] |
 | 15   | 0x000f | IPv6 Address   | 16 raw bytes | Link-local or global IPv6 |
 | 16   | 0x0010 | Interface Name | UTF-8 string | Sending interface on the router (e.g. `ether1`) |
 | 17   | 0x0011 | IPv4 Address   | 4 raw bytes (network order) | IP of the sending interface |
@@ -119,7 +119,9 @@ particular that **uptime is type 10, software-id is type 11, and board is type 1
 a common mistake is to off-by-one these (uptime=11/board=13), which silently misparses
 real RouterOS packets.
 
-**Packing TLVs (types 2, 3, 9):** related to `/ip` packing/compression. Safe to skip.
+**Unknown values:** header bytes 0–1, the TLV 14 byte mapping, and any type not
+listed above are not grounded here. Skip unknown types by length, preserve their
+bytes when logging, and report observations to m2ir.[^m2ir-mndp]
 
 ## Multi-Interface Behavior
 
@@ -288,6 +290,7 @@ are big-endian and that uptime (type 10) is the sole little-endian value.
 
 ## Related Skills
 
+- For IP packing and other MikroTik-specific protocols and files: see [routeros-proprietary-protocols](../routeros-proprietary-protocols/SKILL.md).
 - For RouterOS CLI/REST basics: see `routeros-fundamentals` skill
 - For the `/console/inspect` command tree: see `routeros-command-tree` skill
 - For packet capture and TZSP streaming: see `routeros-sniffer` skill
@@ -296,3 +299,6 @@ are big-endian and that uptime (type 10) is the sole little-endian value.
 ## Related MCP Tools
 
 - For RouterOS docs lookup: use the `rosetta` MCP server tools (`routeros_search`, `routeros_get_page`)
+
+[^packing]: MikroTik [IP Packing](https://manual.mikrotik.com/docs/system-information-and-utilities/ip-packing/): routers announce their unpacking setting through neighbor discovery and pack only toward a neighbor that unpacks; `unpack=none|simple|uncompress-headers|uncompress-all`.
+[^m2ir-mndp]: [tikoci/m2ir#3](https://github.com/tikoci/m2ir/issues/3) tracks grounding the TLV 14 values, unidentified TLVs and header bytes, and the packed-frame format.

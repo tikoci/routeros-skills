@@ -276,6 +276,7 @@ issue — if you hit one, add evidence there rather than working around it silen
 
 ## Authoritative docs & related skills
 
+- [routeros-proprietary-protocols](../routeros-proprietary-protocols/SKILL.md) — index of MikroTik wire protocols and files (WinBox/M2 research in m2ir, RoMON, CDB, and others) with what is and is not known.
 - centrs repo:
   [README](https://github.com/tikoci/centrs/blob/main/README.md) ·
   [`docs/CLI.md`](https://github.com/tikoci/centrs/blob/main/docs/CLI.md) (generated

@@ -23,6 +23,7 @@ Custom instruction skills for [GitHub Copilot](https://docs.github.com/en/copilo
 | **routeros-zerotier** | Native ZeroTier on ARM/ARM64 — instances, network authorization, RouterOS controllers, managed routes, firewall integration, RoMON, and bridging. |
 | **routeros-webfig** | Link humans to RouterOS WebFig views — connections, addresses, VLANs, bridges, firewall rules and CMR; object URLs, login/session behavior, and native WebView integration guidance grounded on CHR browser checks. |
 | **routeros-netinstall** | `netinstall-cli` for automated RouterOS device flashing — etherboot, BOOTP/TFTP, modescript. |
+| **routeros-proprietary-protocols** | Navigator for MikroTik-specific protocols and file formats — WinBox/M2, MAC-WinBox, RoMON, MAC-Telnet, MNDP, API, EoIP, btest, IP packing, and binary files; research/implementation pointers and explicit knowledge gaps. |
 | **routeros-mndp** | MNDP (MikroTik Neighbor Discovery Protocol) — wire format, `/ip/neighbor`, WinBox discovery. |
 | **routeros-mac-telnet** | MAC-Telnet (UDP 20561) — Layer-2 terminal by MAC address, 22-byte header, control blocks, MD5 + MTWEI (EC-SRP) auth. |
 | **routeros-sniffer** | RouterOS packet capture and TZSP streaming — `/tool/sniffer`, firewall sniff-tzsp, Wireshark integration. |
