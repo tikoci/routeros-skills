@@ -107,6 +107,10 @@ case "$cmd" in
     rc=0
     for target in $targets; do
       mkdir -p "$target"
+      # Retire only this checkout's old tool-skill links; leave unrelated installs.
+      for old in routeros-centrs routeros-quickchr routeros-quickchr-cli; do
+        unlink_one "$repo/$old" "$target/$old"
+      done
       for skill in $(skill_names); do
         link_one "$repo/$skill" "$target/$skill" || rc=1
       done

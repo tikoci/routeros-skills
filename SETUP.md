@@ -23,6 +23,11 @@ repo-owned `routeros-*` symlinks.
 
 **Only `routeros-*` named skills.** Anything else (`tikoci-*`, `screenshot`, `sql-as-rag`, `markdownlint-setup`, etc.) is personal/project-scoped and stays in the local `~/.*/skills/` directories only.
 
+Within the public family, use `routeros-tikoci-<tool>` for skills about tikoci
+tools, with a suffix when needed (for example, `routeros-tikoci-quickchr-cli`).
+Use the ordinary `routeros-<topic>` form for RouterOS features, protocols, and
+platform knowledge. Both follow the same public-content and grounding rules.
+
 ## Setting up the symlinks (fresh machine)
 
 ```sh
@@ -40,6 +45,29 @@ cd ~/GitHub/routeros-skills && git pull
 ```
 
 Because the AI tools follow symlinks to the real files, `git pull` immediately takes effect — no re-linking needed.
+
+Renamed or newly added skill directories also need `make link` and a fresh
+assistant session.
+
+## Renamed tikoci tool skills
+
+| Previous name | Current name |
+|---------------|--------------|
+| `routeros-centrs` | `routeros-tikoci-centrs` |
+| `routeros-quickchr` | `routeros-tikoci-quickchr` |
+| `routeros-quickchr-cli` | `routeros-tikoci-quickchr-cli` |
+
+After pulling this rename, run `make link` followed by `make check`.
+`make link` removes the three obsolete symlinks in the four supported assistant
+directories only when they point to the old paths in this checkout, then creates
+the current links. Real directories and links to other checkouts are preserved.
+For installations made by copying folders or another installer, remove the old
+skills and install the new names using that method.
+
+Update explicit skill invocations, saved prompts, and links to the old skill
+directories. The old names are retired without alias skills; start a fresh
+assistant session to discover the new names. The `centrs` and `quickchr` CLI
+commands and `@tikoci/centrs` / `@tikoci/quickchr` package names are unchanged.
 
 ## Linting locally
 

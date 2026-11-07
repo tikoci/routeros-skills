@@ -24,7 +24,7 @@ the difference matters. The surface follows the `[0.5.0]` through `[0.5.2]`
 sections of quickchr's
 [`CHANGELOG.md`](https://github.com/tikoci/quickchr/blob/main/CHANGELOG.md) and
 was checked against the published 0.5.2 package's `src/lib/types.ts`
-([package review](../../routeros-quickchr-cli/references/cli-grounding.md#quickchr-052-package-review)).
+([package review](../../routeros-tikoci-quickchr-cli/references/cli-grounding.md#quickchr-052-package-review)).
 
 ## Trigger terms
 

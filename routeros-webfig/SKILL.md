@@ -1,6 +1,6 @@
 ---
 name: routeros-webfig
-description: "Build RouterOS WebFig deep links for human review of connections, addresses, VLANs, bridges, firewall rules and CMR. Covers the hash-fragment URL scheme, object links, login redirects, browser token storage, and embedding the router UI in a native WebView. Use when linking a human to RouterOS views or integrating WebFig into an app. Grounded on CHR 7.24.5 and version-specific CMR checks; use routeros-centrs for machine configuration."
+description: "Build RouterOS WebFig deep links for human review of connections, addresses, VLANs, bridges, firewall rules and CMR. Covers the hash-fragment URL scheme, object links, login redirects, browser token storage, and embedding the router UI in a native WebView. Use when linking a human to RouterOS views or integrating WebFig into an app. Grounded on CHR 7.24.5 and version-specific CMR checks; use routeros-tikoci-centrs for machine configuration."
 ---
 
 # RouterOS WebFig links and embedded views
@@ -12,7 +12,7 @@ work. Give them a link plus what to check, for example:
 > <https://router.example/webfig/#Bridge.VLANs>
 
 WebFig can edit configuration too; opening its UI does not make an agent's
-changes approved. Use **routeros-centrs** for machine configuration and verification.
+changes approved. Use **routeros-tikoci-centrs** for machine configuration and verification.
 This skill covers navigation and session behavior.[^manual]
 
 ## Build a link
@@ -152,9 +152,9 @@ real UI, not a replacement configuration API.[^embedding]
 
 ## Related skills
 
-- **routeros-centrs** — validated machine operations and state verification.
+- **routeros-tikoci-centrs** — validated machine operations and state verification.
 - **routeros-cmr** — CMR package/version requirements and configuration.
-- **routeros-quickchr-cli** — disposable CHR for reproducing UI behavior.
+- **routeros-tikoci-quickchr-cli** — disposable CHR for reproducing UI behavior.
 
 [^manual]: [MikroTik WebFig manual](https://help.mikrotik.com/docs/spaces/ROS/pages/328131/WebFig)
     describes monitoring, configuration, troubleshooting and skins.

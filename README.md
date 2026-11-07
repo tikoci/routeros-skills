@@ -6,6 +6,13 @@ Custom instruction skills for [GitHub Copilot](https://docs.github.com/en/copilo
 
 ## Skills
 
+Names distinguish RouterOS knowledge from tikoci tooling:
+
+- `routeros-*`: RouterOS features, protocols, and platform knowledge.
+- `routeros-tikoci-*`: using public tikoci tools with RouterOS, including centrs
+  and quickchr. Future tikoci tool skills use this prefix too.
+- Bare `tikoci-*`: local project and maintainer skills, outside this repository.
+
 | Skill | Description |
 |-------|-------------|
 | **routeros-fundamentals** | RouterOS v7 domain knowledge — CLI, REST API, scripting, architecture. The foundational skill that others build on. |
@@ -17,9 +24,9 @@ Custom instruction skills for [GitHub Copilot](https://docs.github.com/en/copilo
 | **routeros-command-tree** | `/console/inspect` API — command tree introspection, schema generation, CLI-to-REST mapping. |
 | **routeros-syntax-inspection** | `/console/inspect` syntax surfaces (`highlight`/`completion`/`syntax`) + `:parse` IL — validating commands, reading token streams, enum discovery, script "explain"/lint; necessary-not-sufficient vs runtime. |
 | **routeros-qemu-chr** | MikroTik CHR (Cloud Hosted Router) with QEMU — boot, VirtIO, acceleration, CI/CD patterns. |
-| **routeros-quickchr** | Ground RouterOS config/scripts/API code against a real router with quickchr (`@tikoci/quickchr`) — boot a disposable CHR, apply config, read it back; networking recipes, integration-test harness patterns. |
-| **routeros-quickchr-cli** | The shell-first half of quickchr — boot a disposable CHR from the terminal and drive it with centrs. Lifecycle (`add` is not `start`), `--bg`, endpoints and credentials, L2 links between VMs, and the provisioning steps that only apply before first boot. |
-| **routeros-centrs** | Drive a real router or CHR with centrs (`@tikoci/centrs`) — target resolution from the WinBox CDB or a quickchr VM, RouterOS command validation before it runs, and one structured envelope over REST, native API, SSH/SFTP, MAC-Telnet, and MNDP. Use instead of hand-rolled `curl`/`ssh`. |
+| **routeros-tikoci-quickchr** | Ground RouterOS config/scripts/API code against a real router with quickchr (`@tikoci/quickchr`) — boot a disposable CHR, apply config, read it back; networking recipes, integration-test harness patterns. |
+| **routeros-tikoci-quickchr-cli** | The shell-first half of quickchr — boot a disposable CHR from the terminal and drive it with centrs. Lifecycle (`add` is not `start`), `--bg`, endpoints and credentials, L2 links between VMs, and the provisioning steps that only apply before first boot. |
+| **routeros-tikoci-centrs** | Drive a real router or CHR with centrs (`@tikoci/centrs`) — target resolution from the WinBox CDB or a quickchr VM, RouterOS command validation before it runs, and one structured envelope over REST, native API, SSH/SFTP, MAC-Telnet, and MNDP. Use instead of hand-rolled `curl`/`ssh`. |
 | **routeros-zerotier** | Native ZeroTier on ARM/ARM64 — instances, network authorization, RouterOS controllers, managed routes, firewall integration, RoMON, and bridging. |
 | **routeros-webfig** | Link humans to RouterOS WebFig views — connections, addresses, VLANs, bridges, firewall rules and CMR; object URLs, login/session behavior, and native WebView integration guidance grounded on CHR browser checks. |
 | **routeros-netinstall** | `netinstall-cli` for automated RouterOS device flashing — etherboot, BOOTP/TFTP, modescript. |
@@ -39,6 +46,10 @@ cd ~/GitHub/routeros-skills
 make link   # Copilot, Claude, Codex, and Hermes
 make check
 ```
+
+The centrs and quickchr skills were renamed to `routeros-tikoci-*`. Existing
+installs should run `make link` after pulling, update explicit skill names and
+links, and start a fresh assistant session. See [migration details](SETUP.md#renamed-tikoci-tool-skills).
 
 Each skill is a folder containing a `SKILL.md` file and optionally a `references/` subfolder. VS Code Copilot and Claude Code automatically discover skills in their respective `~/.*/skills/` directories.
 Codex discovers user-authored skills in `~/.agents/skills`, and Hermes in `~/.hermes/skills`.

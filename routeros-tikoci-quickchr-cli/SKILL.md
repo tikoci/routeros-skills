@@ -1,6 +1,6 @@
 ---
-name: routeros-quickchr-cli
-description: "Answer a RouterOS question by asking RouterOS. quickchr boots a real, disposable MikroTik CHR router on the local machine under QEMU — no hardware, no cloud, gone when you remove it — and centrs drives it. Covers the shell path end to end: the add/start/stop/shutdown/remove lifecycle, getting the shell back (--no-wait; --bg does not), getting REST endpoints and credentials out of a machine, L2 links between two VMs, provisioning (device-mode) that applies at first boot and the set route after it, and RouterOS 6 as a boot-only target. Pinned to quickchr 0.5.2. Use when: checking a claim or config against real RouterOS instead of guessing; needing a throwaway router for REST/CLI/API iteration; giving a shell script or CI job a router to talk to. For TypeScript harnesses that import the QuickCHR class, use routeros-quickchr instead."
+name: routeros-tikoci-quickchr-cli
+description: "Answer a RouterOS question by asking RouterOS. quickchr boots a real, disposable MikroTik CHR router on the local machine under QEMU — no hardware, no cloud, gone when you remove it — and centrs drives it. Covers the shell path end to end: the add/start/stop/shutdown/remove lifecycle, getting the shell back (--no-wait; --bg does not), getting REST endpoints and credentials out of a machine, L2 links between two VMs, provisioning (device-mode) that applies at first boot and the set route after it, and RouterOS 6 as a boot-only target. Pinned to quickchr 0.5.2. Use when: checking a claim or config against real RouterOS instead of guessing; needing a throwaway router for REST/CLI/API iteration; giving a shell script or CI job a router to talk to. For TypeScript harnesses that import the QuickCHR class, use routeros-tikoci-quickchr instead."
 ---
 
 # CHR from the shell: quickchr CLI + centrs
@@ -11,7 +11,7 @@ router. This skill is the **shell-first** path: you have a terminal, you want a
 router to interrogate, and the answer will be quoted as shell + RouterOS
 commands (e.g. in a `forum.mikrotik.com` reply). If you are writing a
 `bun:test` harness that imports `QuickCHR`, use the
-**routeros-quickchr** skill instead — one scheme per task, never both.[^split]
+**routeros-tikoci-quickchr** skill instead — one scheme per task, never both.[^split]
 
 Behavior below is pinned to **0.5.2**. Install with
 `bun install -g @tikoci/quickchr@0.5.2`, or invoke
@@ -311,7 +311,7 @@ listed under Enabled.[^dm-set]
 Before 0.5.0 the CLI had no post-boot route: `remove`, then
 `add --device-mode-enable …`, then `start` was the only CLI path. The
 library's `instance.setDeviceMode()` power-cycles for you on both
-versions (see **routeros-quickchr**).
+versions (see **routeros-tikoci-quickchr**).
 
 The other provisioning flags also refuse after first boot
 (`--add-package`, `--add-user`, `--disable-admin`, `--secure-login`,
@@ -376,7 +376,7 @@ not have, and times out. Use 7.x there, or upgrade.
   REST polling, cold power-cycle for device-mode, cache-warming gap.
 
 [^split]: Split rationale: tikoci/routeros-skills#21. Library consumers
-    stay on **routeros-quickchr**; shell-first agents come here.
+    stay on **routeros-tikoci-quickchr**; shell-first agents come here.
 [^release052]: quickchr [0.5.2 CHANGELOG](https://github.com/tikoci/quickchr/blob/v0.5.2/CHANGELOG.md)
     `[0.5.1]` and `[0.5.2]`;
     [package review](./references/cli-grounding.md#quickchr-052-package-review).
@@ -490,7 +490,7 @@ not have, and times out. Use 7.x there, or upgrade.
     [tikoci/quickchr#190](https://github.com/tikoci/quickchr/pull/190),
     released in 0.5.0 (CHANGELOG `[0.5.0]` Fixed, #140 and #181) and
     covered by quickchr's concurrency unit tests and a live two-CHR start.
-    See the **routeros-quickchr** skill, "Running several CHRs at once".
+    See the **routeros-tikoci-quickchr** skill, "Running several CHRs at once".
 [^ground-ports]: `quickchr add --help` — "`--port-base <port>` Starting
     port number (default: auto-allocated from 9100)"; successive
     machines observed at 9140/9150/9160 in

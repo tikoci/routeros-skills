@@ -1,6 +1,6 @@
 ---
 name: routeros-cmr
-description: "Configure or debug MikroTik CMR on RouterOS 7.26beta1: the optional cmr controller package, built-in /cmr/client, routed controller-addresses or neighbor discovery, TCP/54321, independent pairing requirements, labels, fleet scripts, alerts and HTTP webhooks, topology, upgrade rules, package directories and backup/export limitations. Use for a CMR controller or client, waiting-for-pairing, CMR alert or upgrade rules, fleet run-script, or the /cmr menus. Use routeros-quickchr for a disposable CMR lab and routeros-centrs for validated device operations. CMR monitors RouterOS clients; it is not a general SNMP/ping replacement for The Dude."
+description: "Configure or debug MikroTik CMR on RouterOS 7.26beta1: the optional cmr controller package, built-in /cmr/client, routed controller-addresses or neighbor discovery, TCP/54321, independent pairing requirements, labels, fleet scripts, alerts and HTTP webhooks, topology, upgrade rules, package directories and backup/export limitations. Use for a CMR controller or client, waiting-for-pairing, CMR alert or upgrade rules, fleet run-script, or the /cmr menus. Use routeros-tikoci-quickchr for a disposable CMR lab and routeros-tikoci-centrs for validated device operations. CMR monitors RouterOS clients; it is not a general SNMP/ping replacement for The Dude."
 ---
 
 # RouterOS CMR

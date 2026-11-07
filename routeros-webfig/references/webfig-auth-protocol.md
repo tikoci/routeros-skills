@@ -4,7 +4,7 @@ Read this when hosting the real WebFig UI or debugging login/session problems.
 Observations below are pinned to x86 CHR **7.24.5**. The
 [validation record](validation.md) distinguishes browser observations, source
 inspection and untested behavior. This is WebFig's private protocol, not a
-supported configuration API; use **routeros-centrs** for automation.
+supported configuration API; use **routeros-tikoci-centrs** for automation.
 
 ## Browser login lifecycle
 

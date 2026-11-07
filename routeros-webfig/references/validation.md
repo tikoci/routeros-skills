@@ -113,7 +113,7 @@ the server public key at offset 8, not offset 4.
 
 ## Reproduce
 
-Use **routeros-quickchr-cli** to boot an isolated router, and **routeros-centrs**
+Use **routeros-tikoci-quickchr-cli** to boot an isolated router, and **routeros-tikoci-centrs**
 to read its note/version before setup. Example with synthetic lab credentials:
 
 ```sh
