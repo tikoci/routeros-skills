@@ -41,7 +41,7 @@ from MikroTik's [Services][services] page, the bridge filter
 | **EoIP / EoIPv6** | EoIP: GRE, IP protocol 47 | [EoIP][eoip] | docs; no wire reference |
 | **IP packing** | EtherType 0x9000 simple / 0x9001 compressed; MNDP TLV 14 advertises unpacking | [IP packing][packing], [m2ir#3][m2ir-mndp] | docs; frame and compression formats are a gap |
 | **WebFig `/jsproxy`** | HTTP(S) to `/jsproxy`, `Content-Type: msg` | [routeros-webfig](../routeros-webfig/SKILL.md) ([validation notes](../routeros-webfig/references/validation.md)) | observed only; gap |
-| **CAPsMAN** | UDP 5246 control; UDP 5247 legacy data; or Layer 2 | [WiFi CAPsMAN][capsman] | docs |
+| **CAPsMAN** | WiFi: TCP and UDP 5246; legacy: UDP 5246 control, 5247 data; or Layer 2 | [WiFi CAPsMAN][capsman] | docs |
 | **CMR** | TCP 54321 | [routeros-cmr](../routeros-cmr/SKILL.md) | docs, lab-tested operation; no wire reference |
 | **MLAG ICCP** | EtherType 0x88b5, dst 01:80:c2:00:00:0e | [MLAG][mlag] | docs |
 | **Loop Protect** | EtherType 0x9003 | [Loop Protect][loop-protect] | docs |
