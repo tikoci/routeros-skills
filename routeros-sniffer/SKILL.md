@@ -226,6 +226,8 @@ set streaming-enabled=no streaming-server=0.0.0.0 file-name=""
 
 ## Additional Resources
 
+- For interpreting MikroTik-specific captures, including WinBox/M2 and research gaps: [routeros-proprietary-protocols](../routeros-proprietary-protocols/SKILL.md).
+
 **Reference files:**
 
 - For TZSP receiver setup (Wireshark, tshark, tcpdump): see [TZSP receivers reference](./references/tzsp-receivers.md)

@@ -276,6 +276,7 @@ issue — if you hit one, add evidence there rather than working around it silen
 
 ## Authoritative docs & related skills
 
+- [routeros-proprietary-protocols](../routeros-proprietary-protocols/SKILL.md) — protocol/file-format research, including m2ir and the distinction between shared authentication and native WinBox configuration access.
 - centrs repo:
   [README](https://github.com/tikoci/centrs/blob/main/README.md) ·
   [`docs/CLI.md`](https://github.com/tikoci/centrs/blob/main/docs/CLI.md) (generated

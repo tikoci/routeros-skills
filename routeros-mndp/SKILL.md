@@ -288,6 +288,7 @@ are big-endian and that uptime (type 10) is the sole little-endian value.
 
 ## Related Skills
 
+- For packing-related discovery fields and the wider MikroTik protocol/file inventory: see [routeros-proprietary-protocols](../routeros-proprietary-protocols/SKILL.md).
 - For RouterOS CLI/REST basics: see `routeros-fundamentals` skill
 - For the `/console/inspect` command tree: see `routeros-command-tree` skill
 - For packet capture and TZSP streaming: see `routeros-sniffer` skill

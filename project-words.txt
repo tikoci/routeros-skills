@@ -388,6 +388,7 @@ vrid
 vrrp
 VTEP
 VXLAN
+WBX
 webfig
 WEBPASSWORD
 Winbox
