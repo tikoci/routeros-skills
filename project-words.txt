@@ -31,6 +31,7 @@ bunx
 bypassable
 calea
 CAPPORT
+capsman
 catvlan
 CCR
 CDB
@@ -63,6 +64,7 @@ DECID
 defconf
 descr
 desynchronize
+dfs
 dgram
 dont
 dport
@@ -281,6 +283,9 @@ recvfrom
 redirector
 Referer
 replayable
+repoint
+repointing
+reprovisioning
 requiredness
 restraml
 REUSEADDR
@@ -367,6 +372,7 @@ UIB
 ulimits
 unconfigured
 undefines
+UNII
 unprovisioned
 unref
 URLBASE
