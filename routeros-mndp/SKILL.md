@@ -25,7 +25,7 @@ varies by device, version and default configuration.
 | Port | 5678 |
 | IPv4 | Broadcast to 255.255.255.255:5678 |
 | IPv6 | Multicast to ff02::1 (all-nodes link-local) |
-| Copies | Every announcement goes out as an IPv4 broadcast. Most also go out as an IPv6 multicast with the same payload and counter, but not all. On 7.17–7.26beta5 these were IPv4 only: 0 to 2 announcements after boot (12 of 13 boot announcements), and every one while `disable-ipv6=yes`. On 7.x an announcement with TLV 15 always had the IPv6 copy, but not the reverse: one IPv6 copy without TLV 15 was captured just after IPv6 was re-enabled. 6.49 sends the IPv6 copy only with the `ipv6` package enabled, and never TLV 15[^m2ir-wire] |
+| Copies | Every announcement goes out as an IPv4 broadcast. Most also go out as an IPv6 multicast with the same payload and counter, but not all. These were IPv4 only: 12 of 13 boot announcements on 6.49.23–7.26beta5, 0 to 2 announcements after a 7.x boot with IPv6 enabled, and every one while `disable-ipv6=yes`. On 7.x an announcement with TLV 15 always had the IPv6 copy, but not the reverse: one IPv6 copy without TLV 15 was captured just after IPv6 was re-enabled. 6.49 sends the IPv6 copy only with the `ipv6` package enabled, and never TLV 15[^m2ir-wire] |
 | Direction | Bidirectional — same port for send and receive |
 | Authentication | None — read-only discovery, no credentials |
 | Scope | Layer 2 broadcast domain (does not cross routers) |
@@ -82,9 +82,16 @@ order**: little-endian on x86, ARM and ARM64, big-endian on MIPSBE boards.[^m2ir
 Older readings (MAC-Telnet's version + TTL bytes plus a big-endian sequence number
 at bytes 2–3) describe the same 4 bytes seen on a long-running big-endian router.
 
-Parsers should skip the 4 header bytes and iterate TLVs from offset 4. If the
-counter matters, pick the byte order whose value × `discover-interval` is closest
-to the uptime (TLV 10).
+Parsers should skip the 4 header bytes and iterate TLVs from offset 4. Treat the
+counter as 4 opaque bytes. Compare them raw to deduplicate the IPv4 and IPv6 copies,
+and read `00 00 00 00` as a boot announcement. A receiver can't reliably tell the
+sender's byte order from the packet. It doesn't know the sender's `discover-interval`:
+TLV 19 reveals it only on 7.24+, and it caps at 255. Replies to requests and triggered
+announcements also inflate the count. A 6.49.23 lab router had counter 38 at 673 s of
+uptime, where its 60 s interval predicts about 11. m2ir used uptime ÷ counter only to
+confirm the byte order of field devices whose CPU was already known, not as a decoding
+rule.[^m2ir-wire] If you need the number, map the byte order from the board (TLV 12) to
+its CPU, and treat anything else as a guess.
 
 ## TLV Format
 
