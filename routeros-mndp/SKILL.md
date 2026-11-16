@@ -166,8 +166,8 @@ Take the version as the first space-separated token; don't require a channel.
 
 A receiver keeps a neighbor for at least its TLV 19 TTL after the last announcement,
 then removes it on a later sweep. With only MNDP enabled, a TTL-21 neighbor was
-removed 0–20 s after the TTL ran out, and a TTL-121 neighbor 2–17 s after; never
-before.[^m2ir-wire] A listener that caches neighbors can treat the TTL as the
+removed between about the TTL (age 18–22 s) and 20 s after it, and a TTL-121
+neighbor 2–17 s after it.[^m2ir-wire] A listener that caches neighbors can treat the TTL as the
 minimum lifetime. For senders without TLV 19 (before 7.24), fall back to a few times
 the expected interval.
 
