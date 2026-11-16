@@ -7,7 +7,8 @@ description: "MNDP (MikroTik Neighbor Discovery Protocol) wire format, behavior,
 
 MNDP is the UDP broadcast/multicast protocol that RouterOS uses for automatic device
 discovery on the local network. It is the same protocol WinBox uses to find routers.
-Every RouterOS device participates by default.
+RouterOS generally ships with MNDP broadly enabled; exactly which interfaces take part
+varies by device, version and default configuration.
 
 ## Why This Matters for Agents
 
@@ -174,7 +175,8 @@ neighbors can expire them at the TTL; RouterOS's own table may keep them a littl
 longer. For senders without TLV 19 (before 7.24), fall back to a few times the
 interval (60 s before 7.16, 30 s default after).
 
-With `dying-gasp=yes` (default `no` on 7.26beta5), a router going through a graceful
+With `dying-gasp=yes` (seen off on a fresh 7.26beta5 CHR; check `/ip/neighbor/discovery-settings`
+on the actual router before relying on it), a router going through a graceful
 reboot, shutdown or upgrade sends a short announcement: the header (the counter
 continues), then TLVs 1, 19 = `00`, 17 and 15.[^m2ir-wire][^changelog-724] It has no
 identity (TLV 5) or interface name (TLV 16), so match it to the cached entry by MAC
@@ -223,7 +225,8 @@ Controls which interfaces participate in neighbor discovery:
 # Show current discovery settings
 /ip/neighbor/discovery-settings/print
 
-# Announce every 10 s (7.16+, minimum 5s) and send a dying gasp on reboot (7.24+)
+# Announce every 10 s (7.16+, minimum 5s) and send a dying gasp on reboot (7.24+);
+# dying gasp only goes out on interfaces discover-interface-list already includes
 /ip/neighbor/discovery-settings/set discover-interval=10s dying-gasp=yes
 
 # Disable MNDP on a specific interface (security hardening)
@@ -250,7 +253,7 @@ curl -u admin: http://<router-ip>/rest/ip/neighbor
 
 - MNDP has **no authentication** — any device on the broadcast domain can discover routers
 - Disable MNDP on untrusted interfaces (public-facing, guest networks)
-- The setting default is `discover-interface-list=static` (every static interface; seen on a 7.26beta5 CHR) — check what your device's default configuration sets, then restrict
+- Which interfaces participate is whatever `discover-interface-list` names. Values seen include `static` (a 7.26beta5 CHR) and `LAN` (defconf on SOHO devices), and older versions may have used `all`. It varies by device, version and default configuration, so read it on the actual router rather than assuming, then restrict
 - MNDP reveals: identity (hostname), version, board model, IPs, MACs, uptime
 - This information is useful for attackers — treat MNDP like an open SNMP community
 
