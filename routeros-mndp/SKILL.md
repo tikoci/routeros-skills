@@ -24,7 +24,7 @@ Every RouterOS device participates by default.
 | Port | 5678 |
 | IPv4 | Broadcast to 255.255.255.255:5678 |
 | IPv6 | Multicast to ff02::1 (all-nodes link-local) |
-| Copies | Each announcement goes out as **both** an IPv4 broadcast and an IPv6 multicast, same payload[^m2ir-wire] |
+| Copies | With IPv6 enabled, each announcement goes out as **both** an IPv4 broadcast and an IPv6 multicast with the same payload and counter; with `disable-ipv6=yes`, only the IPv4 broadcast[^m2ir-wire] |
 | Direction | Bidirectional — same port for send and receive |
 | Authentication | None — read-only discovery, no credentials |
 | Scope | Layer 2 broadcast domain (does not cross routers) |
@@ -125,7 +125,7 @@ the sender's CPU.[^m2ir-wire]
 | 16   | 0x0010 | Interface Name | UTF-8 string | Sending interface; `bridge/port` (e.g. `bridge/ether1`) for a bridge port |
 | 17   | 0x0011 | IPv4 Address   | 4 raw bytes (network order) | IP of the sending interface |
 | 18   | 0x0012 | Running        | 1 byte | 7.20+: `00` none, `01` CAPsMAN, `02` CMR controller (seen singly; a bitmask is inferred, combined values unseen); shown as `running=`[^changelog-720][^quickchr-cmr] |
-| 19   | 0x0013 | TTL            | 1 byte | 7.24+: entry lifetime in seconds, `min(discover-interval × 4 + 1, 255)`, an approximate lifetime; `00` = dying gasp[^changelog-724] |
+| 19   | 0x0013 | TTL            | 1 byte | 7.24+ (not in 7.24beta1): entry lifetime in seconds, `min(discover-interval × 4 + 1, 255)`, an approximate lifetime; `00` = dying gasp[^changelog-724] |
 
 **Source of truth:** types 1, 5, 7, 8, 10–12 and 15–17 match the canonical MAC-Telnet
 `protocol.c` (`MT_MNDPTYPE_*` enum) and the Wireshark MNDP dissector value table. Note in
@@ -136,7 +136,8 @@ captures across RouterOS 6.49–7.26beta5, one setting changed at a time.[^m2ir-
 MAC-Telnet and Wireshark label type 14 "unpack"; that label is wrong.
 
 **Unknown values:** types 6 and 13 and anything above 19 were never seen in an
-announcement, and combined TLV 18 bits (CAPsMAN and CMR together) are untested.
+announcement. Combined TLV 18 bits (CAPsMAN and CMR together), TLV 9 on big-endian
+CPUs, and packing TLVs on 6.x and 7.x before 7.24 are untested.
 Skip unknown types by length, preserve their bytes when logging, and report
 observations to m2ir.[^m2ir-mndp]
 
@@ -147,11 +148,12 @@ TLV order changes between versions, so **never parse by position**:
 | Versions | TLV order |
 |----------|-----------|
 | 6.49, 7.6–7.19 | 1, 5, 7, 8, 10, 11, 12, 14, [15], 16, 17 |
-| 7.20–7.23 | …, 16, 17, 18 |
-| 7.24 and later | 1, [2, 3, 4, 9], 5, 7, 8, 10, 11, 12, 14, 16, 18, 19, 17, 15… |
+| 7.20–7.23 | 1, 5, 7, 8, 10, 11, 12, 14, [15], 16, 17, 18 |
+| 7.24beta1 | 1, 5, 7, 8, 10, 11, 12, 14, 16, 18, 17 |
+| 7.24.5 and later | 1, [2, 3, 4, 9], 5, 7, 8, 10, 11, 12, 14, 16, 18, 19, 17, 15… |
 
 TLVs 15 and 17 are absent when the interface has no such address, including right
-after boot. TLV 7 text also changes format:
+after boot. TLVs 2–4 and 9 were only tested on 7.24.5 and later. TLV 7 text also changes format:
 
 | Versions | Example |
 |----------|---------|
@@ -164,15 +166,19 @@ Take the version as the first space-separated token; don't require a channel.
 
 ### Entry Lifetime and Dying Gasp (7.24+)
 
-A receiver removes a silent neighbor at about its TLV 19 TTL after the last
-announcement, or up to about 20 s later. With only MNDP enabled, a TTL-21 neighbor
-was removed anywhere from age 18–22 s to about 20 s past the TTL, and a TTL-121
-neighbor 2–17 s past it.[^m2ir-wire] A listener that caches neighbors can expire them at
-the TTL; RouterOS's own `/ip/neighbor` may keep them a little longer. For senders without TLV 19 (before 7.24), fall back to a few times
-the expected interval.
+TLV 19 is an approximate lifetime, not an exact expiry. In a 7.26beta5 lab with
+only MNDP enabled, the receiver's `/ip/neighbor` dropped a silent TTL-121 neighbor
+2–17 s after the TTL. A TTL-21 neighbor went at age 18–22 s in one run; in others it
+was still listed 8–15 s past the TTL and gone within about 20 s.[^m2ir-wire] A listener that caches
+neighbors can expire them at the TTL; RouterOS's own table may keep them a little
+longer. For senders without TLV 19 (before 7.24), fall back to a few times the
+interval (60 s before 7.16, 30 s default after).
 
-With `dying-gasp=yes`, a router going through a graceful reboot, shutdown or upgrade sends a short announcement of TLVs 1,
-19 = `00`, 17 and 15. Treat TTL 0 as "remove this neighbor now".[^changelog-724]
+With `dying-gasp=yes` (default `no` on 7.26beta5), a router going through a graceful
+reboot, shutdown or upgrade sends a short announcement: the header (the counter
+continues), then TLVs 1, 19 = `00`, 17 and 15.[^m2ir-wire][^changelog-724] It has no
+identity (TLV 5) or interface name (TLV 16), so match it to the cached entry by MAC
+(TLV 1). Treat TTL 0 as "remove this neighbor now".
 
 ## Multi-Interface Behavior
 
@@ -216,6 +222,9 @@ Controls which interfaces participate in neighbor discovery:
 ```routeros
 # Show current discovery settings
 /ip/neighbor/discovery-settings/print
+
+# Announce every 10 s (7.16+, minimum 5s) and send a dying gasp on reboot (7.24+)
+/ip/neighbor/discovery-settings/set discover-interval=10s dying-gasp=yes
 
 # Disable MNDP on a specific interface (security hardening)
 /interface/list/member/add list=no-mndp interface=ether1
@@ -276,7 +285,10 @@ When you send a broadcast to 255.255.255.255:5678, the OS delivers a copy back t
 
 ### IPv6 Multicast
 
-IPv6 MNDP uses `ff02::1` (all-nodes multicast). Less commonly used than IPv4 broadcast but supported:
+IPv6 MNDP uses `ff02::1` (all-nodes multicast). A router with IPv6 enabled sends every
+announcement there as well as to the IPv4 broadcast, so a listener on both sockets gets
+each one twice: deduplicate on MAC (TLV 1) plus the header counter. A router with
+`disable-ipv6=yes` sends only the IPv4 copy.[^m2ir-wire]
 
 ```typescript
 sock.addMembership("ff02::1");
@@ -342,7 +354,7 @@ function parseMndpResponse(buf: Buffer): Record<string, string | number | boolea
 | Language | Source | Notes |
 |----------|--------|-------|
 | C | github.com/haakonnessjoen/MAC-Telnet (`protocol.c`, `protocol.h`) | **Canonical ground truth** for the original TLV enum, `ntohs` big-endian TLVs and `le32toh` uptime; its header and TLV 14 names are outdated |
-| C (dissector) | Wireshark `epan/dissectors/packet-mndp.c` | Official protocol dissector — confirms type IDs and `ENC_BIG_ENDIAN` TLVs |
+| C (dissector) | Wireshark `epan/dissectors/packet-mndp.c` | Official protocol dissector — confirms type IDs and `ENC_BIG_ENDIAN` TLVs; also labels TLV 14 "unpack" |
 | Go | github.com/middelink/mikrotik-fwupdate | Secondary protocol cross-check |
 | Elixir | hex.pm mndp package | Confirms TLV type IDs |
 | Swift | Open-source macOS implementations | Confirms raw-byte MAC encoding |
@@ -366,7 +378,7 @@ and 19, the layouts and the lifetime behavior were grounded on live captures.[^m
 
 [^packing]: MikroTik [IP Packing](https://manual.mikrotik.com/docs/system-information-and-utilities/ip-packing/): routers announce their unpacking setting through neighbor discovery and pack only toward a neighbor that unpacks; `unpack=none|simple|uncompress-headers|uncompress-all`.
 [^m2ir-mndp]: [tikoci/m2ir#3](https://github.com/tikoci/m2ir/issues/3) tracks the remaining unknowns: types 6/13/>19, combined TLV 18 bits, TLV 9 on big-endian CPUs, and the packed-frame format.
-[^m2ir-wire]: m2ir MNDP grounding lab, 2026-11-15: CHR labs on 6.49.23, 7.24.6, 7.25 and 7.26beta5 changing one setting per step, plus a field capture of RouterOS 6.49–7.26beta5 on ARM, ARM64 and MIPSBE hardware. Findings and evidence: [`work/2026-11-mndp-grounding/FINDINGS.md`](https://github.com/tikoci/m2ir/blob/main/work/2026-11-mndp-grounding/FINDINGS.md).
+[^m2ir-wire]: m2ir MNDP grounding lab, 2026-11-15: CHR labs on 6.49.23, 7.24.6, 7.25 and 7.26beta5 changing one setting per step, plus a field capture of RouterOS 6.49–7.26beta5 on ARM, ARM64 and MIPSBE hardware. Findings and evidence: [`work/2026-11-mndp-grounding/FINDINGS.md`](https://github.com/tikoci/m2ir/blob/270bfbbcd49867233481c67c3e32417c3bfed444/work/2026-11-mndp-grounding/FINDINGS.md).
 [^quickchr-cmr]: quickchr CMR wire study, 7.26beta5: [FINDINGS.md → MNDP](https://github.com/tikoci/quickchr/blob/dd7e0ad99aa51acc79f086fe5d71e65efbb511eb/examples/cmr/FINDINGS.md#mndp).
 [^changelog-716]: RouterOS 7.16 changelog: "added discover-interval setting" and "changed default discover-interval setting from 60s to 30s".
 [^changelog-718]: RouterOS 7.18 changelog: "advertise IPv6 capabilities based on "Disable IPv6" global setting".
