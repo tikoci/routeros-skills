@@ -24,6 +24,7 @@ Every RouterOS device participates by default.
 | Port | 5678 |
 | IPv4 | Broadcast to 255.255.255.255:5678 |
 | IPv6 | Multicast to ff02::1 (all-nodes link-local) |
+| Copies | Each announcement goes out as **both** an IPv4 broadcast and an IPv6 multicast, same payload[^m2ir-wire] |
 | Direction | Bidirectional — same port for send and receive |
 | Authentication | None — read-only discovery, no credentials |
 | Scope | Layer 2 broadcast domain (does not cross routers) |
@@ -33,7 +34,8 @@ Every RouterOS device participates by default.
 1. **Listener sends a refresh packet** — a small UDP datagram to 255.255.255.255:5678 (MAC-Telnet sends a minimal 4-byte zeroed header; a 9-byte form also works — see below)
 2. **All RouterOS devices on the LAN reply** — each sends a TLV-encoded announcement with identity, version, board, MAC, IP, uptime, etc.
 3. **Replies arrive asynchronously** — devices respond within milliseconds to seconds depending on network conditions
-4. **RouterOS devices also announce periodically** (~60s cycle) without being prompted — passive listening works but is slow to populate
+4. **RouterOS devices also announce periodically** every `discover-interval` (a setting since 7.16, default 30 s; a fixed 60 s before[^changelog-716]) — passive listening works but is slow to populate
+5. **Some config changes announce at once** — identity, CAPsMAN, CMR, `/ip/packing`, IPv6 on/off, discovery `protocol`/`mode`/`discover-interval`/`lldp-med`, and address changes (7.21+[^changelog-721]). Service toggles (MAC server, RoMON, IP services) wait for the next interval[^m2ir-wire]
 
 ### Refresh Packet (Discovery Request)
 
@@ -43,9 +45,7 @@ sends (`unsigned int message = 0;`):
 
 ```text
 Offset  Length  Value       Field
-0       1       0x00        header byte 0 (version per MAC-Telnet; "unknown" per Wireshark)
-1       1       0x00        header byte 1 (ttl per MAC-Telnet)
-2       2       0x0000      seqno / checksum
+0       4       00 00 00 00 header (zero in a request; a counter in announcements — see below)
 ```
 
 As raw bytes (minimal): `00 00 00 00`
@@ -56,7 +56,7 @@ a trailing zero byte (non-semantic padding), giving 9 bytes. RouterOS accepts al
 
 ```text
 Offset  Length  Value       Field
-0       4       00 00 00 00 header (2 header bytes + 2-byte seqno)
+0       4       00 00 00 00 header
 4       2       0x0006      TLV type = 6 (refresh)   ← big-endian
 6       2       0x0000      TLV length = 0
 8       1       0x00        optional trailing pad (non-semantic)
@@ -68,13 +68,20 @@ As raw bytes (9-byte form): `00 00 00 00 00 06 00 00 00`
 
 ```text
 Offset  Length  Field
-0       2       header bytes (version + ttl per MAC-Telnet; "unknown" per Wireshark)
-2       2       sequence number (big-endian; per-device counter)
+0       4       announcement counter (uint32, SENDER's native byte order)
 4+      TLV[]   zero or more TLV records (see below)
 ```
 
-The first 4 bytes are a fixed header; parsers skip the first 2 bytes and read the
-sequence number as a big-endian uint16, then iterate TLVs from offset 4.
+The header is one 32-bit counter of announcements sent on that interface (periodic
+and triggered). It restarts at boot, and the IPv4 and IPv6 copies of one
+announcement carry the same value. Its byte order is the **sender's CPU byte
+order**: little-endian on x86, ARM and ARM64, big-endian on MIPSBE boards.[^m2ir-wire]
+Older readings (MAC-Telnet's version + TTL bytes plus a big-endian sequence number
+at bytes 2–3) describe the same 4 bytes seen on a long-running big-endian router.
+
+Parsers should skip the 4 header bytes and iterate TLVs from offset 4. If the
+counter matters, pick the byte order whose value × `discover-interval` is closest
+to the uptime (TLV 10).
 
 ## TLV Format
 
@@ -94,34 +101,77 @@ This is confirmed by the canonical reference implementations: MAC-Telnet's `prot
 
 **Value encoding varies by type and is the most common footgun:** string TLVs are UTF-8,
 IPv4/IPv6/MAC are raw network-order bytes, but **TLV 10 (uptime) is a little-endian
-uint32** — the *only* little-endian value in the entire protocol. Everything else
-multi-byte is big-endian/raw.
+uint32**, also on big-endian MIPSBE routers. TLV 9 (`aggregated-size`) is
+little-endian on x86 (unverified on big-endian CPUs), and the header counter follows
+the sender's CPU.[^m2ir-wire]
 
 ### TLV Type Reference
 
 | Type | Hex    | Name           | Value Format | Notes |
 |------|--------|----------------|-------------|-------|
 | 1    | 0x0001 | MAC Address    | 6 raw bytes (network order) | Per-interface MAC, not chassis MAC |
+| 2    | 0x0002 | Unpack: simple | empty (flag) | Neighbor unpacks aggregated packets; with 3 and 4, builds `unpack=`[^m2ir-wire][^packing] |
+| 3    | 0x0003 | Unpack: headers | empty (flag) | Also decompresses headers (`unpack=uncompress-headers`) |
+| 4    | 0x0004 | Unpack: all    | empty (flag) | Also decompresses payload (`unpack=uncompress-all`) |
 | 5    | 0x0005 | Identity       | UTF-8 string | Hostname — same across all interfaces |
-| 7    | 0x0007 | Version        | UTF-8 string | e.g. `7.18 (stable)`, `7.22rc1` |
-| 8    | 0x0008 | Platform       | UTF-8 string | Usually `MikroTik` |
-| 10   | 0x000a | Uptime         | 4 bytes **LE** uint32 | Seconds since boot — the only little-endian value |
+| 7    | 0x0007 | Version        | UTF-8 string | Format varies by version — see below |
+| 8    | 0x0008 | Platform       | UTF-8 string | `MikroTik`, or the branding package's name |
+| 9    | 0x0009 | Aggregated size | 4 bytes **LE** uint32 (x86) | `/ip/packing` `aggregated-size`; sent only with TLV 2 |
+| 10   | 0x000a | Uptime         | 4 bytes **LE** uint32 | Seconds since boot; LE on every CPU |
 | 11   | 0x000b | Software ID    | UTF-8 string | License identifier |
 | 12   | 0x000c | Board          | UTF-8 string | e.g. `RB4011iGS+5HacQ2HnD`, `CHR` |
-| 14   | 0x000e | Unpack         | 1 byte | Neighbor's `/ip/packing` unpacking setting, shown as `unpack=` in `/ip/neighbor`[^packing]; byte values not grounded[^m2ir-mndp] |
-| 15   | 0x000f | IPv6 Address   | 16 raw bytes | Link-local or global IPv6 |
-| 16   | 0x0010 | Interface Name | UTF-8 string | Sending interface on the router (e.g. `ether1`) |
+| 14   | 0x000e | IPv6 enabled   | 1 byte | `01` IPv6 enabled, `00` disabled; shown as `ipv6=` in `/ip/neighbor`. **Not** "unpack"[^m2ir-wire][^changelog-718] |
+| 15   | 0x000f | IPv6 Address   | 16 raw bytes | **Repeats** once per address: global first, then link-local |
+| 16   | 0x0010 | Interface Name | UTF-8 string | Sending interface; `bridge/port` (e.g. `bridge/ether1`) for a bridge port |
 | 17   | 0x0011 | IPv4 Address   | 4 raw bytes (network order) | IP of the sending interface |
+| 18   | 0x0012 | Running        | 1 byte bitmask | 7.20+: `00` none, `01` CAPsMAN, `02` CMR controller; shown as `running=`[^changelog-720][^quickchr-cmr] |
+| 19   | 0x0013 | TTL            | 1 byte | 7.24+: entry lifetime in seconds, `min(discover-interval × 4 + 1, 255)`; `00` = dying gasp[^changelog-724] |
 
-**Source of truth:** these type IDs match the canonical MAC-Telnet `protocol.c`
-(`MT_MNDPTYPE_*` enum) and the Wireshark MNDP dissector value table exactly. Note in
+**Source of truth:** types 1, 5, 7, 8, 10–12 and 15–17 match the canonical MAC-Telnet
+`protocol.c` (`MT_MNDPTYPE_*` enum) and the Wireshark MNDP dissector value table. Note in
 particular that **uptime is type 10, software-id is type 11, and board is type 12** —
 a common mistake is to off-by-one these (uptime=11/board=13), which silently misparses
-real RouterOS packets.
+real RouterOS packets. Types 2–4, 9, 18 and 19, and the meaning of 14, come from live
+captures across RouterOS 6.49–7.26beta5, one setting changed at a time.[^m2ir-wire] Both
+MAC-Telnet and Wireshark label type 14 "unpack"; that label is wrong.
 
-**Unknown values:** header bytes 0–1, the TLV 14 byte mapping, and any type not
-listed above are not grounded here. Skip unknown types by length, preserve their
-bytes when logging, and report observations to m2ir.[^m2ir-mndp]
+**Unknown values:** types 6 and 13 and anything above 19 were never seen in an
+announcement, and combined TLV 18 bits (CAPsMAN and CMR together) are untested.
+Skip unknown types by length, preserve their bytes when logging, and report
+observations to m2ir.[^m2ir-mndp]
+
+### Layout and Version Differences
+
+TLV order changes between versions, so **never parse by position**:
+
+| Versions | TLV order |
+|----------|-----------|
+| 6.49, 7.6–7.19 | 1, 5, 7, 8, 10, 11, 12, 14, [15], 16, 17 |
+| 7.20–7.23 | …, 16, 17, 18 |
+| 7.24 and later | 1, [2, 3, 4, 9], 5, 7, 8, 10, 11, 12, 14, 16, 18, 19, 17, 15… |
+
+TLVs 15 and 17 are absent when the interface has no such address, including right
+after boot. TLV 7 text also changes format:
+
+| Versions | Example |
+|----------|---------|
+| 6.x | `6.49.21 (long-term)` |
+| 7.6–7.13 | `7.12.1 (stable) Nov/17/2023 11:38:45` |
+| 7.14–7.24 | `7.24.6 (long-term) 2026-10-30 08:24:29` |
+| 7.25 and later | `7.25.1 2026-11-02 12:39:53` (no channel) |
+
+Take the version as the first space-separated token; don't require a channel.
+
+### Entry Lifetime and Dying Gasp (7.24+)
+
+A receiver keeps a neighbor for its TLV 19 TTL after the last announcement. With
+LLDP disabled on both sides, a 5 s interval (TTL 21) neighbor was gone 18–22 s after
+going silent, and a 30 s interval (TTL 121) neighbor 123–131 s after.[^m2ir-wire]
+A listener that caches neighbors should honor the TTL. For senders without TLV 19
+(before 7.24), fall back to a few times the expected interval.
+
+With `dying-gasp=yes`, a router going through a graceful reboot, shutdown or upgrade sends a short announcement of TLVs 1,
+19 = `00`, 17 and 15. Treat TTL 0 as "remove this neighbor now".[^changelog-724]
 
 ## Multi-Interface Behavior
 
@@ -236,9 +286,10 @@ IPv6 link-local addresses include a zone ID (e.g., `fe80::1%en0`) that identifie
 ## Parsing Example (TypeScript)
 
 ```typescript
-function parseMndpResponse(buf: Buffer): Record<string, string | number> {
-  let offset = 4; // skip 2-byte header (version, ttl) + 2-byte sequence
-  const fields: Record<string, string | number> = {};
+function parseMndpResponse(buf: Buffer): Record<string, string | number | boolean | string[]> {
+  let offset = 4; // skip the 4-byte announcement counter (sender's byte order)
+  const fields: Record<string, string | number | boolean | string[]> = {};
+  const ipv6: string[] = [];
 
   while (offset + 4 <= buf.length) {
     const tlvType = buf.readUInt16BE(offset);      // big-endian
@@ -255,21 +306,32 @@ function parseMndpResponse(buf: Buffer): Record<string, string | number> {
       case 5:  fields.identity = value.toString("utf8"); break;
       case 7:  fields.version = value.toString("utf8"); break;
       case 8:  fields.platform = value.toString("utf8"); break;
-      case 10: // Uptime — 4 bytes LITTLE-ENDIAN uint32 (the only LE value)
+      case 10: // Uptime — 4 bytes LITTLE-ENDIAN uint32 (on every CPU)
         if (tlvLen === 4) fields.uptime = value.readUInt32LE(0);
         break;
       case 11: fields.softwareId = value.toString("utf8"); break;
       case 12: fields.board = value.toString("utf8"); break;
-      case 15: // IPv6 — 16 bytes
-        if (tlvLen === 16) fields.ipv6 = formatIpv6(value);
+      case 14: // IPv6 enabled flag (NOT unpack)
+        if (tlvLen === 1) fields.ipv6Enabled = value[0] === 1;
+        break;
+      case 15: // IPv6 — 16 bytes; one TLV per address, so collect them
+        if (tlvLen === 16) ipv6.push(formatIpv6(value));
         break;
       case 16: fields.interfaceName = value.toString("utf8"); break;
       case 17: // IPv4 — 4 raw bytes
         if (tlvLen === 4) fields.ipv4 = `${value[0]}.${value[1]}.${value[2]}.${value[3]}`;
         break;
+      case 18: // Running bitmask (7.20+): 0x01 CAPsMAN, 0x02 CMR controller
+        if (tlvLen === 1) fields.running = value[0];
+        break;
+      case 19: // TTL seconds (7.24+); 0 = dying gasp, remove the neighbor
+        if (tlvLen === 1) fields.ttl = value[0];
+        break;
+      // 2/3/4 (empty unpack flags) and 9 (aggregated-size, LE) omitted for brevity
     }
     offset += tlvLen;
   }
+  if (ipv6.length) fields.ipv6 = ipv6;
   return fields;
 }
 ```
@@ -278,15 +340,16 @@ function parseMndpResponse(buf: Buffer): Record<string, string | number> {
 
 | Language | Source | Notes |
 |----------|--------|-------|
-| C | github.com/haakonnessjoen/MAC-Telnet (`protocol.c`, `protocol.h`) | **Canonical ground truth.** TLV enum + `ntohs` big-endian TLVs + `le32toh` uptime |
+| C | github.com/haakonnessjoen/MAC-Telnet (`protocol.c`, `protocol.h`) | **Canonical ground truth** for the original TLV enum, `ntohs` big-endian TLVs and `le32toh` uptime; its header and TLV 14 names are outdated |
 | C (dissector) | Wireshark `epan/dissectors/packet-mndp.c` | Official protocol dissector — confirms type IDs and `ENC_BIG_ENDIAN` TLVs |
 | Go | github.com/middelink/mikrotik-fwupdate | Secondary protocol cross-check |
 | Elixir | hex.pm mndp package | Confirms TLV type IDs |
 | Swift | Open-source macOS implementations | Confirms raw-byte MAC encoding |
 
-**Verified:** The TLV type IDs and byte order in this skill were cross-checked against
+**Verified:** The original TLV type IDs and TLV byte order were cross-checked against
 MAC-Telnet's `protocol.c` and the Wireshark dissector — both agree that TLV type/length
-are big-endian and that uptime (type 10) is the sole little-endian value.
+are big-endian and uptime (type 10) is little-endian. The header, TLVs 2–4, 9, 14, 18
+and 19, the layouts and the lifetime behavior were grounded on live captures.[^m2ir-wire]
 
 ## Related Skills
 
@@ -301,4 +364,11 @@ are big-endian and that uptime (type 10) is the sole little-endian value.
 - For RouterOS docs lookup: use the `rosetta` MCP server tools (`routeros_search`, `routeros_get_page`)
 
 [^packing]: MikroTik [IP Packing](https://manual.mikrotik.com/docs/system-information-and-utilities/ip-packing/): routers announce their unpacking setting through neighbor discovery and pack only toward a neighbor that unpacks; `unpack=none|simple|uncompress-headers|uncompress-all`.
-[^m2ir-mndp]: [tikoci/m2ir#3](https://github.com/tikoci/m2ir/issues/3) tracks grounding the TLV 14 values, unidentified TLVs and header bytes, and the packed-frame format.
+[^m2ir-mndp]: [tikoci/m2ir#3](https://github.com/tikoci/m2ir/issues/3) tracks the remaining unknowns: types 6/13/>19, combined TLV 18 bits, TLV 9 on big-endian CPUs, and the packed-frame format.
+[^m2ir-wire]: m2ir MNDP grounding lab, 2026-11-15: CHR labs on 6.49.23, 7.24.6, 7.25 and 7.26beta5 changing one setting per step, plus a field capture of RouterOS 6.49–7.26beta5 on ARM, ARM64 and MIPSBE hardware. Findings and evidence: [`work/2026-11-mndp-grounding/FINDINGS.md`](https://github.com/tikoci/m2ir/blob/main/work/2026-11-mndp-grounding/FINDINGS.md).
+[^quickchr-cmr]: quickchr CMR wire study, 7.26beta5: [FINDINGS.md → MNDP](https://github.com/tikoci/quickchr/blob/dd7e0ad99aa51acc79f086fe5d71e65efbb511eb/examples/cmr/FINDINGS.md#mndp).
+[^changelog-716]: RouterOS 7.16 changelog: "added discover-interval setting" and "changed default discover-interval setting from 60s to 30s".
+[^changelog-718]: RouterOS 7.18 changelog: "advertise IPv6 capabilities based on "Disable IPv6" global setting".
+[^changelog-720]: RouterOS 7.20 changelog: "report router as CAPsMAN on MNDP under running parameter".
+[^changelog-721]: RouterOS 7.21 changelog: "send out neighbor discovery immediately on IPv4/IPv6 changes".
+[^changelog-724]: RouterOS 7.24 changelog: "added "dying-gasp" feature for LLDP, MNDP, CDP that sends packet with "TTL=0" before graceful reboot/shutdown/upgrade" and "clear neighbor entry when receiving "dying-gasp" packet".
