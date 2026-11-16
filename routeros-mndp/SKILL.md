@@ -24,7 +24,7 @@ Every RouterOS device participates by default.
 | Port | 5678 |
 | IPv4 | Broadcast to 255.255.255.255:5678 |
 | IPv6 | Multicast to ff02::1 (all-nodes link-local) |
-| Copies | With IPv6 enabled, each announcement goes out as **both** an IPv4 broadcast and an IPv6 multicast with the same payload and counter; with `disable-ipv6=yes`, only the IPv4 broadcast[^m2ir-wire] |
+| Copies | Once IPv6 is up on the interface, each announcement goes out as **both** an IPv4 broadcast and an IPv6 multicast with the same payload and counter. Expect IPv4-only copies right after boot or after re-enabling IPv6, and with `disable-ipv6=yes` (7.26beta5 lab)[^m2ir-wire] |
 | Direction | Bidirectional — same port for send and receive |
 | Authentication | None — read-only discovery, no credentials |
 | Scope | Layer 2 broadcast domain (does not cross routers) |
@@ -35,7 +35,7 @@ Every RouterOS device participates by default.
 2. **All RouterOS devices on the LAN reply** — each sends a TLV-encoded announcement with identity, version, board, MAC, IP, uptime, etc.
 3. **Replies arrive asynchronously** — devices respond within milliseconds to seconds depending on network conditions
 4. **RouterOS devices also announce periodically** every `discover-interval` (a setting since 7.16, default 30 s; a fixed 60 s before[^changelog-716]) — passive listening works but is slow to populate
-5. **Some config changes announce at once** — identity, CAPsMAN, CMR, `/ip/packing`, IPv6 on/off, discovery `protocol`/`mode`/`discover-interval`/`lldp-med`, and address changes (7.21+[^changelog-721]). Service toggles (MAC server, RoMON, IP services) wait for the next interval[^m2ir-wire]
+5. **Some config changes announce at once** (observed on 7.26beta5) — identity, CAPsMAN, CMR, `/ip/packing` on that interface, IPv6 on/off, discovery `protocol`/`discover-interval`/`lldp-med`, `mode` returning to a transmitting value, and address changes (7.21+[^changelog-721]). Service toggles (MAC server, RoMON, IP services) wait for the next interval[^m2ir-wire]
 
 ### Refresh Packet (Discovery Request)
 
@@ -145,24 +145,24 @@ observations to m2ir.[^m2ir-mndp]
 
 TLV order changes between versions, so **never parse by position**:
 
-| Versions | TLV order |
-|----------|-----------|
+| Versions (observed) | TLV order |
+|---------------------|-----------|
 | 6.49, 7.6–7.19 | 1, 5, 7, 8, 10, 11, 12, 14, [15], 16, 17 |
 | 7.20–7.23 | 1, 5, 7, 8, 10, 11, 12, 14, [15], 16, 17, 18 |
 | 7.24beta1 | 1, 5, 7, 8, 10, 11, 12, 14, 16, 18, 17 |
-| 7.24.5 and later | 1, [2, 3, 4, 9], 5, 7, 8, 10, 11, 12, 14, 16, 18, 19, 17, 15… |
+| 7.24.5–7.26beta5 | 1, [2, 3, 4, 9], 5, 7, 8, 10, 11, 12, 14, 16, 18, 19, 17, 15… |
 
 TLVs 15 and 17 are absent when the interface has no such address, including right
-after boot. TLVs 2–4 and 9 were only tested on 7.24.5 and later. TLV 7 text also changes format:
+after boot. The packing TLVs' positions and meaning were tested only on x86 CHR 7.26beta5. TLV 7 text also changes format:
 
 | Versions | Example |
 |----------|---------|
 | 6.x | `6.49.21 (long-term)` |
 | 7.6–7.13 | `7.12.1 (stable) Nov/17/2023 11:38:45` |
 | 7.14–7.24 | `7.24.6 (long-term) 2026-10-30 08:24:29` |
-| 7.25 and later | `7.25.1 2026-11-02 12:39:53` (no channel) |
+| 7.25 and later (7.25beta5 seen) | `7.25.1 2026-11-02 12:39:53` (no channel) |
 
-Take the version as the first space-separated token; don't require a channel.
+The 7.13/7.14 boundary comes from a neighbor table, not a capture. Take the version as the first space-separated token; don't require a channel.
 
 ### Entry Lifetime and Dying Gasp (7.24+)
 
@@ -182,7 +182,7 @@ identity (TLV 5) or interface name (TLV 16), so match it to the cached entry by 
 
 ## Multi-Interface Behavior
 
-A RouterOS device with N active interfaces sends **N separate MNDP announcements** — one per interface. Each announcement has:
+A RouterOS device sends **one MNDP announcement per participating interface** (in `discover-interface-list`, with `mode` not `rx-only`). Each announcement has:
 
 - A **different MAC address** (the interface's own MAC)
 - A **different interface name** (TLV 16)
@@ -250,7 +250,7 @@ curl -u admin: http://<router-ip>/rest/ip/neighbor
 
 - MNDP has **no authentication** — any device on the broadcast domain can discover routers
 - Disable MNDP on untrusted interfaces (public-facing, guest networks)
-- RouterOS defaults to discovery on all interfaces — review and restrict
+- The setting default is `discover-interface-list=static` (every static interface; seen on a 7.26beta5 CHR) — check what your device's default configuration sets, then restrict
 - MNDP reveals: identity (hostname), version, board model, IPs, MACs, uptime
 - This information is useful for attackers — treat MNDP like an open SNMP community
 
@@ -285,13 +285,19 @@ When you send a broadcast to 255.255.255.255:5678, the OS delivers a copy back t
 
 ### IPv6 Multicast
 
-IPv6 MNDP uses `ff02::1` (all-nodes multicast). A router with IPv6 enabled sends every
+IPv6 MNDP uses `ff02::1` (all-nodes multicast). Once IPv6 is up, a router sends each
 announcement there as well as to the IPv4 broadcast, so a listener on both sockets gets
-each one twice: deduplicate on MAC (TLV 1) plus the header counter. A router with
-`disable-ipv6=yes` sends only the IPv4 copy.[^m2ir-wire]
+most announcements twice: deduplicate on MAC (TLV 1) plus the header counter. Don't
+depend on the IPv6 copy: it is missing right after boot and with `disable-ipv6=yes`.[^m2ir-wire]
+
+IPv6 multicast needs its own `udp6` socket; `addMembership` on the `udp4` socket above
+fails. Name the interface to join on a specific link:
 
 ```typescript
-sock.addMembership("ff02::1");
+const sock6 = createSocket({ type: "udp6", reuseAddr: true, reusePort: true });
+sock6.bind(5678, "::", () => {
+  sock6.addMembership("ff02::1", "::%eth0"); // omit the 2nd arg to let the OS pick
+});
 ```
 
 IPv6 link-local addresses include a zone ID (e.g., `fe80::1%en0`) that identifies the receiving interface — useful topology information not available in IPv4.
@@ -299,6 +305,12 @@ IPv6 link-local addresses include a zone ID (e.g., `fe80::1%en0`) that identifie
 ## Parsing Example (TypeScript)
 
 ```typescript
+function formatIpv6(b: Buffer): string {
+  const groups: string[] = [];
+  for (let i = 0; i < 16; i += 2) groups.push(b.readUInt16BE(i).toString(16));
+  return groups.join(":"); // uncompressed; e.g. fe80:0:0:0:7e:d1ff:fe2a:671c
+}
+
 function parseMndpResponse(buf: Buffer): Record<string, string | number | boolean | string[]> {
   let offset = 4; // skip the 4-byte announcement counter (sender's byte order)
   const fields: Record<string, string | number | boolean | string[]> = {};
