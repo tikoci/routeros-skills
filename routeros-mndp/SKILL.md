@@ -25,7 +25,7 @@ varies by device, version and default configuration.
 | Port | 5678 |
 | IPv4 | Broadcast to 255.255.255.255:5678 |
 | IPv6 | Multicast to ff02::1 (all-nodes link-local) |
-| Copies | Once IPv6 is up on the interface, each announcement goes out as **both** an IPv4 broadcast and an IPv6 multicast with the same payload and counter. Expect IPv4-only copies right after boot or after re-enabling IPv6, and with `disable-ipv6=yes` (7.26beta5 lab)[^m2ir-wire] |
+| Copies | Every announcement goes out as an IPv4 broadcast. On 7.x it also goes out as an IPv6 multicast, with the same payload and counter, **when it carries TLV 15** (an IPv6 address). In the 7.26beta5 lab these were IPv4 only: the first two announcements after boot, every announcement while `disable-ipv6=yes`, and the first one after IPv6 was re-enabled. 6.49 sends the IPv6 copy only when the `ipv6` package is enabled, and without TLV 15[^m2ir-wire] |
 | Direction | Bidirectional — same port for send and receive |
 | Authentication | None — read-only discovery, no credentials |
 | Scope | Layer 2 broadcast domain (does not cross routers) |
@@ -288,10 +288,12 @@ When you send a broadcast to 255.255.255.255:5678, the OS delivers a copy back t
 
 ### IPv6 Multicast
 
-IPv6 MNDP uses `ff02::1` (all-nodes multicast). Once IPv6 is up, a router sends each
-announcement there as well as to the IPv4 broadcast, so a listener on both sockets gets
-most announcements twice: deduplicate on MAC (TLV 1) plus the header counter. Don't
-depend on the IPv6 copy: it is missing right after boot and with `disable-ipv6=yes`.[^m2ir-wire]
+IPv6 MNDP uses `ff02::1` (all-nodes multicast). On 7.x a router sends an announcement
+there, as well as to the IPv4 broadcast, when the announcement carries TLV 15. A listener
+on both sockets gets most announcements twice, so deduplicate on MAC (TLV 1) plus the
+header counter. Don't rely on the IPv6 copy alone. In the 7.26beta5 lab it was missing for
+the first two announcements after boot, for every announcement while `disable-ipv6=yes`,
+and for the first one after IPv6 was re-enabled.[^m2ir-wire]
 
 IPv6 multicast needs its own `udp6` socket; `addMembership` on the `udp4` socket above
 fails. Name the interface to join on a specific link:
