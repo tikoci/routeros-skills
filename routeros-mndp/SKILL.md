@@ -125,7 +125,7 @@ the sender's CPU.[^m2ir-wire]
 | 16   | 0x0010 | Interface Name | UTF-8 string | Sending interface; `bridge/port` (e.g. `bridge/ether1`) for a bridge port |
 | 17   | 0x0011 | IPv4 Address   | 4 raw bytes (network order) | IP of the sending interface |
 | 18   | 0x0012 | Running        | 1 byte | 7.20+: `00` none, `01` CAPsMAN, `02` CMR controller (seen singly; a bitmask is inferred, combined values unseen); shown as `running=`[^changelog-720][^quickchr-cmr] |
-| 19   | 0x0013 | TTL            | 1 byte | 7.24+: entry lifetime in seconds, `min(discover-interval × 4 + 1, 255)`, a minimum lifetime; `00` = dying gasp[^changelog-724] |
+| 19   | 0x0013 | TTL            | 1 byte | 7.24+: entry lifetime in seconds, `min(discover-interval × 4 + 1, 255)`, an approximate lifetime; `00` = dying gasp[^changelog-724] |
 
 **Source of truth:** types 1, 5, 7, 8, 10–12 and 15–17 match the canonical MAC-Telnet
 `protocol.c` (`MT_MNDPTYPE_*` enum) and the Wireshark MNDP dissector value table. Note in
@@ -164,11 +164,11 @@ Take the version as the first space-separated token; don't require a channel.
 
 ### Entry Lifetime and Dying Gasp (7.24+)
 
-A receiver keeps a neighbor for at least its TLV 19 TTL after the last announcement,
-then removes it on a later sweep. With only MNDP enabled, a TTL-21 neighbor was
-removed between about the TTL (age 18–22 s) and 20 s after it, and a TTL-121
-neighbor 2–17 s after it.[^m2ir-wire] A listener that caches neighbors can treat the TTL as the
-minimum lifetime. For senders without TLV 19 (before 7.24), fall back to a few times
+A receiver removes a silent neighbor at about its TLV 19 TTL after the last
+announcement, or up to about 20 s later. With only MNDP enabled, a TTL-21 neighbor
+was removed anywhere from age 18–22 s to about 20 s past the TTL, and a TTL-121
+neighbor 2–17 s past it.[^m2ir-wire] A listener that caches neighbors can expire them at
+the TTL; RouterOS's own `/ip/neighbor` may keep them a little longer. For senders without TLV 19 (before 7.24), fall back to a few times
 the expected interval.
 
 With `dying-gasp=yes`, a router going through a graceful reboot, shutdown or upgrade sends a short announcement of TLVs 1,
