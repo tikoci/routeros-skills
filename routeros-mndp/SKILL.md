@@ -33,7 +33,7 @@ varies by device, version and default configuration.
 ## How Discovery Works
 
 1. **Listener sends a request** — a small UDP datagram to 255.255.255.255:5678; `00 00 00 00 00 06 00 00` is the form to use (see below). The 9-byte forms in circulation get **no** reply
-2. **Every RouterOS device on the segment replies** to a broadcast request with an ordinary announcement (identity, version, board, MAC, IP, uptime, etc.). A unicast request draws a reply only from the router it is addressed to. Either way the reply is **broadcast** from port 5678 to 255.255.255.255:5678 (and usually `ff02::1`), so a listener must bind port 5678
+2. **Every RouterOS device announcing on the segment replies** to a broadcast request with an ordinary announcement. A reply is an announcement, so a router whose interface is left out of `discover-interface-list` or set to `mode=rx-only` sends none (see [Multi-Interface Behavior](#multi-interface-behavior)) (identity, version, board, MAC, IP, uptime, etc.). A unicast request draws a reply only from the router it is addressed to. Either way the reply is **broadcast** from port 5678 to 255.255.255.255:5678 (and usually `ff02::1`), so a listener must bind port 5678
 3. **Replies arrive after a random delay** — 21 ms to 1.96 s on the tested 7.x routers and 11 ms to 1.87 s on 6.49.23 (an observed range, not a measured bound); 7.x routers answer a burst of requests once[^m2ir-wire]
 4. **RouterOS devices also announce periodically** every `discover-interval` (a setting since 7.16, default 30 s; a fixed 60 s before[^changelog-716]) — passive listening works but is slow to populate
 5. **Some config changes announce at once** (observed on 7.26beta5) — identity, CAPsMAN, CMR, `/ip/packing` on that interface, IPv6 on/off, discovery `protocol`/`discover-interval`/`lldp-med`, `mode` returning to a transmitting value, and address changes (7.21+[^changelog-721]). Service toggles (MAC server, RoMON, IP services) wait for the next interval[^m2ir-wire]
@@ -198,8 +198,8 @@ TLV 19 is an approximate lifetime, not an exact expiry. In a 7.26beta5 lab with
 only MNDP enabled, the receiver's `/ip/neighbor` dropped a silent TTL-121 neighbor
 2–17 s after the TTL. A TTL-21 neighbor went at age 18–22 s in one run; in others it
 was still listed 8–15 s past the TTL and gone within about 20 s.[^m2ir-wire] A listener that caches
-neighbors can expire them at the TTL; RouterOS's own table may keep them a little
-longer. For senders without TLV 19 (before 7.24), fall back to a few times the
+neighbors can expire them at the TTL, unless that router's `discover-interval` was just
+shortened (see below); RouterOS's own table may keep them a little longer. For senders without TLV 19 (before 7.24), fall back to a few times the
 interval (60 s before 7.16, 30 s default after).
 
 Shortening `discover-interval` sends one triggered announcement, but the next periodic
@@ -436,10 +436,10 @@ and 19, the layouts and the lifetime behavior were grounded on live captures.[^m
 
 [^packing]: MikroTik [IP Packing](https://manual.mikrotik.com/docs/system-information-and-utilities/ip-packing/): routers announce their unpacking setting through neighbor discovery and pack only toward a neighbor that unpacks; `unpack=none|simple|uncompress-headers|uncompress-all`.
 [^m2ir-mndp]: [tikoci/m2ir#3](https://github.com/tikoci/m2ir/issues/3) tracks the remaining unknowns: type 13 and >19, other TLV 18 bits, TLV 9 on big-endian CPUs, TLV 14 on 7.21–7.25, WinBox's request bytes, and the packed-frame format.
-[^m2ir-wire]: m2ir MNDP grounding labs, 2026-11-15/16: CHR labs on 6.49.23, 7.24.6, 7.25 and 7.26beta5 changing one setting per step; a hub lab (6.49.23, 7.17.2, 7.18.2, 7.20.8 and two 7.26beta5 on one segment with the host as a station) for requests, TLV 14 and TLV 18; and a field capture of RouterOS 6.49–7.26beta5 on ARM, ARM64 and MIPSBE hardware. Findings and evidence: [`work/2026-11-mndp-grounding/FINDINGS.md`](https://github.com/tikoci/m2ir/blob/ad904b3464568fdf9047d832802ea69c08dcba83/work/2026-11-mndp-grounding/FINDINGS.md).
+[^m2ir-wire]: m2ir MNDP grounding labs, 2026-11-15/16: CHR labs on 6.49.23, 7.24.6, 7.25 and 7.26beta5 changing one setting per step; a hub lab (6.49.23, 7.17.2, 7.18.2, 7.20.8 and two 7.26beta5 on one segment with the host as a station) for requests, TLV 14 and TLV 18; and a field capture of RouterOS 6.49–7.26beta5 on ARM, ARM64 and MIPSBE hardware. Findings and evidence: [`work/2026-11-mndp-grounding/FINDINGS.md`](https://github.com/tikoci/m2ir/blob/d0b13b5e87c75db8be3592de7530c9c0effaade6/work/2026-11-mndp-grounding/FINDINGS.md).
 [^quickchr-cmr]: quickchr CMR wire study, 7.26beta5: [FINDINGS.md → MNDP](https://github.com/tikoci/quickchr/blob/dd7e0ad99aa51acc79f086fe5d71e65efbb511eb/examples/cmr/FINDINGS.md#mndp).
-[^changelog-716]: RouterOS 7.16 changelog: "added discover-interval setting" and "changed default discover-interval setting from 60s to 30s".
-[^changelog-718]: RouterOS 7.18 changelog: "advertise IPv6 capabilities based on "Disable IPv6" global setting".
-[^changelog-720]: RouterOS 7.20 changelog: "report router as CAPsMAN on MNDP under running parameter".
-[^changelog-721]: RouterOS 7.21 changelog: "send out neighbor discovery immediately on IPv4/IPv6 changes" and "fixed MNDP IPv6 status reporting".
-[^changelog-724]: RouterOS 7.24 changelog: "added "dying-gasp" feature for LLDP, MNDP, CDP that sends packet with "TTL=0" before graceful reboot/shutdown/upgrade" and "clear neighbor entry when receiving "dying-gasp" packet".
+[^changelog-716]: RouterOS [7.16 changelog](https://download.mikrotik.com/routeros/7.16/CHANGELOG): "added discover-interval setting" and "changed default discover-interval setting from 60s to 30s".
+[^changelog-718]: RouterOS [7.18 changelog](https://download.mikrotik.com/routeros/7.18/CHANGELOG): "advertise IPv6 capabilities based on "Disable IPv6" global setting".
+[^changelog-720]: RouterOS [7.20 changelog](https://download.mikrotik.com/routeros/7.20/CHANGELOG): "report router as "CAPsMAN" on MNDP under "running" parameter".
+[^changelog-721]: RouterOS [7.21 changelog](https://download.mikrotik.com/routeros/7.21/CHANGELOG): "send out neighbor discovery immediately on IPv4/IPv6 changes" and "fixed MNDP IPv6 status reporting".
+[^changelog-724]: RouterOS [7.24 changelog](https://download.mikrotik.com/routeros/7.24/CHANGELOG): "added "dying-gasp" feature for LLDP, MNDP, CDP that sends packet with "TTL=0" before graceful reboot/shutdown/upgrade" and "clear neighbor entry when receiving "dying-gasp" packet".
