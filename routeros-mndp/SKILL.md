@@ -124,7 +124,7 @@ the sender's CPU.[^m2ir-wire]
 | 15   | 0x000f | IPv6 Address   | 16 raw bytes | **Repeats** once per address: global first, then link-local |
 | 16   | 0x0010 | Interface Name | UTF-8 string | Sending interface; `bridge/port` (e.g. `bridge/ether1`) for a bridge port |
 | 17   | 0x0011 | IPv4 Address   | 4 raw bytes (network order) | IP of the sending interface |
-| 18   | 0x0012 | Running        | 1 byte bitmask | 7.20+: `00` none, `01` CAPsMAN, `02` CMR controller; shown as `running=`[^changelog-720][^quickchr-cmr] |
+| 18   | 0x0012 | Running        | 1 byte | 7.20+: `00` none, `01` CAPsMAN, `02` CMR controller (seen singly; a bitmask is inferred, combined values unseen); shown as `running=`[^changelog-720][^quickchr-cmr] |
 | 19   | 0x0013 | TTL            | 1 byte | 7.24+: entry lifetime in seconds, `min(discover-interval × 4 + 1, 255)`; `00` = dying gasp[^changelog-724] |
 
 **Source of truth:** types 1, 5, 7, 8, 10–12 and 15–17 match the canonical MAC-Telnet
@@ -321,7 +321,7 @@ function parseMndpResponse(buf: Buffer): Record<string, string | number | boolea
       case 17: // IPv4 — 4 raw bytes
         if (tlvLen === 4) fields.ipv4 = `${value[0]}.${value[1]}.${value[2]}.${value[3]}`;
         break;
-      case 18: // Running bitmask (7.20+): 0x01 CAPsMAN, 0x02 CMR controller
+      case 18: // Running (7.20+): 0x01 CAPsMAN, 0x02 CMR controller (bitmask inferred)
         if (tlvLen === 1) fields.running = value[0];
         break;
       case 19: // TTL seconds (7.24+); 0 = dying gasp, remove the neighbor
