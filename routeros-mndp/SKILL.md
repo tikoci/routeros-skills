@@ -33,7 +33,7 @@ varies by device, version and default configuration.
 ## How Discovery Works
 
 1. **Listener sends a request** — a small UDP datagram to 255.255.255.255:5678; `00 00 00 00 00 06 00 00` is the form to use (see below). The 9-byte forms in circulation get **no** reply
-2. **Every RouterOS device announcing on the segment replies** to a broadcast request with an ordinary announcement. A reply is an announcement, so a router whose interface is left out of `discover-interface-list` or set to `mode=rx-only` sends none (see [Multi-Interface Behavior](#multi-interface-behavior)) (identity, version, board, MAC, IP, uptime, etc.). A unicast request draws a reply only from the router it is addressed to. Either way the reply is **broadcast** from port 5678 to 255.255.255.255:5678 (and usually `ff02::1`), so a listener must bind port 5678
+2. **Every RouterOS device announcing on the segment replies** to a broadcast request with an ordinary announcement. A reply is an announcement, so a router sends none on an interface that doesn't participate in discovery, or while `mode=rx-only` (see [Multi-Interface Behavior](#multi-interface-behavior)) (identity, version, board, MAC, IP, uptime, etc.). A unicast request draws a reply only from the router it is addressed to. Either way the reply is **broadcast** from port 5678 to 255.255.255.255:5678 (and usually `ff02::1`), so a listener must bind port 5678
 3. **Replies arrive after a random delay** — 21 ms to 1.96 s on the tested 7.x routers and 11 ms to 1.87 s on 6.49.23 (an observed range, not a measured bound); 7.x routers answer a burst of requests once[^m2ir-wire]
 4. **RouterOS devices also announce periodically** every `discover-interval` (a setting since 7.16, default 30 s; a fixed 60 s before[^changelog-716]) — passive listening works but is slow to populate
 5. **Some config changes announce at once** (observed on 7.26beta5) — identity, CAPsMAN, CMR, `/ip/packing` on that interface, IPv6 on/off, discovery `protocol`/`discover-interval`/`lldp-med`, `mode` returning to a transmitting value, and address changes (7.21+[^changelog-721]). Service toggles (MAC server, RoMON, IP services) wait for the next interval[^m2ir-wire]
@@ -217,7 +217,7 @@ identity (TLV 5) or interface name (TLV 16), so match it to the cached entry by 
 
 ## Multi-Interface Behavior
 
-A RouterOS device sends **one MNDP announcement per participating interface** (in `discover-interface-list`, with `mode` not `rx-only`). Each announcement has:
+A RouterOS device sends **one MNDP announcement per participating interface** (with `mode` not `rx-only`). An interface participates if it is in `discover-interface-list`, or if its bridge or bonding master is: discovery runs on the individual ports, so listing a master enrolls all of them.[^nd-manual] Each announcement has:
 
 - A **different MAC address** (the interface's own MAC)
 - A **different interface name** (TLV 16)
@@ -263,7 +263,7 @@ Controls which interfaces participate in neighbor discovery:
 /ip/neighbor/discovery-settings/print
 
 # Announce every 10 s (7.16+, minimum 5s) and send a dying gasp on reboot (7.24+);
-# dying gasp only goes out on interfaces discover-interface-list already includes
+# dying gasp only goes out on interfaces that already participate in discovery
 /ip/neighbor/discovery-settings/set discover-interval=10s dying-gasp=yes
 
 # Disable MNDP on a specific interface (security hardening)
@@ -290,7 +290,7 @@ curl -u admin: http://<router-ip>/rest/ip/neighbor
 
 - MNDP has **no authentication** — any device on the broadcast domain can discover routers
 - Disable MNDP on untrusted interfaces (public-facing, guest networks)
-- Which interfaces participate is whatever `discover-interface-list` names. Values seen include `static` (a 7.26beta5 CHR) and `LAN` (defconf on SOHO devices), and older versions may have used `all`. It varies by device, version and default configuration, so read it on the actual router rather than assuming, then restrict
+- Which interfaces participate is whatever `discover-interface-list` names, plus the ports of any bridge or bond it names. Values seen include `static` (a 7.26beta5 CHR) and `LAN` (defconf on SOHO devices), and older versions may have used `all`. It varies by device, version and default configuration, so read it on the actual router rather than assuming, then restrict
 - MNDP reveals: identity (hostname), version, board model, IPs, MACs, uptime
 - This information is useful for attackers — treat MNDP like an open SNMP community
 
@@ -434,6 +434,7 @@ and 19, the layouts and the lifetime behavior were grounded on live captures.[^m
 
 - For RouterOS docs lookup: use the `rosetta` MCP server tools (`routeros_search`, `routeros_get_page`)
 
+[^nd-manual]: MikroTik [Neighbor Discovery](https://manual.mikrotik.com/docs/system-information-and-utilities/neighbor-discovery/#choose-which-interfaces-participate): "When a master interface (e.g. bonding or bridge) is included in the discovery interface list, all its slave interfaces will automatically participate in neighbor discovery."
 [^packing]: MikroTik [IP Packing](https://manual.mikrotik.com/docs/system-information-and-utilities/ip-packing/): routers announce their unpacking setting through neighbor discovery and pack only toward a neighbor that unpacks; `unpack=none|simple|uncompress-headers|uncompress-all`.
 [^m2ir-mndp]: [tikoci/m2ir#3](https://github.com/tikoci/m2ir/issues/3) tracks the remaining unknowns: type 13 and >19, other TLV 18 bits, TLV 9 on big-endian CPUs, TLV 14 on 7.21–7.25, WinBox's request bytes, and the packed-frame format.
 [^m2ir-wire]: m2ir MNDP grounding labs, 2026-11-15/16: CHR labs on 6.49.23, 7.24.6, 7.25 and 7.26beta5 changing one setting per step; a hub lab (6.49.23, 7.17.2, 7.18.2, 7.20.8 and two 7.26beta5 on one segment with the host as a station) for requests, TLV 14 and TLV 18; and a field capture of RouterOS 6.49–7.26beta5 on ARM, ARM64 and MIPSBE hardware. Findings and evidence: [`work/2026-11-mndp-grounding/FINDINGS.md`](https://github.com/tikoci/m2ir/blob/d0b13b5e87c75db8be3592de7530c9c0effaade6/work/2026-11-mndp-grounding/FINDINGS.md).
