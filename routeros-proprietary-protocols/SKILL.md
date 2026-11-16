@@ -87,7 +87,7 @@ through m2ir's [discovery guidance][discoveries].
 [m2ir-index]: https://raw.githubusercontent.com/tikoci/m2ir/main/profiles/README.md
 [winbox-guide]: https://raw.githubusercontent.com/tikoci/m2ir/main/profiles/winbox-ipc/README.md
 [m2ir-mndp]: https://github.com/tikoci/m2ir/issues/3
-[m2ir-mndp-wire]: https://github.com/tikoci/m2ir/blob/270bfbbcd49867233481c67c3e32417c3bfed444/work/2026-11-mndp-grounding/FINDINGS.md
+[m2ir-mndp-wire]: https://github.com/tikoci/m2ir/blob/ad904b3464568fdf9047d832802ea69c08dcba83/work/2026-11-mndp-grounding/FINDINGS.md
 [m2ir-sources]: https://raw.githubusercontent.com/tikoci/m2ir/main/work/2026-05-winbox-nova-sources/winbox-nova-source-inventory.md
 [m2ir-dude]: https://raw.githubusercontent.com/tikoci/m2ir/main/profiles/dude-on-disk/profile.yaml
 [m2ir-chr]: https://raw.githubusercontent.com/tikoci/m2ir/main/work/2026-10-chr-extraction/README.md

@@ -32,38 +32,39 @@ varies by device, version and default configuration.
 
 ## How Discovery Works
 
-1. **Listener sends a refresh packet** — a small UDP datagram to 255.255.255.255:5678 (MAC-Telnet sends a minimal 4-byte zeroed header; a 9-byte form also works — see below)
-2. **All RouterOS devices on the LAN reply** — each sends a TLV-encoded announcement with identity, version, board, MAC, IP, uptime, etc.
-3. **Replies arrive asynchronously** — devices respond within milliseconds to seconds depending on network conditions
+1. **Listener sends a request** — a small UDP datagram to 255.255.255.255:5678; `00 00 00 00 00 06 00 00` is the form to use (see below). The 9-byte forms in circulation get **no** reply
+2. **Every RouterOS device on the segment replies** with an ordinary announcement (identity, version, board, MAC, IP, uptime, etc.), **broadcast** from port 5678 to 255.255.255.255:5678 (and `ff02::1` when IPv6 is up), even when the request was unicast — so a listener must bind port 5678
+3. **Replies arrive after a random delay** — 21 ms to about 2 s per router in a 6.49.23–7.26beta5 lab; 7.x routers answer a burst of requests once[^m2ir-wire]
 4. **RouterOS devices also announce periodically** every `discover-interval` (a setting since 7.16, default 30 s; a fixed 60 s before[^changelog-716]) — passive listening works but is slow to populate
 5. **Some config changes announce at once** (observed on 7.26beta5) — identity, CAPsMAN, CMR, `/ip/packing` on that interface, IPv6 on/off, discovery `protocol`/`discover-interval`/`lldp-med`, `mode` returning to a transmitting value, and address changes (7.21+[^changelog-721]). Service toggles (MAC server, RoMON, IP services) wait for the next interval[^m2ir-wire]
 
-### Refresh Packet (Discovery Request)
+### Request Packet (Discovery Request)
 
-A short packet that triggers immediate replies from all RouterOS devices on the broadcast
-domain. The minimal form is just a zeroed 4-byte header — this is exactly what MAC-Telnet
-sends (`unsigned int message = 0;`):
+A request asks every router on the segment to announce now. RouterOS treats a payload
+as a request when its 4-byte header is `00 00 00 00` **or** it carries TLV 6 (empty).
+A payload whose TLVs do not end exactly at the end of the datagram is dropped whole: no
+reply and no neighbor row. These held on 6.49.23, 7.17.2, 7.18.2, 7.20.8 and 7.26beta5
+in every round:[^m2ir-wire]
 
-```text
-Offset  Length  Value       Field
-0       4       00 00 00 00 header (zero in a request; a counter in announcements — see below)
-```
+| Payload (hex) | Bytes | Replies | Requester listed in 7.x `/ip/neighbor` |
+|---------------|-------|---------|----------------------------------------|
+| `00 00 00 00 00 06 00 00` (header 0 + empty TLV 6) | 8 | yes | **no** |
+| `00 00 00 00` (MAC-Telnet's `unsigned int message = 0;`) | 4 | yes | yes, empty identity, the host's IPv4 |
+| `00 00 00 00 00 06 00 00 00` (TLV 6 + trailing pad) | 9 | **no** | no |
+| `00` × 9 | 9 | **no** | no |
+| `01 00 00 00` (non-zero header, no TLV 6) | 4 | no | yes |
 
-As raw bytes (minimal): `00 00 00 00`
-
-Some implementations append an explicit refresh TLV (type 6, length 0). The complete
-header + empty-TLV form is 8 bytes (`00 00 00 00 00 06 00 00`); some implementations add
-a trailing zero byte (non-semantic padding), giving 9 bytes. RouterOS accepts all forms:
+Use the 8-byte form: every router answers, and the scanner doesn't add itself to
+the neighbor tables. On 7.x receivers, any well-formed payload without TLV 6, request
+or not, creates or refreshes a neighbor row for its sender (6.49 was not checked). Requests over IPv6 to `ff02::1` also drew replies from every router with
+IPv6. WinBox's own request bytes were not captured.
 
 ```text
 Offset  Length  Value       Field
 0       4       00 00 00 00 header
-4       2       0x0006      TLV type = 6 (refresh)   ← big-endian
-6       2       0x0000      TLV length = 0
-8       1       0x00        optional trailing pad (non-semantic)
+4       2       0x0006      TLV type = 6 (request)   ← big-endian
+6       2       0x0000      TLV length = 0 (nothing follows)
 ```
-
-As raw bytes (9-byte form): `00 00 00 00 00 06 00 00 00`
 
 ### Response Packet
 
@@ -73,9 +74,10 @@ Offset  Length  Field
 4+      TLV[]   zero or more TLV records (see below)
 ```
 
-The header is one 32-bit counter of announcements sent on that interface (periodic
-and triggered). It restarts at boot, and the IPv4 and IPv6 copies of one
-announcement carry the same value. Its byte order is the **sender's CPU byte
+The header is one 32-bit counter of announcements sent on that interface (periodic,
+triggered, and replies to requests). It restarts at 0 on boot, so the first announcement
+after a reboot has header `00 00 00 00` and doubles as a request: its neighbors answer
+it. The IPv4 and IPv6 copies of one announcement carry the same value. Its byte order is the **sender's CPU byte
 order**: little-endian on x86, ARM and ARM64, big-endian on MIPSBE boards.[^m2ir-wire]
 Older readings (MAC-Telnet's version + TTL bytes plus a big-endian sequence number
 at bytes 2–3) describe the same 4 bytes seen on a long-running big-endian router.
@@ -110,35 +112,52 @@ the sender's CPU.[^m2ir-wire]
 
 | Type | Hex    | Name           | Value Format | Notes |
 |------|--------|----------------|-------------|-------|
-| 1    | 0x0001 | MAC Address    | 6 raw bytes (network order) | Per-interface MAC, not chassis MAC |
+| 1    | 0x0001 | MAC Address    | 6 raw bytes (network order) | Per-interface MAC, not chassis MAC. RouterOS's own neighbor row uses the frame's Ethernet source instead (see below) |
 | 2    | 0x0002 | Unpack: simple | empty (flag) | Neighbor unpacks aggregated packets; with 3 and 4, builds `unpack=`[^m2ir-wire][^packing] |
 | 3    | 0x0003 | Unpack: headers | empty (flag) | Also decompresses headers (`unpack=uncompress-headers`) |
 | 4    | 0x0004 | Unpack: all    | empty (flag) | Also decompresses payload (`unpack=uncompress-all`) |
 | 5    | 0x0005 | Identity       | UTF-8 string | Hostname — same across all interfaces |
+| 6    | 0x0006 | Request        | empty (flag) | Only in requests: "announce now". Never in an announcement |
 | 7    | 0x0007 | Version        | UTF-8 string | Format varies by version — see below |
 | 8    | 0x0008 | Platform       | UTF-8 string | `MikroTik`, or the branding package's name |
 | 9    | 0x0009 | Aggregated size | 4 bytes **LE** uint32 (x86) | `/ip/packing` `aggregated-size`; sent only with TLV 2 |
 | 10   | 0x000a | Uptime         | 4 bytes **LE** uint32 | Seconds since boot; LE on every CPU |
 | 11   | 0x000b | Software ID    | UTF-8 string | License identifier |
 | 12   | 0x000c | Board          | UTF-8 string | e.g. `RB4011iGS+5HacQ2HnD`, `CHR` |
-| 14   | 0x000e | IPv6 enabled   | 1 byte | `01` IPv6 enabled, `00` disabled; shown as `ipv6=` in `/ip/neighbor`. **Not** "unpack"[^m2ir-wire][^changelog-718] |
+| 14   | 0x000e | IPv6 enabled   | 1 byte | `01` enabled, `00` disabled, but what it tracks varies by version (below); shown as `ipv6=` in `/ip/neighbor`. **Not** "unpack"[^m2ir-wire][^changelog-718] |
 | 15   | 0x000f | IPv6 Address   | 16 raw bytes | **Repeats** once per address: global first, then link-local |
 | 16   | 0x0010 | Interface Name | UTF-8 string | Sending interface; `bridge/port` (e.g. `bridge/ether1`) for a bridge port |
 | 17   | 0x0011 | IPv4 Address   | 4 raw bytes (network order) | IP of the sending interface |
-| 18   | 0x0012 | Running        | 1 byte | 7.20+: `00` none, `01` CAPsMAN, `02` CMR controller (seen singly; a bitmask is inferred, combined values unseen); shown as `running=`[^changelog-720][^quickchr-cmr] |
+| 18   | 0x0012 | Running        | 1 byte | 7.20+ bitmask: `01` CAPsMAN, `02` CMR controller, `03` both, `00` none. Receivers print `running=capsman`, `cmr` or `capsman,cmr` and omit the field for `00`[^m2ir-wire][^changelog-720][^quickchr-cmr] |
 | 19   | 0x0013 | TTL            | 1 byte | 7.24+ (not in 7.24beta1): entry lifetime in seconds, `min(discover-interval × 4 + 1, 255)`, an approximate lifetime; `00` = dying gasp[^changelog-724] |
 
 **Source of truth:** types 1, 5, 7, 8, 10–12 and 15–17 match the canonical MAC-Telnet
 `protocol.c` (`MT_MNDPTYPE_*` enum) and the Wireshark MNDP dissector value table. Note in
 particular that **uptime is type 10, software-id is type 11, and board is type 12** —
 a common mistake is to off-by-one these (uptime=11/board=13), which silently misparses
-real RouterOS packets. Types 2–4, 9, 18 and 19, and the meaning of 14, come from live
+real RouterOS packets. Types 2–4, 6, 9, 18 and 19, and the meaning of 14, come from live
 captures across RouterOS 6.49–7.26beta5, one setting changed at a time.[^m2ir-wire] Both
 MAC-Telnet and Wireshark label type 14 "unpack"; that label is wrong.
 
-**Unknown values:** types 6 and 13 and anything above 19 were never seen in an
-announcement. Combined TLV 18 bits (CAPsMAN and CMR together), TLV 9 on big-endian
-CPUs, and packing TLVs on 6.x and 7.x before 7.24 are untested.
+**TLV 14 by version.** Before 7.18 the flag meant "IPv6 present". Since 7.18 it
+follows `/ipv6/settings disable-ipv6`, but on 7.18.2 and 7.20.8 only after a
+reboot:[^m2ir-wire][^changelog-718][^changelog-721]
+
+| Sender | `disable-ipv6=yes` | Then reboot | `disable-ipv6=no` |
+|--------|--------------------|-------------|-------------------|
+| 6.49.23 | — (flag follows the `ipv6` package: `00` disabled, `01` enabled) | — | — |
+| 7.17.2 | stays `01` | stays `01` | `01` |
+| 7.18.2, 7.20.8 | stays `01` | `00` | `01` at once |
+| 7.26beta5 | `00` at once | `00` | `01` at once |
+
+7.21's "fixed MNDP IPv6 status reporting" is the likely boundary for live updates;
+7.21–7.25 were not tested. So `ipv6=true` from a 7.17–7.20 sender does not prove IPv6
+is on. On every version, `disable-ipv6=yes` drops the TLV 15 addresses at once, so
+their absence is the better signal.
+
+**Unknown values:** type 13 and anything above 19 were never seen. Other TLV 18 bits
+(services beyond CAPsMAN and CMR), TLV 9 on big-endian CPUs, and packing TLVs on 6.x
+and 7.x before 7.24 are untested.
 Skip unknown types by length, preserve their bytes when logging, and report
 observations to m2ir.[^m2ir-mndp]
 
@@ -175,6 +194,12 @@ neighbors can expire them at the TTL; RouterOS's own table may keep them a littl
 longer. For senders without TLV 19 (before 7.24), fall back to a few times the
 interval (60 s before 7.16, 30 s default after).
 
+Shortening `discover-interval` sends one triggered announcement, but the next periodic
+one may still wait for the old interval. After 2 h → 10 s, none of five routers
+(7.17.2–7.26beta5) sent a periodic announcement in the next 40 s; 9 h → 5 s showed the
+same.[^m2ir-wire] The cause (the pending timer not being rescheduled) is inferred. Until
+then a receiver can go past the new, shorter TTL without hearing from that router.
+
 With `dying-gasp=yes` (seen off on a fresh 7.26beta5 CHR; check `/ip/neighbor/discovery-settings`
 on the actual router before relying on it), a router going through a graceful
 reboot, shutdown or upgrade sends a short announcement: the header (the counter
@@ -193,6 +218,12 @@ A RouterOS device sends **one MNDP announcement per participating interface** (i
 
 This is expected behavior, not a bug. When displaying results, **group by identity** to avoid showing the same router N times. Use MAC address to disambiguate when the identity is the factory default (`MikroTik`).
 
+RouterOS's own `/ip/neighbor` keys a row on the frame's Ethernet source MAC, not TLV 1,
+and takes `address4` from TLV 17, or from the IP source address when TLV 17 is missing
+(seen on 7.17.2 and 7.26beta5 with a spoofed packet).[^m2ir-wire] A UDP listener can't
+see the Ethernet source, so TLV 1 is the best it has; on real routers the two match. Do
+fall back to the IP source when TLV 17 is absent, as it is right after boot.
+
 ## Timing and Reliability
 
 | Scenario | Expected Response Time |
@@ -202,7 +233,7 @@ This is expected behavior, not a bug. When displaying results, **group by identi
 | ZeroTier / tunnel overlay | 5-20 seconds |
 | Satellite / high-latency | 10-30 seconds |
 
-**Best practice:** Send multiple refresh packets during the listen window (every 5 seconds, matching WinBox behavior). Devices that miss the first broadcast due to packet loss, WiFi power-save, or tunnel relay latency will respond to subsequent refreshes.
+**Best practice:** Send several requests during the listen window, a few seconds apart, and keep listening at least 2 s after the last one (routers reply after a random delay of up to about 2 s). Requests close together (50–200 ms) drew one reply per 7.x router, so spacing them out is what helps. Devices that miss the first broadcast due to packet loss, WiFi power-save, or tunnel relay latency will respond to later requests.
 
 **Never interpret missing devices as offline.** A short scan window produces partial results. Increase the timeout before concluding a device is unreachable.
 
@@ -284,7 +315,7 @@ setsockopt(fd, SOL_SOCKET, SO_BROADCAST, &opt, sizeof(opt));
 
 ### Self-Echo Filtering
 
-When you send a broadcast to 255.255.255.255:5678, the OS delivers a copy back to your own socket. Filter out packets from your own IP addresses to avoid processing your own refresh as a neighbor response. The looped-back packet will have no MNDP TLVs (it's your 9-byte refresh, not a device announcement).
+When you send a broadcast to 255.255.255.255:5678, the OS delivers a copy back to your own socket. Filter out packets from your own IP addresses to avoid processing your own request as a neighbor response. The looped-back packet carries no announcement TLVs (only your request's header and TLV 6).
 
 ### IPv6 Multicast
 
@@ -351,7 +382,7 @@ function parseMndpResponse(buf: Buffer): Record<string, string | number | boolea
       case 17: // IPv4 — 4 raw bytes
         if (tlvLen === 4) fields.ipv4 = `${value[0]}.${value[1]}.${value[2]}.${value[3]}`;
         break;
-      case 18: // Running (7.20+): 0x01 CAPsMAN, 0x02 CMR controller (bitmask inferred)
+      case 18: // Running (7.20+), bitmask: 0x01 CAPsMAN, 0x02 CMR controller
         if (tlvLen === 1) fields.running = value[0];
         break;
       case 19: // TTL seconds (7.24+); 0 = dying gasp, remove the neighbor
@@ -394,11 +425,11 @@ and 19, the layouts and the lifetime behavior were grounded on live captures.[^m
 - For RouterOS docs lookup: use the `rosetta` MCP server tools (`routeros_search`, `routeros_get_page`)
 
 [^packing]: MikroTik [IP Packing](https://manual.mikrotik.com/docs/system-information-and-utilities/ip-packing/): routers announce their unpacking setting through neighbor discovery and pack only toward a neighbor that unpacks; `unpack=none|simple|uncompress-headers|uncompress-all`.
-[^m2ir-mndp]: [tikoci/m2ir#3](https://github.com/tikoci/m2ir/issues/3) tracks the remaining unknowns: types 6/13/>19, combined TLV 18 bits, TLV 9 on big-endian CPUs, and the packed-frame format.
-[^m2ir-wire]: m2ir MNDP grounding lab, 2026-11-15: CHR labs on 6.49.23, 7.24.6, 7.25 and 7.26beta5 changing one setting per step, plus a field capture of RouterOS 6.49–7.26beta5 on ARM, ARM64 and MIPSBE hardware. Findings and evidence: [`work/2026-11-mndp-grounding/FINDINGS.md`](https://github.com/tikoci/m2ir/blob/270bfbbcd49867233481c67c3e32417c3bfed444/work/2026-11-mndp-grounding/FINDINGS.md).
+[^m2ir-mndp]: [tikoci/m2ir#3](https://github.com/tikoci/m2ir/issues/3) tracks the remaining unknowns: type 13 and >19, other TLV 18 bits, TLV 9 on big-endian CPUs, TLV 14 on 7.21–7.25, WinBox's request bytes, and the packed-frame format.
+[^m2ir-wire]: m2ir MNDP grounding labs, 2026-11-15/16: CHR labs on 6.49.23, 7.24.6, 7.25 and 7.26beta5 changing one setting per step; a hub lab (6.49.23, 7.17.2, 7.18.2, 7.20.8 and two 7.26beta5 on one segment with the host as a station) for requests, TLV 14 and TLV 18; and a field capture of RouterOS 6.49–7.26beta5 on ARM, ARM64 and MIPSBE hardware. Findings and evidence: [`work/2026-11-mndp-grounding/FINDINGS.md`](https://github.com/tikoci/m2ir/blob/ad904b3464568fdf9047d832802ea69c08dcba83/work/2026-11-mndp-grounding/FINDINGS.md).
 [^quickchr-cmr]: quickchr CMR wire study, 7.26beta5: [FINDINGS.md → MNDP](https://github.com/tikoci/quickchr/blob/dd7e0ad99aa51acc79f086fe5d71e65efbb511eb/examples/cmr/FINDINGS.md#mndp).
 [^changelog-716]: RouterOS 7.16 changelog: "added discover-interval setting" and "changed default discover-interval setting from 60s to 30s".
 [^changelog-718]: RouterOS 7.18 changelog: "advertise IPv6 capabilities based on "Disable IPv6" global setting".
 [^changelog-720]: RouterOS 7.20 changelog: "report router as CAPsMAN on MNDP under running parameter".
-[^changelog-721]: RouterOS 7.21 changelog: "send out neighbor discovery immediately on IPv4/IPv6 changes".
+[^changelog-721]: RouterOS 7.21 changelog: "send out neighbor discovery immediately on IPv4/IPv6 changes" and "fixed MNDP IPv6 status reporting".
 [^changelog-724]: RouterOS 7.24 changelog: "added "dying-gasp" feature for LLDP, MNDP, CDP that sends packet with "TTL=0" before graceful reboot/shutdown/upgrade" and "clear neighbor entry when receiving "dying-gasp" packet".
