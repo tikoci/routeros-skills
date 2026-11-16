@@ -25,7 +25,7 @@ varies by device, version and default configuration.
 | Port | 5678 |
 | IPv4 | Broadcast to 255.255.255.255:5678 |
 | IPv6 | Multicast to ff02::1 (all-nodes link-local) |
-| Copies | Every announcement goes out as an IPv4 broadcast. Most also go out as an IPv6 multicast with the same payload and counter, but not all: on 7.26beta5 the first two after boot and every one while `disable-ipv6=yes` were IPv4 only. The IPv6 copy usually carries TLV 15, but one was captured without it just after IPv6 was re-enabled. 6.49 sends the IPv6 copy only with the `ipv6` package enabled, and never TLV 15[^m2ir-wire] |
+| Copies | Every announcement goes out as an IPv4 broadcast. Most also go out as an IPv6 multicast with the same payload and counter, but not all. On 7.17–7.26beta5 these were IPv4 only: 0 to 2 announcements after boot (12 of 13 boot announcements), and every one while `disable-ipv6=yes`. On 7.x an announcement with TLV 15 always had the IPv6 copy, but not the reverse: one IPv6 copy without TLV 15 was captured just after IPv6 was re-enabled. 6.49 sends the IPv6 copy only with the `ipv6` package enabled, and never TLV 15[^m2ir-wire] |
 | Direction | Bidirectional — same port for send and receive |
 | Authentication | None — read-only discovery, no credentials |
 | Scope | Layer 2 broadcast domain (does not cross routers) |
@@ -154,7 +154,7 @@ reboot:[^m2ir-wire][^changelog-718][^changelog-721]
 7.21–7.25 were not tested. So `ipv6=true` from a 7.17–7.20 sender does not prove IPv6
 is on. On the four tested 7.x releases, `disable-ipv6=yes` dropped the TLV 15 addresses
 at once, so their absence is the better signal on 7.x, though not proof on its own: 6.49
-never sends TLV 15, and 7.x omits it right after boot.
+never sends TLV 15, and 7.x usually omits it for the first announcements after boot.
 
 **Unknown values:** type 13 and anything above 19 were never seen. Other TLV 18 bits
 (services beyond CAPsMAN and CMR), TLV 9 on big-endian CPUs, and packing TLVs on 6.x
@@ -223,7 +223,7 @@ RouterOS's own `/ip/neighbor` keys a row on the frame's Ethernet source MAC, not
 and takes `address4` from TLV 17, or from the IP source address when TLV 17 is missing
 (seen on 7.17.2 and 7.26beta5 with a spoofed packet).[^m2ir-wire] A UDP listener can't
 see the Ethernet source, so TLV 1 is the best it has; on real routers the two match. Do
-fall back to the IP source when TLV 17 is absent, as it is right after boot.
+fall back to the IP source when TLV 17 is absent, as it can be right after boot.
 
 ## Timing and Reliability
 
@@ -321,8 +321,9 @@ When you send a broadcast to 255.255.255.255:5678, the OS delivers a copy back t
 IPv6 MNDP uses `ff02::1` (all-nodes multicast). Most announcements also go there, as
 well as to the IPv4 broadcast, so a listener on both sockets gets them twice:
 deduplicate on MAC (TLV 1) plus the header counter. Don't rely on the IPv6 copy alone.
-On 7.26beta5 it was missing for the first two announcements after boot and for every
-announcement while `disable-ipv6=yes`.[^m2ir-wire]
+On 7.17–7.26beta5 it was missing for 0 to 2 announcements after boot, for every
+announcement while `disable-ipv6=yes`, and sometimes for the first one after IPv6 was
+re-enabled.[^m2ir-wire]
 
 IPv6 multicast needs its own `udp6` socket; `addMembership` on the `udp4` socket above
 fails. Name the interface to join on a specific link:
