@@ -25,7 +25,7 @@ varies by device, version and default configuration.
 | Port | 5678 |
 | IPv4 | Broadcast to 255.255.255.255:5678 |
 | IPv6 | Multicast to ff02::1 (all-nodes link-local) |
-| Copies | Every announcement goes out as an IPv4 broadcast. On 7.x it also goes out as an IPv6 multicast, with the same payload and counter, **when it carries TLV 15** (an IPv6 address). In the 7.26beta5 lab these were IPv4 only: the first two announcements after boot, every announcement while `disable-ipv6=yes`, and the first one after IPv6 was re-enabled. 6.49 sends the IPv6 copy only when the `ipv6` package is enabled, and without TLV 15[^m2ir-wire] |
+| Copies | Every announcement goes out as an IPv4 broadcast. Most also go out as an IPv6 multicast with the same payload and counter, but not all: on 7.26beta5 the first two after boot and every one while `disable-ipv6=yes` were IPv4 only. The IPv6 copy usually carries TLV 15, but one was captured without it just after IPv6 was re-enabled. 6.49 sends the IPv6 copy only with the `ipv6` package enabled, and never TLV 15[^m2ir-wire] |
 | Direction | Bidirectional — same port for send and receive |
 | Authentication | None — read-only discovery, no credentials |
 | Scope | Layer 2 broadcast domain (does not cross routers) |
@@ -33,8 +33,8 @@ varies by device, version and default configuration.
 ## How Discovery Works
 
 1. **Listener sends a request** — a small UDP datagram to 255.255.255.255:5678; `00 00 00 00 00 06 00 00` is the form to use (see below). The 9-byte forms in circulation get **no** reply
-2. **Every RouterOS device on the segment replies** with an ordinary announcement (identity, version, board, MAC, IP, uptime, etc.), **broadcast** from port 5678 to 255.255.255.255:5678 (and `ff02::1` when IPv6 is up), even when the request was unicast — so a listener must bind port 5678
-3. **Replies arrive after a random delay** — 21 ms to about 2 s per router in a 6.49.23–7.26beta5 lab; 7.x routers answer a burst of requests once[^m2ir-wire]
+2. **Every RouterOS device on the segment replies** to a broadcast request with an ordinary announcement (identity, version, board, MAC, IP, uptime, etc.). A unicast request draws a reply only from the router it is addressed to. Either way the reply is **broadcast** from port 5678 to 255.255.255.255:5678 (and usually `ff02::1`), so a listener must bind port 5678
+3. **Replies arrive after a random delay** — 21 ms to 1.96 s on the tested 7.x routers and 11 ms to 1.87 s on 6.49.23 (an observed range, not a measured bound); 7.x routers answer a burst of requests once[^m2ir-wire]
 4. **RouterOS devices also announce periodically** every `discover-interval` (a setting since 7.16, default 30 s; a fixed 60 s before[^changelog-716]) — passive listening works but is slow to populate
 5. **Some config changes announce at once** (observed on 7.26beta5) — identity, CAPsMAN, CMR, `/ip/packing` on that interface, IPv6 on/off, discovery `protocol`/`discover-interval`/`lldp-med`, `mode` returning to a transmitting value, and address changes (7.21+[^changelog-721]). Service toggles (MAC server, RoMON, IP services) wait for the next interval[^m2ir-wire]
 
@@ -152,8 +152,9 @@ reboot:[^m2ir-wire][^changelog-718][^changelog-721]
 
 7.21's "fixed MNDP IPv6 status reporting" is the likely boundary for live updates;
 7.21–7.25 were not tested. So `ipv6=true` from a 7.17–7.20 sender does not prove IPv6
-is on. On every version, `disable-ipv6=yes` drops the TLV 15 addresses at once, so
-their absence is the better signal.
+is on. On the four tested 7.x releases, `disable-ipv6=yes` dropped the TLV 15 addresses
+at once, so their absence is the better signal on 7.x, though not proof on its own: 6.49
+never sends TLV 15, and 7.x omits it right after boot.
 
 **Unknown values:** type 13 and anything above 19 were never seen. Other TLV 18 bits
 (services beyond CAPsMAN and CMR), TLV 9 on big-endian CPUs, and packing TLVs on 6.x
@@ -226,14 +227,12 @@ fall back to the IP source when TLV 17 is absent, as it is right after boot.
 
 ## Timing and Reliability
 
-| Scenario | Expected Response Time |
-|----------|----------------------|
-| Local LAN (wired) | 1-3 seconds |
-| WiFi / congested network | 3-10 seconds |
-| ZeroTier / tunnel overlay | 5-20 seconds |
-| Satellite / high-latency | 10-30 seconds |
+On a local lab segment, routers replied to a request after a random 11 ms–1.96 s
+(see [How Discovery Works](#how-discovery-works)). No maximum was measured, and slower
+links (WiFi, tunnels, overlays) add their own latency, so size the listen window
+generously.
 
-**Best practice:** Send several requests during the listen window, a few seconds apart, and keep listening at least 2 s after the last one (routers reply after a random delay of up to about 2 s). Requests close together (50–200 ms) drew one reply per 7.x router, so spacing them out is what helps. Devices that miss the first broadcast due to packet loss, WiFi power-save, or tunnel relay latency will respond to later requests.
+**Best practice:** Send several requests during the listen window, a few seconds apart, and keep listening well past 2 s after the last one. Requests close together (50–200 ms) drew one reply per 7.x router, so spacing them out is what helps. Devices that miss the first broadcast due to packet loss, WiFi power-save, or tunnel relay latency will respond to later requests.
 
 **Never interpret missing devices as offline.** A short scan window produces partial results. Increase the timeout before concluding a device is unreachable.
 
@@ -319,12 +318,11 @@ When you send a broadcast to 255.255.255.255:5678, the OS delivers a copy back t
 
 ### IPv6 Multicast
 
-IPv6 MNDP uses `ff02::1` (all-nodes multicast). On 7.x a router sends an announcement
-there, as well as to the IPv4 broadcast, when the announcement carries TLV 15. A listener
-on both sockets gets most announcements twice, so deduplicate on MAC (TLV 1) plus the
-header counter. Don't rely on the IPv6 copy alone. In the 7.26beta5 lab it was missing for
-the first two announcements after boot, for every announcement while `disable-ipv6=yes`,
-and for the first one after IPv6 was re-enabled.[^m2ir-wire]
+IPv6 MNDP uses `ff02::1` (all-nodes multicast). Most announcements also go there, as
+well as to the IPv4 broadcast, so a listener on both sockets gets them twice:
+deduplicate on MAC (TLV 1) plus the header counter. Don't rely on the IPv6 copy alone.
+On 7.26beta5 it was missing for the first two announcements after boot and for every
+announcement while `disable-ipv6=yes`.[^m2ir-wire]
 
 IPv6 multicast needs its own `udp6` socket; `addMembership` on the `udp4` socket above
 fails. Name the interface to join on a specific link:
@@ -347,7 +345,10 @@ function formatIpv6(b: Buffer): string {
   return groups.join(":"); // uncompressed; e.g. fe80:0:0:0:7e:d1ff:fe2a:671c
 }
 
-function parseMndpResponse(buf: Buffer): Record<string, string | number | boolean | string[]> {
+// Returns null for a malformed datagram: RouterOS drops a payload whose TLVs
+// don't end exactly at the end of the datagram, so a parser should too.
+function parseMndpResponse(buf: Buffer): Record<string, string | number | boolean | string[]> | null {
+  if (buf.length < 4) return null;
   let offset = 4; // skip the 4-byte announcement counter (sender's byte order)
   const fields: Record<string, string | number | boolean | string[]> = {};
   const ipv6: string[] = [];
@@ -357,7 +358,7 @@ function parseMndpResponse(buf: Buffer): Record<string, string | number | boolea
     const tlvLen  = buf.readUInt16BE(offset + 2);  // big-endian
     offset += 4;
 
-    if (offset + tlvLen > buf.length) break; // malformed / truncated
+    if (offset + tlvLen > buf.length) return null; // truncated TLV
     const value = buf.subarray(offset, offset + tlvLen);
 
     switch (tlvType) {
@@ -392,6 +393,7 @@ function parseMndpResponse(buf: Buffer): Record<string, string | number | boolea
     }
     offset += tlvLen;
   }
+  if (offset !== buf.length) return null; // trailing bytes that aren't a whole TLV
   if (ipv6.length) fields.ipv6 = ipv6;
   return fields;
 }

@@ -242,7 +242,8 @@ end of a TCP `socket` netdev:
 4. Host strips the prefix and parses Ethernet → IPv4 → UDP/5678 → MNDP TLVs.
 
 Writing a length-prefixed frame back over the same connection **injects** L2 into the guest
-(e.g. an MNDP refresh to trigger an immediate reply — the same primitive MAC-Telnet needs).
+(e.g. an MNDP request, which draws a broadcast announcement after a short random delay —
+see `routeros-mndp` for the 8-byte payload; the same primitive MAC-Telnet needs).
 Loopback-only, so nothing leaks onto the LAN; works on macOS, Linux, and Windows alike.
 
 Reference implementation + verified evidence: `tikoci/quickchr` (`examples/mndp/`,
