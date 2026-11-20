@@ -65,7 +65,7 @@ provisioning rule to a different profile name and expect it to take effect.
 
 ```routeros
 # WRONG for changing already-running radios: repointing provisioning does nothing until next CAP join
-/caps-man/provisioning/set [find radio-mac=D0:EA:11:44:82:05] master-configuration=cfg_5g_5220
+/caps-man/provisioning/set [find radio-mac=02:00:00:00:01:05] master-configuration=cfg_5g_5220
 
 # RIGHT: edit the profile the radio is already bound to — pushes live, no drop
 /caps-man/configuration/set [find name=cfg_5g_5220_40] channel=cfg_5g_5220
@@ -80,8 +80,8 @@ a *different* configuration by name, not just edited properties), there are buil
 commands for exactly this — no need to disable/remove anything:
 
 ```routeros
-/caps-man/radio/provision [find radio-mac="04:F4:1C:F2:E5:9C"]
-/caps-man/remote-cap/provision [find name="[04:F4:1C:F2:E5:99]"]
+/caps-man/radio/provision [find radio-mac="02:00:00:00:02:0C"]
+/caps-man/remote-cap/provision [find name="[02:00:00:00:02:09]"]
 ```
 
 **Do not** reach for `/caps-man/interface disable`+`enable` or `/caps-man/interface
@@ -100,14 +100,14 @@ rule is not deleted and does not error; it silently stops matching anything.
 of a name:
 
 ```routeros
-[admin@CM] /caps-man/access-list> print terse
- 8 comment=1FL-Meeting-room-5G: accept > -75dBm interface=*92 signal-range=-75..0 action=accept
+[admin@capsman] /caps-man/access-list> print terse
+ 8 comment=ap-a-5g: accept > -75dBm interface=*92 signal-range=-75..0 action=accept
 ```
 
 Compare to a healthy rule on an interface that was never removed:
 
 ```routeros
- 0 comment=2FL-Accounting-5G: accept > -75dBm interface=2FL Accounting 5Ghz signal-range=-75..0 action=accept
+ 0 comment=ap-b-5g: accept > -75dBm interface=AP-B 5GHz signal-range=-75..0 action=accept
 ```
 
 `interface=*92` (a bare `*hex`) instead of a quoted/plain interface name is the tell.
@@ -118,13 +118,16 @@ multi-AP deployment this shows up as one AP accumulating far more clients than i
 neighbors (weak-signal clients that should have been rejected and forced to roam never
 get rejected).
 
-**Fix:** remove the orphaned rule(s) by comment/other stable field and re-add them
-pointing at the current interface name:
+**Fix:** re-add the orphaned rule(s) pointing at the current interface name, in the same
+position. The access list is checked top-down until the first match, so a rule appended
+below a catch-all `accept` never matches. Add the new rule just above the old one, then
+remove the old one:
 
 ```routeros
-/caps-man/access-list remove [find comment="1FL-Meeting-room-5G: accept > -75dBm"]
-/caps-man/access-list add interface="1FL Meeting room 5Ghz" signal-range=-75..0 \
-    action=accept comment="1FL-Meeting-room-5G: accept > -75dBm"
+/caps-man/access-list add interface="AP-A 5GHz" signal-range=-75..0 action=accept \
+    comment="ap-a-5g: accept > -75dBm (fixed)" \
+    place-before=[find comment="ap-a-5g: accept > -75dBm"]
+/caps-man/access-list remove [find comment="ap-a-5g: accept > -75dBm"]
 ```
 
 **Prevention:** avoid `/caps-man/interface remove` on a live interface entirely. Use
@@ -170,7 +173,8 @@ The details, grounded on a CubeSA 60Pro ac AP with Cube 60Pro ac stations on 7.2
 - On the AP, each station gets a saved `wlan60-station-N` interface, added to the bridge as
   a dynamic port by `put-stations-in-bridge`. Because the interfaces themselves are not
   dynamic, a bridge VLAN entry with `tagged=ether1,dynamic` never tags them; use
-  `tagged=ether1,all`.
+  `tagged=ether1,all` (interface lists in bridge VLANs need 7.17+; on older versions,
+  name the `wlan60-station-N` interfaces explicitly).
 - The 5 GHz backup is an active-backup bond of `wlan60-1` and `wlan1` on each station.
   Failover took 0.2–0.3 s with two-way traffic but about 13 s with inbound-only traffic, and
   failback lost 2–18 s even with `up-delay=20s`. Treat it as "keeps the site up", not hitless.
