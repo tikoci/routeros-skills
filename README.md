@@ -34,6 +34,7 @@ Names distinguish RouterOS knowledge from tikoci tooling:
 | **routeros-proprietary-protocols** | Navigator for MikroTik-specific protocols and file formats — WinBox/M2, MAC-WinBox, RoMON, MAC-Telnet, MNDP, API, EoIP, btest, IP packing, and binary files; research/implementation pointers and explicit knowledge gaps. |
 | **routeros-mndp** | MNDP (MikroTik Neighbor Discovery Protocol) — wire format, `/ip/neighbor`, WinBox discovery. |
 | **routeros-mac-telnet** | MAC-Telnet (UDP 20561) — Layer-2 terminal by MAC address, 22-byte header, control blocks, MD5 + MTWEI (EC-SRP) auth. |
+| **routeros-legacy-wireless** | The legacy `wireless` package — `/interface/wireless`, legacy CAPsMAN (`/caps-man`) provisioning and access-list gotchas, and 60 GHz W60G links (point-to-multipoint, VLANs over `wlan60-station-N`, the 5 GHz backup bond). |
 | **routeros-sniffer** | RouterOS packet capture and TZSP streaming — `/tool/sniffer`, firewall sniff-tzsp, Wireshark integration. |
 
 ## Install
