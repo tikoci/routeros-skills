@@ -75,7 +75,7 @@ See also [`references/quickchr-api.md`](./references/quickchr-api.md) in this sk
 | Return before ready | `wait: false`, then `instance.waitForBoot()`; refused with provisioning options |
 | Architecture | `arch:` — `"x86"` or `"arm64"` |
 | Managed login vs open admin | `secureLogin: true` (managed user, real password, managed SSH key) / `false`. Use `true` for anything that will use SSH/SFTP, centrs over SSH included: the key is made at first boot only (see gotchas) |
-| Run a CLI command | `instance.exec(cmd, opts?)` — `opts.via` is `auto`/`rest`/`ssh`/`console`/`qga` |
+| Run a CLI command | `instance.exec(cmd, opts?)` — `opts.via` is `auto`/`rest`/`console`/`qga`. The type also lists `ssh`, but on 0.6.0 `exec()` throws `EXEC_FAILED` for it; for SSH use `centrs execute --quickchr <name> --via ssh` |
 | REST call | `instance.rest(path, init?)` |
 | Move files | `instance.upload(local, remote?)` / `instance.download(remote, local)` |
 | Add a package | `packages` at first boot, or `instance.installPackage(name)` later (downloads + reboots; returns installed names) |
@@ -109,7 +109,7 @@ forward) and is all most grounding needs. Reach past it only for these shapes
 | Receive UDP the **guest sends** (syslog, NetFlow, TZSP, a server replying) | guest → host | guest sends to gateway `10.0.2.2:<port>`; host binds an **unconnected** socket — **no forward** |
 | Receive guest **L2 frames / broadcasts** (MNDP, MAC-Telnet, raw Ethernet) | guest ↔ host | `socket-connect` L2 NIC (host runs a TCP server) |
 | L2 link between two VMs | VM ↔ VM | `socket::<name>` named socket (default `dgram` unix pair, **either machine may start first**; `--mode mcast` is UDP multicast — see gotchas) or an explicit `socket:listen:`/`socket:connect:` pair (listener starts first) |
-| Real LAN presence / DHCP from the host | full L3 | `shared` or `bridged:<iface>` (macOS: once per host, `quickchr networks create <net>`, the one sudo step) |
+| Real LAN presence / DHCP from the host | full L3 | `shared` or `bridged:<iface>` (macOS without root: `quickchr networks create <net>` once per network, a sudo step, QEMU 7.2+) |
 
 Two non-obvious points worth keeping:
 
@@ -128,9 +128,10 @@ Two non-obvious points worth keeping:
   Keep `user` **first** (ether1) in any multi-NIC config — RouterOS only
   auto-DHCPs ether1, and `hostfwd` needs the guest's `10.0.2.15`.
   `networks` *replaces* the default NIC, so list `"user"` yourself: since
-  0.6.0 a waiting `start()` with no `user` NIC is refused with
-  `INVALID_NETWORK` before anything downloads (pass `wait: false` to boot
-  without one).[^nic]
+  0.6.0 a waiting, non-provisioning `start()` with no `user` NIC is
+  refused with `INVALID_NETWORK` before anything downloads (`wait: false`
+  boots it without waiting). Provisioning needs a `user` NIC regardless
+  and fails with `NETWORK_UNAVAILABLE` without one.[^nic]
 
 ## Driving an external tool against a live CHR
 
@@ -186,13 +187,17 @@ centrs's own integration tests work this way.[^tests]
   the two steps cannot start a download inside a test.
 - **Create and boot with one `start()`** on a random name
   (`myapp-it-<hex>`). Don't use `add()` then `start({ name })`: `start()`
-  claims a new name under the same locks, removes the machine again if its
-  first boot times out, and returns the handle. On 0.6.0, `start()` on a
+  claims a new name under the same locks and returns the handle. On a
+  first-boot timeout quickchr normally stops and removes the machine it
+  just made; if that cleanup fails, or `QUICKCHR_PRESERVE_ON_FAILURE=1`
+  is set, the printed name and the failure report find what was kept. On 0.6.0, `start()` on a
   machine `add()` made also ignores `timeoutExtra` (fixed after 0.6.0,
   quickchr#291).
-- **Keep stdout the test's own.** Pass `onProgress` to `start()` and
-  `logger: createLogger(onProgress)` to `cacheAdd()`; quickchr then prints
-  nothing to stdout. `add()` prints its image line anyway (quickchr#290).
+- **Keep stdout the test's own.** Send `onProgress` to stderr, pass it
+  to `start()`, and pass `logger: createLogger(onProgress)` to
+  `cacheAdd()`. In the warm-cache background recipe that left no quickchr
+  output on stdout. `add()` does not forward the image logger on 0.6.0
+  and prints its image line anyway (quickchr#290).
 - **The hook timeout must outlive quickchr's own waits**, so a slow boot
   ends in quickchr's `BOOT_TIMEOUT` report instead of the runner cutting it
   off. Start from `defaultBootTimeout(arch, withPackages, "tcg")` and add
@@ -222,8 +227,12 @@ centrs's own integration tests work this way.[^tests]
 - **The managed SSH key is first-boot only.** `secureLogin: true` (without
   `user`) on the first boot is the only way a machine gets the
   batch-verified key that `descriptor()` advertises and centrs needs for
-  every SSH/SFTP path. A machine booted without it has to be cleaned or
-  recreated (quickchr#253; adding one later is quickchr#280).[^secure-login]
+  every SSH/SFTP path. Leave `user` out, and before connecting check that
+  `descriptor()` lists `private-key` in `services.ssh.auth.batchModes`,
+  which quickchr does only after verifying the key. A machine booted
+  without it gets no key later (adding one is quickchr#280); on a
+  disposable VM, `clean()` erases the guest disks and reopens first-boot
+  provisioning (quickchr#253).[^secure-login]
 - **A machine whose QEMU another user owns** (one started with `sudo`) is
   refused by `stop()`, `shutdown()`, `remove()` and `clean()` with
   `PERMISSION_DENIED` since 0.6.0. Run them as that user against the same

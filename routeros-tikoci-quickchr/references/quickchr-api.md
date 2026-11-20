@@ -54,14 +54,14 @@ Common `StartOptions`:
 | `mem` | MiB RAM (default `512`; `1024` for cross-arch TCG) |
 | `background` | `true` (default) — QEMU's stdio goes to a log file, **and since 0.4.8 it is spawned into its own session on POSIX** (`detached: true`), so a signal to the caller's process group no longer reaches it; Windows uses a detached child for the same reason. `false` = foreground, serial on stdio — **except when provisioning options are also set**: `start()` then boots detached anyway (`spawnInBackground = background \|\| (!background && hasProvisioning)`), provisions, `stop()`s, and relaunches with serial attached, so a foreground provisioning run is really boot → provision → full restart. Note none of this is "return immediately": with default `wait`, `start()` resolves after the version-specific readiness check. |
 | `wait` | `true` (default). `false` resolves once QEMU is running, with state and ports saved, and leaves readiness to you (`instance.waitForBoot()`). Throws `INVALID_ARGUMENT` with any provisioning option, including ones `add()` recorded for a first boot, or with `background: false`. (#159) |
-| `secureLogin` | `true` → managed `quickchr` user with a stored password **and a managed SSH key** that `descriptor()` advertises (`services.ssh.auth.privateKeyPath`); `false`/omitted → open admin. **Pass `true` whenever the machine will be used over SSH/SFTP or by centrs**: the key is made only on the first boot and only without `user`, and a booted machine cannot gain one later (quickchr#253, #280). Since 0.5.5, `upload()`/`download()`/`installPackage()` offer that key (#229). Inverse alias: `noAuth` (`noAuth: true` ≙ `secureLogin: false`; `secureLogin` wins if both set). Prefer `secureLogin`. **Must be explicitly `true` to take effect** — provisioning tests `secureLogin === true`, so omitting it leaves `admin` password-less (observed: `inspect --json` reports `"password": ""`). That open-admin result holds only when nothing else changes admin's state: `disableAdmin: true` is applied independently and will disable `admin` even with no managed account, warning *"disabling admin without creating another user — you may lose access"*; an explicit `user` creates that user but does not disable `admin`. (Doc comments in 0.4.8 said `secureLogin` defaults to true; the code never did — the comments were fixed in 0.5.0, tikoci/quickchr#178.) |
+| `secureLogin` | `true` → managed `quickchr` user with a stored password **and a managed SSH key** that `descriptor()` advertises (`services.ssh.auth.privateKeyPath`); `false`/omitted → open admin. **Pass `true` on a fresh machine, without `user`, whenever it will be used over SSH/SFTP or by centrs**: the key is made only on the first boot and only without `user`, and `descriptor()` lists `private-key` in `services.ssh.auth.batchModes` only after quickchr verifies it, so check that before connecting. A booted machine gains no key later; `clean()` erases the guest disks and reopens first-boot provisioning (quickchr#253, #280). Since 0.5.5, `upload()`/`download()`/`installPackage()` offer that key (#229). Inverse alias: `noAuth` (`noAuth: true` ≙ `secureLogin: false`; `secureLogin` wins if both set). Prefer `secureLogin`. **Must be explicitly `true` to take effect** — provisioning tests `secureLogin === true`, so omitting it leaves `admin` password-less (observed: `inspect --json` reports `"password": ""`). That open-admin result holds only when nothing else changes admin's state: `disableAdmin: true` is applied independently and will disable `admin` even with no managed account, warning *"disabling admin without creating another user — you may lose access"*; an explicit `user` creates that user but does not disable `admin`. (Doc comments in 0.4.8 said `secureLogin` defaults to true; the code never did — the comments were fixed in 0.5.0, tikoci/quickchr#178.) |
 | `user` | `{ name, password }` custom user (provisioning, ≥ 7.20.8) |
 | `disableAdmin` | disable default admin after boot (provisioning, ≥ 7.20.8) |
 | `packages` | `string[]` extra packages to install (provisioning, ≥ 7.20.8) |
 | `installAllPackages` | install all packages from all_packages.zip (overrides `packages`) |
-| `license` | one-shot trial license at first start: `"p1"` / `"p10"` / `"p-unlimited"` or `LicenseOptions`. 0.6.0 sends RouterOS's spelling `p-unlimited` and still accepts `"unlimited"` for it; on 0.5.x `"unlimited"` failed with HTTP 400. Without explicit credentials it uses the stored MikroTik account credential (#261) |
+| `license` | one-shot trial license at first start: `"p1"` / `"p10"` / `"p-unlimited"` or `LicenseOptions`. 0.6.0 sends RouterOS's spelling `p-unlimited` and still accepts `"unlimited"` for it; on 0.5.x `"unlimited"` failed with HTTP 400. Credentials come from `LicenseOptions`, else `MIKROTIK_WEB_ACCOUNT`/`MIKROTIK_WEB_PASSWORD`, else the stored credential, in that order (#261) |
 | `deviceMode` | `/system/device-mode` config (provisioning, ≥ 7.20.8) |
-| `networks` | `NetworkSpecifier[]` — replaces the default single `user` NIC (see networking). Since 0.6.0 a waiting `start()` with no `user` NIC is refused with `INVALID_NETWORK` before anything downloads: list `"user"` first, or pass `wait: false` (#268). macOS `shared`/`bridged:<iface>` need a socket_vmnet daemon from `quickchr networks create <net>` (one sudo step) or fail with `NETWORK_UNAVAILABLE` (#256) |
+| `networks` | `NetworkSpecifier[]` — replaces the default single `user` NIC (see networking). Since 0.6.0 a waiting, non-provisioning `start()` with no `user` NIC is refused with `INVALID_NETWORK` before anything downloads: list `"user"` first, or pass `wait: false` to boot without waiting. Provisioning needs a `user` NIC regardless (`NETWORK_UNAVAILABLE`) (#268). On macOS without root, `shared`/`bridged:<iface>` need a socket_vmnet daemon from `quickchr networks create <net>` (once per network, sudo, QEMU 7.2+) or fail with `NETWORK_UNAVAILABLE`; as root, native vmnet still works (#256) |
 | `extraPorts` | custom host→guest forwards — `PortMapping[]` with `proto` `"tcp"` or `"udp"` |
 | `portBase` | first port of the 10-port block (auto from `9100` if omitted) |
 | `excludePorts` | `ServiceName[]` to exclude (e.g. `["winbox", "api-ssl"]`) |
@@ -69,7 +69,7 @@ Common `StartOptions`:
 | `bootDiskFormat` | `"raw"` by default in the library; `bootSize` implies `"qcow2"` (snapshots + resize). CLI default: `"qcow2"`. qcow2 and extra disks require `qemu-img` |
 | `extraDisks` | `string[]` extra blank qcow2 disks e.g. `["512M", "1G"]` |
 | `timeoutExtra` | extra ms added to the computed boot timeout. On 0.6.0 and earlier it applies only when `start()` **creates** the machine; booting one that exists (made by `add()`, or booted before) ignores it. Fixed on quickchr `main` for the release after 0.6.0 (#291) |
-| `onProgress` | `(msg: string) => void` progress callback (debug lines only when `QUICKCHR_DEBUG=1`). With it, `start()` prints nothing to stdout; `add()` still prints its image line to stdout (#290) |
+| `onProgress` | `(msg: string) => void` progress callback (debug lines only when `QUICKCHR_DEBUG=1`). `start()` forwards it to the image logger: a warm-cache background test boot with `onProgress` on stderr left no quickchr stdout. `add()` does not forward it on 0.6.0 and prints its image line to stdout (#290). A foreground (`background: false`) QEMU inherits stdout |
 | `qemuArgs` | `string[]`, one QEMU argv element each, appended after quickchr's own (0.5.3+, #213). A lab escape hatch for QEMU surface quickchr does not model |
 | `frozen` | boot held at reset (`-S`) with a gdbstub, skipping the wait; resume with `instance.continue()` (0.5.3+, #214). Not with provisioning |
 | `installDeps` | deprecated and ignored since 0.5.1; never installed anything. Run `quickchr doctor` for install hints; CLI `--install-deps` errors |
@@ -94,11 +94,11 @@ already has is reported as applied rather than refused.
 | Method | Purpose |
 |---|---|
 | `rest(path, init?)` | REST call → parsed JSON |
-| `exec(cmd, opts?)` | run a CLI command/script → `{ output, via }`. `opts.via`: `auto`/`rest`/`ssh`/`console`/`qga` |
-| `continue()` | resume a `frozen` boot and wait for REST (0.5.3+) |
+| `exec(cmd, opts?)` | run a CLI command/script → `{ output, via }`. `opts.via`: `auto`/`rest`/`console`/`qga`. `ssh` is in the type but throws `EXEC_FAILED` on 0.6.0; use `centrs execute --quickchr <name> --via ssh` |
+| `continue({ wait?, timeoutExtra? })` | resume a `frozen` boot and, by default, wait for version-specific readiness (REST on 7.x, native-API login on 6.x) (0.5.3+). Honors `timeoutExtra` on 0.6.0 |
 | `waitForBoot(timeoutMs?)` | wait for REST on RouterOS 7 or native-API login on RouterOS 6; needed after `wait: false` (default start() already waits) |
 | `waitFor(cond, timeoutMs?)` | poll an arbitrary async predicate (e.g. "/dude enabled") |
-| `installPackage(names)` | one name or an array; download + install + reboot; returns names actually installed. Since 0.5.5 it refuses a stopped machine (`MACHINE_STOPPED`) or one without a `user` NIC (`NETWORK_UNAVAILABLE`) up front, throws if the activating reboot fails (`PROCESS_FAILED`/`REBOOT_FAILED`) instead of reporting success, and records the step so a later `start()` with the same `packages` is a no-op (#24) |
+| `installPackage(names)` | one name or an array; download + install + reboot; returns names actually installed. Since 0.5.5 it refuses a stopped machine (`MACHINE_STOPPED`) or one without a `user` NIC (`NETWORK_UNAVAILABLE`) up front, and no longer reports success when activation fails: REST down before upload, or the guest not returning after the reboot, is `BOOT_TIMEOUT`; reboot HTTP 401/403 is `PROCESS_FAILED`; another non-2xx reboot response, or the guest never going down, is `REBOOT_FAILED`. It also records the step so a later `start()` with the same `packages` is a no-op (#24) |
 | `availablePackages()` | package names available for this version/arch |
 | `upload(local, remote?)` / `download(remote, local)` | SCP file transfer |
 | `subprocessEnv()` | env vars for a child process (see below) |
@@ -214,9 +214,10 @@ values.) See "Running several CHRs at once" in `SKILL.md`.
 - `PROVISIONING_WINDOW_CLOSED` (0.5.0): a provisioning option on a machine that has
   already booted.
 - `REST_UNAVAILABLE` (0.5.0): a REST operation (`exec`, `rest()`) on RouterOS 6.
-- `REBOOT_FAILED` (0.5.5): the guest rejected `installPackage()`'s activating reboot.
-- `PERMISSION_DENIED` (0.6.0): `stop`, `shutdown`, `remove`, `clean` or
-  `setDeviceMode()` on a machine whose QEMU another user owns (for example one
+- `REBOOT_FAILED` (0.5.5): `installPackage()`'s activating reboot got a non-2xx
+  response other than 401/403, or the guest never went down for it.
+- `PERMISSION_DENIED` (0.6.0): `stop`, `shutdown`, `remove` (and `destroy`),
+  `clean` or `setDeviceMode()` on a machine whose QEMU another user owns (for example one
   started with `sudo`). The hint runs the command as that user against the same
   data dir (#259).
 

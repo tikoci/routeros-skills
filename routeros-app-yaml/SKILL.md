@@ -14,7 +14,7 @@ The `/app` subsystem lets users define one or more containers as a single "appli
 **Key concepts:**
 
 - Each `/app` is defined by a YAML document with services, configs, volumes, and networks
-- The YAML is loaded into RouterOS as text, via CLI (`/app/add yaml=...`) or REST (`PUT /rest/app` with `{"yaml": "..."}`). 7.24.5 and 7.25.1 have no `yaml-url` parameter on `/app/add`, so fetch the YAML first (see [Lifecycle](#lifecycle-on-the-router))
+- The YAML is loaded into RouterOS as text, via CLI (`/app/add yaml=...`) or REST (`PUT /rest/app` with `{"yaml": "..."}`). 7.24.5 and 7.25.1 have no `yaml-url` parameter on `/app/add`, so fetch the YAML first (see [Lifecycle](#lifecycle-on-the-router))[^chr-app]
 - Built-in apps ship with RouterOS (visible at `GET /rest/app`)
 - Custom apps are added from YAML text (fetched from a URL or written inline)
 - App stores (`app-store-urls=`) provide curated collections
@@ -254,7 +254,7 @@ Measured on CHR 7.25.1 by tikoci/app-t3code[^t3code] unless another source is ma
 
 - **Before enabling:** `/app` refuses to enable an app until a disk is set with `/app/settings/set disk=<mount-point>`. Format it first (`/disk/format <id> file-system=ext4`; the id is positional).
 - **Adding leaves the app disabled.** After `/app/add` or `PUT /rest/app`, run `/app/set [find where name=<app>] disabled=no`, then poll `/container` (`.running` is the string `"true"`).
-- **`use-https=yes` needs a hostname for the certificate**, the `/ip/cloud` name or your own domain. On a free-license CHR (no `/ip/cloud`), the app stalled at `wait for reverse proxy` on 7.24.5 and again on 7.25.1; use `use-https=no` in labs.[^ip-prefix][^chr-app]
+- **`use-https=yes` needs a hostname for the certificate**, the `/ip/cloud` name or your own domain. On a free-license CHR, which cannot get a cloud DNS name, the app stalled at `wait for reverse proxy` on 7.24.5 and was still there after 150 s on 7.25.1; use `use-https=no` in labs.[^ip-prefix][^chr-app]
 - **Fetching YAML from a URL:** `/app/add yaml=([/tool/fetch url="https://…/my.tikapp.yaml" check-certificate=yes output=user as-value]->"data")`.
 - **Never change an installed app's `yaml=` to change settings.** `/app/set … yaml=` recreates the app's volumes, wiping their data even for a comment-only change, and leaves the app disabled (7.25.1 and 7.26beta5). Back up every app-owned volume first if the YAML really must change.
 - **Use `/app/update` for a new image and `/app/set environment=` for settings.** `environment=` restarts the container and keeps its volumes, and the value survived a reboot and an `/app/update` with an unchanged image (a real image change wasn't tested). It replaces the **whole** list; the YAML's `environment:` is only the starting value. A new value containing a comma is rejected from the CLI and REST because the list splits on commas (also on 7.26beta5). Rebuilding the list from `[/app/get <app> environment]` keeps comma values that came from the YAML.
@@ -309,7 +309,7 @@ Use `.editor.json` URLs for better autocompletion at the cost of less strict val
 ## Additional Resources
 
 - For RouterOS fundamentals, CLI syntax, REST API: see the `routeros-fundamentals` skill
-- To try an app on a disposable CHR: the `routeros-tikoci-quickchr-cli` skill, "/app and containers on a CHR" (container package, device-mode, app disk in one `quickchr start`). Raw QEMU without quickchr: the `routeros-qemu-chr` skill
+- To try an app on a disposable CHR: the `routeros-tikoci-quickchr-cli` skill, "/app and containers on a CHR" (one `quickchr start` installs the container package, enables device-mode and attaches a blank disk to format for `/app`). Raw QEMU without quickchr: the `routeros-qemu-chr` skill
 - MikroTik forum reference: <https://forum.mikrotik.com/t/amm0s-manual-for-custom-app-containers-7-22beta/268036/22>
 
 [^manual-apps]: MikroTik manual, [Apps](https://manual.mikrotik.com/docs/containers/apps/) (as of 2026-11-20): "Map ports", "Runtime placeholders", "Secrets" and the `use-https` notes.

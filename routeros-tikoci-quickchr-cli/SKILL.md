@@ -34,7 +34,7 @@ feature.[^license]
 Bun **1.4.3** or newer is the documented minimum (0.5.5+); the 0.6.0
 package is tested on 1.4.4. Run `quickchr doctor` for missing
 dependencies and install hints; it also reports the HTTPS egress proxy
-and warns when only TCG acceleration is available. The old
+and warns when only TCG acceleration is available.[^release055] The old
 `start --install-deps` flag now errors; it never installed dependencies.
 The CLI defaults to **qcow2**, requiring `qemu-img`; the library defaults
 to **raw** unless `bootSize` implies qcow2. Extra disks also need
@@ -76,9 +76,9 @@ quickchr remove lab-a
   ("created — not waiting for RouterOS" with `--no-wait`); resuming
   an existing machine says "started". Since 0.5.4 resuming boots the
   machine's recorded version without asking the network, so it works
-  offline.[^release052] On 0.6.0, `--timeout-extra` on a resume is
-  ignored; it applies only when `start` creates the machine (fixed after
-  0.6.0, quickchr#291).
+  offline.[^release055] On 0.6.0, `start <existing>` ignores
+  `--timeout-extra`; it applies only when `start` creates the machine
+  (fixed after 0.6.0, quickchr#291). `quickchr continue` honors it.
 - `exec <name> <command…>` runs one RouterOS command over REST.
   `--via` is `auto|rest|qga` here, and **`qga` is narrower than it
   looks**: RouterOS only starts its guest agent for an **x86** CHR
@@ -194,15 +194,18 @@ first two cases for inspection.
   dynamic `10.0.2.15/24`), and the host port-forwards assume
   it.[^ground-nic]
 - **Any `--add-network` replaces the default NIC**, so name `user`
-  yourself. Since 0.6.0 a waiting `start` with no `user` NIC is refused
-  up front (`INVALID_NETWORK`, nothing downloaded, hint names
-  `--add-network user --add-network <spec>` or `--no-wait`); 0.5.x sat
-  silent until the boot timeout.[^release060]
-- On macOS, `shared` and `bridged:<iface>` need a socket_vmnet daemon:
-  run `quickchr networks create shared` (or `bridged:en0`) once per
-  host. It is the one sudo step, and machines attach without sudo
-  afterwards. Since 0.6.0, without it they fail with
-  `NETWORK_UNAVAILABLE` naming that command instead of falling back to
+  yourself. Since 0.6.0 a waiting, non-provisioning `start` with no
+  `user` NIC is refused up front (`INVALID_NETWORK`, nothing downloaded;
+  0.5.x sat silent until the boot timeout). `--no-wait` boots it without
+  waiting. Provisioning (`--secure-login`, packages, device-mode, …)
+  needs a `user` NIC regardless and fails with `NETWORK_UNAVAILABLE`
+  without one.[^release060]
+- On macOS, unprivileged `shared` and `bridged:<iface>` need a
+  socket_vmnet daemon: run `quickchr networks create shared` (or
+  `bridged:en0`) once **per network**. That step uses sudo and needs
+  QEMU 7.2+; machines then attach without sudo. Since 0.6.0, without it
+  they fail with `NETWORK_UNAVAILABLE` naming that command instead of
+  falling back to native vmnet. Running quickchr as root still uses
   native vmnet.[^release060]
 - For an L2 link between two VMs, prefer a **named socket**
   `socket::<name>`. It resolves through a registry entry, defaults to
@@ -348,15 +351,21 @@ that `quickchr inspect --json` advertises
 (`services.ssh.auth.batchModes: ["private-key"]`). centrs uses that key
 for every SSH path (`execute --via ssh`, `transfer --via sftp`,
 `terminal`) and never falls back to a password. The key is made only on
-the first boot, and not with `--add-user`. A machine booted without it
-has no route except `clean` (or recreate) and starting again with the
-flag.[^secure-login]
+the first boot, and not with `--add-user`. So for centrs SSH/SFTP, boot a
+fresh CHR with `--secure-login` and no `--add-user`, and before connecting
+check that `quickchr inspect --json` lists `private-key` in
+`services.ssh.auth.batchModes` (the key path is advertised only after
+quickchr has verified the key). A machine booted without it gets no key
+later; on a disposable VM, `quickchr clean` erases the guest disks and
+reopens first-boot provisioning.[^secure-login]
 
 Trial licenses take RouterOS's level names `p1`, `p10` and
 `p-unlimited` (0.6.0; `unlimited` is accepted for `p-unlimited`, and
 failed with HTTP 400 on 0.5.x). `add --license-level` records the level
-only, never credentials, and the first `start` applies it using the
-stored MikroTik credential.[^release060]
+only, never credentials. The first `start` applies it with explicit
+`--license-account`/`--license-password`, else `MIKROTIK_WEB_ACCOUNT` /
+`MIKROTIK_WEB_PASSWORD`, else the stored credential, in that order, and
+refuses before booting when none is found.[^release060]
 
 The refusal tells you which side of the line a machine is on — no
 detective work needed before relying on a flag:
@@ -373,7 +382,9 @@ boot-only.[^device-mode]
 ## /app and containers on a CHR
 
 `/app` and `/container` do not work on a fresh CHR. Three things are
-missing, and one `start` supplies all three:[^app]
+missing. One `start` installs the package, enables container
+device-mode and attaches a blank disk; you then format the disk and
+select it in `/app/settings` before enabling an app:[^app]
 
 ```sh
 quickchr start --name app-lab --version 7.25.1 --arch x86 \
@@ -384,7 +395,7 @@ centrs execute --quickchr app-lab --yes '/app/settings/set disk=pcie1'
 ```
 
 - **The `container` extra package.** It is not in the base image, and
-  without it `/app` returns 404. `--add-package container` downloads the
+  it is what provides the `/app` menu. `--add-package container` downloads the
   same version's package, uploads it and reboots. After first boot,
   `quickchr set <name> --package container` (0.5.5+) does the same; no
   manual SFTP.
@@ -400,10 +411,11 @@ centrs execute --quickchr app-lab --yes '/app/settings/set disk=pcie1'
 The run above took 73 s on HVF (package reboot plus device-mode
 power-cycle). After it, `/app` is ordinary RouterOS. Two lab-relevant
 facts are in **routeros-app-yaml**: an added app starts **disabled**,
-and a new app defaults to `use-https=yes`, which on a free-license CHR
-sits at `wait for reverse proxy` and never starts. Add lab apps with
-`use-https=no`. `/app/add` has no `yaml-url` argument, so send the YAML
-inline (`PUT /rest/app` with `{"yaml": …}`).
+and a new app defaults to `use-https=yes`. On the free-license 7.25.1
+lab, an app with HTTPS on was still at `wait for reverse proxy` after
+150 s and ran once switched to `use-https=no`, so add lab apps with
+`use-https=no`. On 7.25.1 `/app/add` takes inline `yaml` and has no
+`yaml-url` argument (`PUT /rest/app` with `{"yaml": …}`).
 
 To reach an app's published port from the host, forward it at creation
 (`--forward web:9188:8088`); the app's dstnat rule lands on the
@@ -459,6 +471,9 @@ not have, and times out. Use 7.x there, or upgrade.
 [^release052]: quickchr [0.5.2 CHANGELOG](https://github.com/tikoci/quickchr/blob/v0.5.2/CHANGELOG.md)
     `[0.5.1]` and `[0.5.2]`;
     [package review](./references/cli-grounding.md#quickchr-052-package-review).
+[^release055]: quickchr [CHANGELOG](https://github.com/tikoci/quickchr/blob/v0.6.0/CHANGELOG.md)
+    `[0.5.5]` (Bun 1.4.3 minimum, #232; `doctor` proxy and TCG
+    reporting, #210) and `[0.5.4]` (offline restart, #233). Not re-run.
 [^release060]: quickchr [0.6.0 CHANGELOG](https://github.com/tikoci/quickchr/blob/v0.6.0/CHANGELOG.md)
     `[0.5.3]` through `[0.6.0]` (#256, #261, #268, #276); the
     `INVALID_NETWORK` refusal was reproduced in
