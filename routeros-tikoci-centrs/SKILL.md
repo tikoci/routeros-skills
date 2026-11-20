@@ -1,6 +1,6 @@
 ---
 name: routeros-tikoci-centrs
-description: "Use whenever a task touches a real MikroTik RouterOS device or CHR: reading or changing config, running a RouterOS CLI command non-interactively, checking a command before sending it, waiting for a router or a condition, watching a menu change, moving files, discovering neighbors, or doing the same thing across several routers. Reach for centrs (@tikoci/centrs, CLI + Bun/TS) rather than hand-rolling curl against /rest or scripting ssh: it resolves address, credentials, port and protocol from the WinBox address book or a quickchr VM, validates the command before it runs, and returns one structured envelope (data, warnings, tips, meta) over REST, native API, SSH/SFTP, MAC-Telnet or MNDP. Covers what agents miss: `explain` (offline or live), `--json` and where failures print, `retrieve --wait/--until/--query`, NDJSON streams, fan-out, the `--yes` gate, and reading a rejection. Not for booting the CHR (routeros-tikoci-quickchr-cli, routeros-tikoci-quickchr) or RouterOS docs (rosetta MCP, routeros-fundamentals)."
+description: "Use whenever a task touches a real MikroTik RouterOS device or CHR: reading or changing config, running a RouterOS CLI command non-interactively, checking a command before sending it, waiting for a router or a condition, watching a menu change, moving files, discovering neighbors, or doing the same thing across several routers. Reach for centrs (@tikoci/centrs, CLI + Bun/TS) rather than hand-rolling curl or scripting ssh: it resolves address, credentials, port and protocol from the WinBox address book or a quickchr VM, validates the command before it runs, and returns one structured envelope (data, warnings, tips, meta) over REST, native API, SSH/SFTP, MAC-Telnet or MNDP. Covers what agents miss: `explain` (offline or live), `--json` and where failures print, `retrieve --wait/--until/--query`, NDJSON streams, fan-out, the `--yes` gate, 60 s limits, reading a rejection. Not for booting the CHR (routeros-tikoci-quickchr-cli, routeros-tikoci-quickchr) or RouterOS docs (rosetta MCP, routeros-fundamentals)."
 ---
 
 # Driving RouterOS with centrs
@@ -26,39 +26,43 @@ or the `routeros-fundamentals` skill), or when you need to *create* the router i
 (use `routeros-tikoci-quickchr-cli` from a shell, or `routeros-tikoci-quickchr` for the TypeScript
 library — centrs consumes a quickchr VM, it does not boot one).
 
-> **Status and version.** Written for centrs **0.1.9** (checked on
-> `0.1.9-next.27`). Older builds differ in places this skill relies on — error
-> codes, where text-mode warnings print, `--match`, live `explain` — so run
-> `centrs --version` and, if it is older, upgrade rather than work around it.
-> `npm view @tikoci/centrs dist-tags` shows what `latest` and `next` point at;
-> `@next` is the leading edge. Expect breaking changes before 1.0 and exercise
-> writes on lab or disposable targets first.
+> **Status and version.** Written for centrs **0.1.10**, which both npm dist-tags
+> (`latest` and `next`) pointed at when this was checked, and exercised against
+> CHR 7.25.1. Run `centrs --version`; on an older build, upgrade rather than work
+> around it. `npm view @tikoci/centrs dist-tags` shows what the tags point at now.
+> Unreleased changes on centrs `main` that alter codes or fields are listed under
+> [Coming in 0.2.0](#coming-in-020). Expect breaking changes before 1.0 and
+> exercise writes on lab or disposable targets first.
 > [`docs/MATRIX.md`](https://github.com/tikoci/centrs/blob/main/docs/MATRIX.md) is
 > the single source of truth for what works today.
 
 ## Install and first call
 
 ```sh
-bun x @tikoci/centrs --help                     # no install
-bun add @tikoci/centrs                          # library + local CLI
+bun x @tikoci/centrs@0.1.10 --help              # no install, pinned
+bun add @tikoci/centrs@latest                   # library + local CLI
 ```
 
-`bun x` works wherever `bunx` does, including sandboxes that ship Bun without the
-`bunx` shim. The offline analyzer needs no router and no credentials — the
+Pin a version (as above) or a dist-tag (`@latest`, `@next`) so a script does not
+change under you. The offline analyzer needs no router and no credentials — the
 cheapest way to confirm centrs works at all:
 
 ```sh
-bun x @tikoci/centrs explain '/ip/address print' --json
+bun x @tikoci/centrs@0.1.10 explain '/ip/address print' --json
 ```
 
 ## Flag spelling
 
-Write flags with a **space**, never `=`: `--via native-api`, `--timeout 30s`.
-`--via=native-api` and `--validate=false` are rejected as
-`input/invalid-command` ("Unknown retrieve flag"), even where `--help` says the `=`
-form is accepted. Boolean flags have explicit negatives: `--no-validate`,
-`--no-verify`. Durations take a unit (`30s`, `2m`); several flags refuse a bare
-number.
+Value flags take either form: `--via native-api` or `--via=native-api` (the `=`
+form is accepted since 0.1.10). A value flag with nothing after it fails
+`usage/missing-flag-value`, and a following `--option` is never taken as its
+value. Durations take a unit (`30s`, `2m`); several flags refuse a bare number.
+
+Turn a boolean off with its negative: `--no-validate`, `--no-verify`. Do not write
+`--validate=false`: `retrieve` refuses it as `input/invalid-command` ("takes no
+value"), while `execute` and `api` accept it, so the negative is the spelling that
+works everywhere. `centrs help <command>` (or `--help <command>`) prints one
+command's help.
 
 With `execute`, put centrs flags **before** `--`. Everything after `--` is the
 RouterOS command; a centrs flag found there is refused before anything dials:
@@ -90,7 +94,7 @@ centrs retrieve lab /ip/address --query 'interface=ether2' --json
 Offline (no `<router>`), `explain` opens no connection. It canonicalizes the input,
 reports structure and syntax diagnostics with byte spans, says whether the input is
 write-shaped, and names the centrs command that would carry it (often a ready
-`centrs api … -X PUT -f …` line). Input can also come from `--file <path>` or
+`centrs api …` line). Input can also come from `--file <path>` or
 piped stdin. It exits **2** when the verdict reaches `--fail-on` (`error` by
 default; `warning` or `never`), so it works as a pre-commit or CI gate for `.rsc`
 snippets.
@@ -124,18 +128,34 @@ Every router-facing command resolves a **target**:
 | An address, no CDB record | the positional `<ip>` / `http(s)://host[:port]`, or `--host <host\|url>` with no positional (no CDB lookup), plus `--username` / `--password` or `CENTRS_USERNAME` / `CENTRS_PASSWORD` |
 | Nothing yet | `centrs discover` over MNDP; `--save` writes found neighbors into the CDB |
 
-- `--quickchr` is exclusive of positional targets, CDB selectors and
-  `--host`/`--port`/`--username`/`--password`; pick one mechanism per call.
+- `--quickchr` is exclusive of positional targets, CDB selectors and the
+  connection overrides (`--host`, `--port`, `--username`, `--password`,
+  `--ssh-key`): `usage/conflicting-flags`. Pick one mechanism per call.
+- **SSH to a quickchr VM needs `--secure-login` at its first boot.** centrs logs
+  in over SSH (`execute --via ssh`, `transfer --via sftp`, `terminal --quickchr`)
+  only with the verified key quickchr creates for a machine *first booted* with
+  `--secure-login` and no `--add-user`. There is no agent-key or password
+  fallback; without that key the call fails `quickchr/ssh-auth-unavailable`, and
+  a machine that already booted has to be recreated to get one. REST and native
+  API work either way.
 - **Never put credentials in the target.** `admin:pass@host` (or a URL with
   `user:pass@`) is refused as `input/invalid-target`, with the password
   masked as `***@`.
 - One address saved under two users is ambiguous: pick the record with
   `--match user=<name>` (or `target=<addr>`, or a record type).
+- A CDB record can pin a port per transport with the comment keys `www-port`,
+  `www-ssl-port`, `api-port`, `api-ssl-port` and `ssh-port`; each beats the
+  all-transport `port=` key.
 - `centrs devices init` creates an empty CDB (`--cdb-file` for a custom path); it
   never overwrites an existing one, so bootstrap scripts can run it
-  unconditionally. Other subcommands: `list`, `show`, `groups`, `add`, `edit`,
-  `set`, `remove`; `devices` is the only command that writes the CDB.
-  `devices init --encrypt` / `devices encrypt` create or convert an encrypted CDB.
+  unconditionally. Other subcommands: `list`, `show`, `groups`, `add`, `set`,
+  `remove` (`edit` is reserved). `devices init --encrypt` / `devices encrypt`
+  create or convert an encrypted CDB.
+- **What writes the CDB:** `devices`, `discover --save`, and the MCP server's
+  `centrs_devices` and `centrs_discover` (`save`) tools. Writes take a
+  `<cdb>.lock` file and re-check the revision they loaded, so concurrent writers
+  no longer lose each other's changes: a stale write is retried, and a lock held
+  past 10 s fails `cdb/locked`.
 
 ### Fan out instead of looping
 
@@ -151,12 +171,13 @@ centrs retrieve --all /system/resource --json
 Selectors: `--group <name>`, `--all`, `--where <attr>=<value>`, `--near`, `--bbox`.
 `--default` picks the single reserved `__default__` record. A fan-out envelope's
 `data` is `{ summary: { total, ok, failed }, targets: [...] }`; each target
-inherits any `meta` it does not repeat from the outer envelope.
+inherits any `meta` it does not repeat from the outer envelope. `api` fan-out exits
+`0` when all targets succeed, `2` on a partial failure, `1` when all fail.
 
 An **empty selection** behaves differently for reads and writes: a read
 over a group that matches nothing is `ok: true` with a `cdb/empty-group` warning,
 but a write (`execute`, mutating `api`, `transfer upload|remove|mkdir|copy`) exits 1
-— a typo in a group name no longer passes for a successful bulk write.
+— a typo in a group name does not pass for a successful bulk write.
 
 ## The command map
 
@@ -181,10 +202,20 @@ the only one that reaches SSH and MAC-Telnet (`execute --via ssh` drives the hos
 OpenSSH client, so `ssh` must be on `PATH`). There is no `update` command —
 CLI-shaped writes ride `execute`.
 
-`retrieve` and `api` paths must be plain menu names — letters, digits and hyphens
-between slashes. Anything else (`/system/reboot#`, `?`) is refused as
-`input/invalid-routeros-path` before anything dials, even with `--no-validate`
-Filter with `--query`, never with characters in the path.
+**Paths.** A `retrieve` path must be plain menu names — letters, digits and
+hyphens between slashes. `api` normalizes its endpoint first (`ip/address`,
+`/rest/ip/address` and `'ip address'` are all `/ip/address`), and then also takes
+a trailing row id (`ip/address/*1`, for GET, PATCH and DELETE; PATCH and DELETE
+*need* it) or a trailing `/listen`. Anything else (`/system/reboot#`, `?`) is
+refused as `input/invalid-routeros-path` before anything dials, even with
+`--no-validate`. Filter with `--query`, never with characters in the path.
+
+**`api` methods map to RouterOS commands, literally:** `GET` → `print`/`get`,
+**`PUT` → `add`**, `PATCH` → `set`, `DELETE` → `remove`, `POST` → any command
+(`-X POST` on `<menu>/<command>`). `PUT` is RouterOS's create, not `POST`; centrs
+never rewrites the method, and tips `tip/rest-verb-mapping` when a bare-collection
+`POST` carries create-looking fields. A menu without records (`/system/identity`)
+has no row to PATCH: use `-X POST` on `system/identity/set`.
 
 ## Read the envelope, not the text
 
@@ -208,16 +239,20 @@ which strips the envelope and emits bare RouterOS JSON):
 ```
 
 A failure has `ok: false` and an `error` with `code`, `summary`, `remediation`,
-`details_url` and, where RouterOS gave one, a `position`. Every code has a page at
-`https://tikoci.github.io/centrs/errors/<code>`.
+`detailsUrl` and, where RouterOS gave one, a `position`. Every code has a page at
+`https://tikoci.dev/centrs/errors/<code>/` (0.1.10 still prints the older
+`tikoci.github.io/centrs/errors/<code>` links, which redirect there over plain
+HTTP; some agent fetch tools refuse that hop, so fetch the `tikoci.dev` form).
+
+**Values are strings.** RouterOS returns every value as a string on both
+transports (`"cpu-load": "0"`, `"disabled": "false"`), and centrs does not coerce
+them. Convert before comparing numbers.
 
 **Pass `--json` (or `--format json`).** `retrieve`, `execute` and `transfer` default
 to `--format text`, and text stdout is data only: warnings and the `Tips:` footer
-go to **stderr**, and `meta` shows only as the `--verbose` header (before 0.1.9,
-`execute` dropped warnings and tips entirely and `retrieve`/`transfer` mixed them
-into stdout). Parsing the text default can appear to work while you never see
-a warning such as `transport/write-outcome-unknown`. (`api` already defaults to
-JSON.)
+go to **stderr**, and `meta` shows only as the `--verbose` header. Parsing the
+text default can appear to work while you never see a warning such as
+`transport/write-outcome-unknown`. (`api` already defaults to JSON.)
 
 **Where the envelope goes.** With `--json`, a one-shot **success** prints on stdout
 and a one-shot **failure** prints on **stderr**, with exit 1. A script that runs
@@ -231,13 +266,13 @@ stdout (see below).
 - `retrieve` on a list menu returns an **array** of rows; on a singleton
   (`/system/resource`), an object. Projecting exactly one attribute of a singleton
   (`--attribute uptime`) returns the bare value.
-- `execute` results are still shape-unstable
-  ([centrs#360](https://github.com/tikoci/centrs/issues/360), open, design
-  undecided): depending on row count and how centrs carried the command, zero rows
-  can come back as an **empty object**, one row as a bare object, N rows as an
-  array. The empty object is truthy, so `d ? [d] : []` invents a row. Take the
-  count from `meta.operation.objectCount`, and normalize with something that
-  excludes it:
+- `execute` results are still shape-unstable (centrs's matrix carries it as a
+  surface-contract theme; [centrs#360](https://github.com/tikoci/centrs/issues/360)
+  is its history): depending on row count and how centrs carried the command,
+  zero rows can come back as an **empty object**, one row as a bare object, N
+  rows as an array, and a script's output as `{ "ret": "<text>" }`. The empty
+  object is truthy, so `d ? [d] : []` invents a row. Take the count from
+  `meta.operation.objectCount`, and normalize with something that excludes it:
 
   ```js
   const rows = Array.isArray(d)
@@ -272,7 +307,7 @@ centrs retrieve lab /ip/dhcp-server/lease --query 'status=waiting' --wait 1m --u
 
 - `--query` / `--filter` uses the `print where` grammar (`mtu>=1500`,
   `(a=1 or b=2)`, bare `disabled` means `=yes`). `~`, `in` and script values fail
-  `input/unsupported-query`.
+  `input/unsupported-query`. A query always returns an array, even on one match.
 - `--wait <deadline>` always takes a value. It retries refused, reset and timed-out
   connections and unreachable hosts; authentication, TLS, DNS, RouterOS and
   validation errors fail immediately. `--timeout` bounds each request, not the
@@ -281,17 +316,18 @@ centrs retrieve lab /ip/dhcp-server/lease --query 'status=waiting' --wait 1m --u
   `deadline-elapsed`, `interrupted`, `failed`), `elapsedMs`, `attempts` and
   `observations`. A deadline that ran out after completed reads is
   `wait/deadline-exceeded`; one that ran out while the router was still down keeps
-  the last transport error. Single target only.
-- `--follow` keeps a list menu's rows current over native API `listen`: snapshot
-  rows, a `synced` line, then one line per change, with an `.id` sweep (`--sweep`,
-  default `10s`) for removals RouterOS never sends. With `--query`, rows leaving
-  the filter are reported too. Bound it with `--count` / `--duration`.
-- `--sample <interval>` re-reads the menu on a timer, over REST or native API. Use
-  it for counters (`rx-byte`, `cpu-load`) and state that `listen` never announces.
+  the last transport error. Reads start one second apart; `--sample <interval>`
+  with `--wait` only sets that cadence, and the result is still one envelope, not
+  a stream. Single target only.
+- `--follow` keeps a list menu's rows current over native API `listen` (see
+  [Follow frames](#follow-frames)). Bound it with `--count` / `--duration`.
+- `--sample <interval>` (without `--wait`) re-reads the menu on a timer, over REST
+  or native API, one line per complete read. Use it for counters (`rx-byte`,
+  `cpu-load`) and for state `listen` never announces.
 
 ```sh
 centrs retrieve lab /ip/address --follow --count 1 --duration 60s --format ndjson
-centrs retrieve lab /interface --sample 5s --count 3 --format ndjson
+centrs retrieve lab /interface --attributes name,rx-byte --sample 5s --count 3 --format ndjson
 ```
 
 ## Consuming streams (NDJSON)
@@ -301,47 +337,80 @@ line. With `--json`/`--format ndjson`, **every** line — including errors — g
 **stdout**; the exit code is nonzero for any failure, even after good rows. (In text
 mode only data rows go to stdout; everything else goes to stderr.)
 
-Branch on **`meta.operation.stream.kind`**, never on line position:
+Branch on **`meta.operation.stream.kind`**, never on line position. The three modes
+share `started` and `summary` but differ in between:
 
-| `kind` | When | `data` | `meta` |
+| Mode | Lines in order | Summary counts in `meta.operation.stream` | `--count N` stops after |
 |---|---|---|---|
-| `started` | first line, once the preflight passed | `null` | full; request advice is in `tips` |
-| `frame` (`--follow`, `api --stream`) / `sample` (`--sample`) | each reply or read | the row(s), or `null` for an `api` `!empty` reply | `operation` only |
-| `synced` (`--follow`) | snapshot finished | — | full |
-| `summary` | exactly once, last | success only | full |
+| `retrieve --follow` | `started`, snapshot `frame`s, `synced`, live `frame`s, `summary` | `frames`, `snapshot`, `changes`, `sweeps`, `synced` | N **live** frames (snapshot frames never count) |
+| `retrieve --sample` | `started`, `sample` per read, `summary` | `samples` | N complete samples |
+| `api --stream` | `started`, `frame` per wire reply, `summary` | `frames`, `rows`, `empty` | N `!re` rows (`!empty` never counts) |
 
-- Read the outcome from `meta.operation.stream` on the **summary**, on success and
-  failure alike: `stopReason` (`completed`, `count-reached`, `duration-elapsed`,
-  `interrupted`, `routeros-error`, `transport-error`), `frames`, `rows`, `empty`,
-  `durationMs`. A failed summary is `ok: false` with an `error` and **no `data`**;
-  rows already emitted are partial results, not a success.
+- Every summary also carries `stopReason` (`completed`, `count-reached`,
+  `duration-elapsed`, `interrupted`, `routeros-error`, `transport-error`) and
+  `durationMs`. Read the outcome there on success and failure alike. A failed
+  summary is `ok: false` with an `error` and **no `data`**; lines already emitted
+  are partial results, not a success.
+- `started`, `synced` and `summary` carry the full `meta`; `frame` and `sample`
+  lines carry only `meta.operation`. Request advice arrives in the `started`
+  line's `tips`.
 - A stream that fails its preflight (bad target, validation, wrong transport) emits
   one error envelope and never a `started` line.
 - `--count` and `--duration` are **centrs** bounds. `api`'s `-f count=3` and
-  `-f duration=2s` are **device** arguments. `--count` counts rows (`!re`) only;
-  `!empty` replies never use it up.
-- A local stop is not a device `!done`. A frame received after centrs stopped has
-  `afterStop: true` — a cancellation `!empty` is not evidence of an empty table.
-  If the router never acknowledges the `/cancel`, the summary carries a
-  `transport/cancel-unacknowledged` warning.
-- Frames carry `observedAt` (host receipt time, ISO 8601).
+  `-f duration=2s` are **device** arguments.
+
+### Follow frames
+
+A `retrieve --follow` frame's `meta.operation.stream` has `index`, `observedAt`
+(host receipt time, ISO 8601), `phase` (`snapshot` or `live`), `change`, `id` and
+`source` (`print`, `listen`, `membership` or `sweep`):
+
+- `change: "upsert"` — `data` is the latest full row; replace what you hold for `id`.
+- `change: "removed"` — `data` is **`null`**; drop `id`. The id is always in
+  `meta.operation.stream.id`, even when `--attributes` leaves `.id` out of `data`.
+
+Apply the lines in order and you hold the menu's state at `synced`; after that,
+each frame is one change. Changes are coalesced state, not an event log: a row
+created and deleted within about 200 ms may never appear.
+
+- **The sweep** (`--sweep`, default `10s`) re-reads the `.id`s and reports rows
+  that vanished without a `listen` notice (view menus such as `/ip/route` never
+  send one) as `removed` with `source: "sweep"`. `--sweep 0` turns it off, with a
+  `tip/follow-sweep-off`.
+- **Filtered follow (`--query`) has a blind spot.** The `listen` stays unfiltered;
+  for each id it reports, centrs asks the router whether the row matches now, so a
+  row that enters or leaves the filter *through a change `listen` reports* is
+  reported as an upsert or a removal (`source: "membership"`). The sweep also
+  catches rows that leave the filter silently (a decreasing address-list
+  `timeout`). But a row that **starts** matching through a change `listen` never reports (a counter, a
+  timer) is never picked up, and a silent field change is never repaired. Use
+  `--sample` for that kind of state.
+- `listen` never reports hot counters (`rx-byte`, firewall `bytes`) or some
+  protocol state; the follow is correct but quiet there.
+
+### `api --stream`
 
 `api --stream` (native API only) is the literal wire, one line per reply:
 
 - **Follow changes** with the `<menu>/listen` endpoint — `api lab
   /ip/address/listen` implies `--stream` and native API. `ip/address/*1/listen`
-  follows one row. Frames keep the device's `.id`, `.dead` and `.section`
-  verbatim.
+  follows one row. Or POST `<menu>/print` with `-f follow=` / `-f follow-only=`.
+  Frames keep the device's `.id`, `.dead` and `.section` verbatim.
 - **GET `<menu>` + `--stream`** streams one print and completes; it does not
   follow.
 - **POST a command + `--stream`** runs it with its fields:
   `api lab /tool/ping -X POST -f address=192.0.2.1 -f count=3 --stream --yes`.
   Streaming never makes a command read-only, so the write gate still applies.
   Terminal attributes from RouterOS's `!done` land in the summary's `data.done`.
-- A filtered or projected `listen` is sent as typed, with a tip saying what
-  RouterOS will not report: `tip/filtered-follow` (rows leaving the filter, and
-  deletes, are not sent) and `tip/follow-proplist` (a proplist without
-  `.id,.dead` strips deletes to empty rows). For stateful filtered following, use
+- A frame's `reply` is `re` (a row) or `empty` (`!empty`, `data: null`). A frame
+  received after centrs stopped has `afterStop: true`: a cancellation `!empty` is
+  not evidence of an empty table. If the router never acknowledges the `/cancel`,
+  the summary carries `transport/cancel-unacknowledged`.
+- **A filtered follow on the wire is incomplete.** Any following request with a
+  query — a `listen`, or a POST `print` with `follow`/`follow-only` — is sent as
+  typed, with `tip/filtered-follow`: RouterOS reports neither rows leaving the
+  filter nor deletes. A proplist without `.id,.dead` strips deletes to empty rows
+  (`tip/follow-proplist`). For a filtered follow you can keep state from, use
   `retrieve --follow --query`.
 - `--raw` drops the envelope and the `started` line; it is not the structured
   stream contract. `--stream` and `/listen` are single target and fail over REST
@@ -366,11 +435,34 @@ Fix: Pass `--yes` in non-interactive automation, or answer `yes` at the TTY prom
   are still checked, and an output file (`file=`, `file-name=`) makes it a write.
 - **Never blindly retry a write.** centrs never replays a write it already sent.
   When the connection drops after sending, the envelope carries
-  `transport/write-outcome-unknown`: the write **may have run**. Read the state back
+  `transport/write-outcome-unknown`: the write **may have run**. A client giving up
+  does not stop the command on the router — it runs to its end. Read the state back
   before trying again. The same warning rides a permission refusal partway through a
   multi-statement script, because the statements before it already ran.
 - Never disable validation to make a write succeed: validation is the product, and
   `--no-validate` should be a deliberate, explained choice, not a workaround.
+
+### Long-running commands
+
+There is no single 60-second limit; there are three, and `--timeout` lifts none of
+them:
+
+- **REST** caps every request at 60 s. A `--timeout` above that is refused before
+  dialing (`usage/timeout-out-of-range`); a command that runs past it fails with
+  RouterOS's `Session closed` (`routeros/session-closed`).
+- **Native API** has no general cap: a structured command runs until `!done`.
+  `execute --via native-api --timeout 120s '/tool/ping address=… count=70'` ran
+  70 s and returned 70 rows. But `execute` sends every **script** (`:delay`, `;`,
+  `:local`, …) over native API as `/execute as-string`, which RouterOS cuts at
+  about 60 s: 0.1.10 reports it as `routeros/api-trap` ("action timed out (13)").
+  `/container/shell` has the same limit.
+- **SSH** runs a script at the console; no reply limit has been measured, only
+  centrs's own `--timeout`.
+
+For long work, start it in the background and poll: `:execute {…}` without
+`as-string` runs the script as a `/system/script/job` and returns at once; then
+`retrieve … --wait 5m --until '…'` waits on what it changes. `api … --stream` shows
+the replies of a long structured command as they arrive.
 
 ### CMR fleets
 
@@ -379,11 +471,15 @@ Fix: Pass `--yes` in non-interactive automation, or answer `yes` at the TTY prom
 controller manages. Only the controller is dialed; each client checks the command
 with `:parse` first, and a client that rejects it is not sent it. One `--yes` covers
 the whole selection, and a timed-out client is `cmr/outcome-unknown`, never retried.
+A connected client RouterOS will not select (half-paired or pending) is dropped as
+if no label matched ([centrs#657](https://github.com/tikoci/centrs/issues/657),
+open).
 
 Treat **any** login on a CMR controller as able to write to the whole fleet: on
 7.26beta1, CMR `run-script` ran writes for a controller login whose group lacked
-`write` ([centrs#456](https://github.com/tikoci/centrs/issues/456)), and centrs
-warns `cmr/caller-policy-not-enforced`. Keep `--cmr` and CMR fleet commands
+`write` ([centrs#456](https://github.com/tikoci/centrs/issues/456); MikroTik says
+beta2 refuses it, not yet verified), and centrs warns
+`cmr/caller-policy-not-enforced`. Keep `--cmr` and CMR fleet commands
 (`/cmr/device/reboot`, `run-script`, `upgrade`, …) out of read-only agent profiles.
 Plain `execute`/`api` fleet commands name the devices they reach in the gate, and
 warn `cmr/rule-selects-every-device` for a VLAN rule with no labels.
@@ -391,7 +487,7 @@ warn `cmr/rule-selects-every-device` for a VLAN rule with no labels.
 ## Files
 
 ```sh
-centrs transfer <router> upload ./routeros-7.24.4.npk
+centrs transfer <router> upload ./routeros-7.25.1.npk
 centrs transfer <router> list
 centrs transfer <router> download flash/backup.rsc ./backup.rsc
 ```
@@ -400,9 +496,11 @@ RouterOS's `/file` contents write caps at **60 KB**, so REST and native API cann
 carry a large upload. With no `--via` pinned, centrs notices the size and
 auto-selects SFTP. The SSH clients run with `BatchMode=yes`, so SFTP never sends a
 password: on a device with no SSH key installed, the auto-hop fails on
-authentication rather than on size. A CDB record's `via=ssh` now selects SFTP, and
-`--via ssh` is accepted as an alias for `sftp`. `download` replaces an
-existing local file, like `curl -o`.
+authentication rather than on size. For a quickchr VM, that key comes from
+`--secure-login` at first boot (see [Naming a router](#naming-a-router)); for
+another router, install a key and pass `--ssh-key`. A CDB record's `via=ssh`
+selects SFTP, and `--via ssh` is accepted as an alias for `sftp`. `download`
+replaces an existing local file, like `curl -o`.
 
 ## When a command is rejected
 
@@ -411,10 +509,17 @@ diagnosis:
 
 1. **Offline** — the same analyzer `explain` uses runs first, with no connection.
    A syntax fault is refused here with the offending byte span.
-2. **Device** — `:parse` plus `/console/inspect` on the router, for the semantic
-   half offline analysis cannot decide.
+2. **Device** — what the router is asked depends on the command:
 
-`--no-validate` disables both. A clean offline pass is necessary, never sufficient.
+| Command | Device stage |
+|---|---|
+| `retrieve`, `api` (a structured path) | `/console/inspect` (path, verb and attribute names); no `:parse`, and `api`'s offline stage is skipped |
+| `api` POST `/execute` (a script) | offline analysis, then `:parse` |
+| `execute` over REST or native API | `:parse`, plus `/console/inspect` for a structured command |
+| `execute` over SSH or MAC-Telnet | `:parse` only |
+
+`--no-validate` disables both stages. A clean offline pass is necessary, never
+sufficient, and RouterOS still re-checks every write.
 
 Every command renders errors the same way, and shows the router's own words
 without `--verbose`:
@@ -424,7 +529,7 @@ without `--verbose`:
 At:          RouterOS's (line N column M), or the offline byte span
 Device said: RouterOS's own message
 Fix:         the next step
-Details:     https://tikoci.github.io/centrs/errors/<code>
+Details:     the code's page
 ```
 
 Branch on the code:
@@ -436,49 +541,115 @@ Branch on the code:
 | `validation/unknown-path` | No published RouterOS build has this path | Check spelling with `explain` or rosetta |
 | `validation/syntax` | A real syntax fault, or a rejection centrs could not pin to one segment | Run `centrs explain '<command>'` and read `At:` |
 | `routeros/permission-denied` | The RouterOS user's group lacks the policy | Fix the user's group; never retried |
+| `routeros/unknown-path` | In 0.1.10: RouterOS answered `no such item` at run time — usually a row that does not exist, not a bad path | Check the row; the code splits in [0.2.0](#coming-in-020) |
 | `transport/auth-failed` | RouterOS refused the login | Check credentials |
 | `transport/edge-auth-failed` | A 401/403 from something in front of RouterOS — proxy, tunnel, WAF | Fix the edge, not RouterOS |
+| `quickchr/ssh-auth-unavailable` | The quickchr VM has no verified SSH key | Recreate it with `--secure-login`, or use REST/native API |
 
 Treat `validation/syntax` as a real syntax problem, and use `explain` to find it
-rather than re-quoting by guesswork. (Before 0.1.8, an absent menu or missing
-package also came back as `validation/syntax`; before 0.1.9, a REST permission
-refusal came back as `transport/connection-closed`.)
+rather than re-quoting by guesswork.
 
 ## Known rough edges
 
 Behaviors to plan around rather than debug from scratch.
 
 - **A hang can be the success path.** `/system/device-mode/update container=yes`
-  blocks by design while RouterOS waits for a *hard power-cycle* to confirm. centrs
-  reports that as a plain timeout on every transport
-  ([centrs#363](https://github.com/tikoci/centrs/issues/363), open). For a CHR, set
-  device-mode at VM creation and let quickchr do the power-cycle. The same applies
-  to `/system/reboot`, package installs and unbounded `/ping`; afterwards, use
-  `retrieve --wait` to see the router come back.
-- **REST timeouts cap at 60 s.** `--timeout` above that is rejected on `rest-api`.
-  For a long `/ping`, traffic test or install, use `--via native-api` with a
-  `--timeout` long enough for it (only REST has the cap), or `api … --stream` to
-  see replies as they come.
+  blocks by design while RouterOS waits for a *hard power-cycle* to confirm, and
+  centrs reports that as a plain timeout
+  ([centrs#363](https://github.com/tikoci/centrs/issues/363), now in the matrix's
+  Provisioning theme). For a CHR, set device-mode at VM creation and let quickchr
+  do the power-cycle. `/system/reboot` is different: it returns `ok: true` at once
+  on REST and native API; then `retrieve --wait` sees the router come back.
+- **Multi-line scripts over SSH (0.1.10).** `execute --via ssh` runs each line of a
+  multi-line script on its own, so `:local` values and menu context are lost
+  between lines (`:local a 7` then `:put "a=$a"` prints `a=`), and a later line can
+  succeed after an earlier one failed. Join statements with `;` on one line, or
+  use REST or native API. Fixed on `main`.
+- **MAC-Telnet output.** `execute --via mac-telnet` can drop `:put` output from a
+  single-line command with a trailing newline
+  ([centrs#575](https://github.com/tikoci/centrs/issues/575), open). Use REST,
+  native API or SSH when you need captured output.
 - **Output can contain secrets.** centrs redacts credentials it *holds*; it does not
   filter values RouterOS *returns*
   ([centrs#359](https://github.com/tikoci/centrs/issues/359), closed won't-fix).
   The boundary is RouterOS's own `sensitive` policy: give an agent or CI job a
-  RouterOS user whose group lacks `sensitive`. Arbitrary file contents
-  (`/file print detail`) are outside that policy, so prefer targeted reads over
-  broad dumps, especially through MCP, where output leaves the machine.
-- **macOS first call.** From a desktop app, the first router call can fail with
-  `FailedToOpenSocket` while macOS's Local Network permission prompt waits for a
-  click. Allow it, then retry once.
+  RouterOS user whose group lacks `sensitive`. The built-in `read`, `write` and
+  `full` groups all include `sensitive` and `reboot`, so make a group: for a
+  read-only REST or native API client, `/user/group/add name=rest-read
+  policy=read,api,rest-api` (REST needs both `api` and `rest-api`). See MikroTik's
+  [User](https://manual.mikrotik.com/docs/authentication-authorization-accounting/user)
+  and [Create a REST user](https://manual.mikrotik.com/docs/developer-guides/rest-api#create-a-rest-user).
+  Arbitrary file contents (`/file print detail`) are outside that policy, so prefer
+  targeted reads over broad dumps, especially through MCP, where output leaves the
+  machine.
 - **`check` is not implemented.** It is `designed` in the matrix; do not build on
   it.
+
+## Dropping to raw REST
+
+centrs exists so you do not have to, but when something else must call `/rest`
+directly (a dashboard backend, a language without centrs), these RouterOS facts
+bite. Checked on CHR 7.25.1 and described in MikroTik's
+[REST API](https://manual.mikrotik.com/docs/developer-guides/rest-api) page:
+
+- **One user's requests run one at a time, in order.** A same-user GET waited 5 s
+  behind a `:delay 6s`, while another user's GET answered in 0.25 s. Give a
+  dashboard and an automation separate users. This applies to centrs over REST
+  too.
+- **A client that gives up does not stop the command.** A `:delay 5s; …set` whose
+  client hung up at 2 s still made its change.
+- **Values come back as strings** (`"7"`, `"true"`); requests may send numbers and
+  booleans. `{"count-only":""}` on POST `<menu>/print` returns `{"ret":"<n>"}`.
+- **No CORS.** `OPTIONS` gets `503` and no `Access-Control-*` header is sent, so a
+  browser page cannot call the router directly; put a backend in between.
+- **Ids start with `*`; send it unencoded.** `/rest/user/*1` works, `/rest/user/%2A1`
+  is a `400`. Quote such URLs in a shell. Names also work as ids where records have
+  them.
+- **A missing permission is not a 403.** A write by a user without `write` is
+  HTTP `500` `not enough permissions (9)` when the row is addressed by `*id`, and
+  `400` `missing or invalid resource identifier` when addressed by name — the same
+  `400` that a PATCH with no row id gets from any user. `403` means the REST
+  service itself is off. centrs maps the permission case to
+  `routeros/permission-denied`.
 
 ## MCP
 
 `centrs mcp` serves stdio tools gated by the CDB: only registered devices are
-reachable, credentials never leave the CDB, and a device accepts writes only when
-its record carries the comment key `mcp=rw` (plus `confirm: true` on the call).
-`centrs_validate` runs both validation stages without executing — the dry-run to
-reach for before `centrs_execute`. `centrs_explain` needs neither CDB nor device.
+reachable, and inline host + credentials are refused (`cdb/target-not-registered`).
+The server reads saved credentials to dial; tool results never return them
+(devices show only `passwordSet`), though `centrs_devices add`/`set` can write
+them. A device accepts writes only when its record carries the comment key
+`mcp=rw` (plus `confirm: true` on the call). `centrs_validate` runs both validation
+stages without executing — the dry-run to reach for before `centrs_execute`.
+`centrs_explain` needs neither CDB nor device.
+
+Do not edit the CDB while MCP device calls are running: authorization and dialing
+read it separately, so a concurrent edit can change the target, credentials or
+write policy in between
+([centrs#604](https://github.com/tikoci/centrs/issues/604), open). In 0.1.10, a
+tool result whose envelope has `ok: false` does not set MCP `isError`; check `ok`.
+
+## Coming in 0.2.0
+
+On centrs `main`, not in a published build when this was written. Check the
+[CHANGELOG](https://github.com/tikoci/centrs/blob/main/CHANGELOG.md) before relying
+on any of it:
+
+- **Error codes.** RouterOS's `no such item` (a missing row in a menu that
+  exists, or a bare REST 404) becomes `routeros/no-such-item`, and
+  `routeros/unknown-path` then means `no such command` (which 0.1.10 reports as
+  `routeros/request-failed` or `routeros/api-trap`). The native `action timed out (13)` trap becomes
+  `routeros/action-timed-out` instead of `routeros/api-trap`. Code that matches
+  these must take both spellings across the upgrade.
+- `execute --via ssh` runs a multi-line script as one unit, and a nonzero RouterOS
+  exit over SSH keeps a `routeros/*` code instead of `transport/network`.
+- MCP sets `isError` on a failed envelope. Error links print the `tikoci.dev` host.
+- `discover`/MNDP fields: `sequence`, `ipv6` and the numeric `unpack` are replaced
+  by `headerHex`, `ipv6Addresses` and corrected TLV decoding.
+- The Docker image runs as a non-root user; its config directory moves to
+  `/home/bun/.config/tikoci/`.
+- The default transport is planned to become native API first, with fallback. Pin
+  `--via` where the protocol matters.
 
 ## Authoritative docs & related skills
 
@@ -498,7 +669,7 @@ reach for before `centrs_execute`. `centrs_explain` needs neither CDB nor device
 - **routeros-tikoci-quickchr-cli** / **routeros-tikoci-quickchr** — boot the CHR that `--quickchr`
   then targets: the `-cli` skill for the shell path, the other for TypeScript
   harnesses. The pair is the normal grounding loop: quickchr creates the router,
-  centrs drives it.
+  centrs drives it. Boot with `--secure-login` if centrs will use SSH or SFTP.
 - **routeros-fundamentals** / **routeros-scripting** — what to actually say to
   RouterOS once centrs can reach it.
 - **routeros-syntax-inspection** — `/console/inspect` and `:parse`, the machinery

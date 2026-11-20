@@ -31,7 +31,7 @@ Decided in [#47](https://github.com/tikoci/routeros-skills/issues/47) (2026-11-0
 | Deferred as standalone skills | DHCP, DNS, VPN, IPsec |
 | Reference-only (fold into existing skills) | tools, logging, files-and-backup, interface-lists (into `routeros-firewall`) |
 | Declined | Mirroring another skill catalog; a meta skill-discovery skill |
-| Fold-in | API operational facts (#39) into `routeros-tikoci-centrs` / `routeros-fundamentals` |
+| Fold-in | API operational facts (#39): done in `routeros-tikoci-centrs` → Dropping to raw REST, linking the manual's REST API page |
 | Split by package | `routeros-wifi` covers the `wifi-*` packages and their integrated CAPsMAN; `routeros-legacy-wireless` (done) covers the legacy `wireless` package: `/interface/wireless`, `/caps-man` and `/interface/w60g`. Each points to the other only to say which applies |
 
 References default to manual.mikrotik.com links (the references pipeline in #38 was
