@@ -93,7 +93,7 @@ as four APIs behind one endpoint.
 | `request=syntax` with `input`, or command-level `syntax`, stalls ~60 s | observed on 7.9.2 | Query `syntax` by `path` only; feature-detect command-level lookups with a short timeout |
 | `input` beyond 32,767 bytes rejected | all | Route oversized input to `:parse` (no cap) or reject it — never highlight a truncated copy and present it as validating the whole script |
 | Highlight latency cliff near 28 KB | observed 7.23.x | Prefer a `:parse` pre-check for big scripts (no such cliff, no 32 KB cap) |
-| Native-API `request=completion` silently drops entries | measured 7.22.1 [^6] | Send `=.proplist=completion` with every native-API completion query, or use REST. Without it, paths with 36–47 candidates lost entries in 80–100% of serial calls; with it, about 1%. REST returned the full set every time |
+| Native-API `request=completion` can silently omit candidates | measured 7.22.1 x86_64 CHR [^6] | Use REST when completeness or row metadata matters. Over the native API, add `=.proplist=completion`: on the 47-candidate probe it cut drops from 100% to about 1%, but returns only the `completion` field (no `type` etc.). Larger candidate lists drop more often; no native-only candidate was ever seen |
 
 - **Distinguish `[]`, timeout, and transport failure.** An empty array is a
   real answer (nonexistent path); a timeout is not. Conflating them corrupts
@@ -210,4 +210,4 @@ response or derived, normalization applied, truncation, and outcome
 [^6]: [tikoci/restraml `docs/mikrotik-bug-native-api-inspect.md`](https://github.com/tikoci/restraml/blob/0893732e0e7860df696ba1203a9704e30e884fb4/docs/mikrotik-bug-native-api-inspect.md)
     — CHR 7.22.1 x86_64, reproducible scripts: drops at concurrency 1 (not tag
     multiplexing), unaffected by RAM, scale with per-item response size;
-    the native result is always a strict subset of REST's.
+    native results never held a candidate that REST lacked.
