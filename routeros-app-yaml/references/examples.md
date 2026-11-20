@@ -79,13 +79,16 @@ services:
     environment:
       POSTGRES_DB: app
       POSTGRES_USER: app
-      POSTGRES_PASSWORD: changeme
+      POSTGRES_PASSWORD: "[secret:db_password]"
     volumes:
       - db-data:/var/lib/postgresql/data
     restart: always
     expose:
       - "5432"
     stop_grace_period: "30s"
+
+secrets:
+  db_password:
 
 volumes:
   web-data: {}
@@ -104,9 +107,10 @@ configs:
       http {
         server {
           listen 80;
-          server_name [accessIP];
+          # literal values: placeholder expansion in configs is unverified
+          server_name app.example.lan;
           location / {
-            proxy_pass http://[containerIP]:3000;
+            proxy_pass http://127.0.0.1:3000;
           }
         }
       }
@@ -134,32 +138,40 @@ configs:
       ports:
         - "3000:3000/tcp:web"
       environment:
-        GF_SECURITY_ADMIN_PASSWORD: admin
+        GF_SECURITY_ADMIN_PASSWORD: "[secret:admin_password]"
       volumes:
         - grafana-data:/var/lib/grafana
+  secrets:
+    admin_password:
   volumes:
     grafana-data: {}
 ```
 
 ## Port Format Examples
 
+Old OCI style (all RouterOS versions):
+
 ```yaml
-# === Old OCI-style (all RouterOS versions) ===
 ports:
   - "8080:80"                          # No protocol (defaults to tcp)
   - "8080:80/tcp"                      # Explicit tcp
   - "53:53/udp"                        # UDP
   - "8080:80/tcp:web"                  # With label
+```
 
-# === New RouterOS 7.23+ style ===
+New RouterOS style (7.23+):
+
+```yaml
 ports:
   - "8080:80:web:tcp"                  # Label then protocol
   - "53:53:dns:udp"                    # UDP with label
+```
 
-# === Never: an IP or placeholder in front of the host port ===
-# "192.168.1.1:8080:80/tcp" publishes port 192 (see SKILL.md, Port Format)
+Never put an address in front of the host port: `"192.168.1.1:8080:80/tcp"` publishes port 192 (see SKILL.md, Port Format).
 
-# === Long-form object syntax ===
+Long-form object syntax:
+
+```yaml
 ports:
   - target: 80
     published: 8080
