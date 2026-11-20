@@ -29,6 +29,7 @@ BSR
 btest
 BTRFS
 Bufferbloat
+bunfig
 bunx
 bypassable
 calea
@@ -109,6 +110,7 @@ fstatus
 fwupdate
 Gbit
 Gbps
+gdbstub
 getpgid
 GMP
 GPT
@@ -183,6 +185,7 @@ mikrotik
 MIPSBE
 misattributed
 misparses
+mke
 mktemp
 mkvlan
 MLAG
@@ -215,6 +218,7 @@ netmap
 Netwatch
 newpass
 nexthop
+nouser
 NStreme
 nwid
 Nexthops
@@ -299,6 +303,7 @@ repoint
 repointing
 reprovisioning
 requiredness
+respawn
 restraml
 REUSEADDR
 REUSEPORT

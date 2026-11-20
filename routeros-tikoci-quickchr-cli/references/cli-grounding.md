@@ -1,4 +1,4 @@
-# CLI grounding log — quickchr 0.4.8, 0.5.0 and 0.5.2
+# CLI grounding log — quickchr 0.4.8, 0.5.0, 0.5.2 and 0.6.0
 
 ## Contents
 
@@ -18,6 +18,12 @@
 - What the 0.5.0 re-check did *not* cover
 - quickchr 0.5.2 package review
   - Follow-up live checks (PR review)
+- quickchr 0.6.0 package review
+  - /app on CHR
+  - Test recipe (library)
+  - SSH with `--secure-login`
+  - Waiting start with no `user` NIC
+  - What the 0.6.0 pass did *not* cover
 
 Live runs behind the claims in `routeros-tikoci-quickchr-cli/SKILL.md`, so a
 reviewer can re-run any of them. Every section up to "What was *not*
@@ -654,3 +660,135 @@ Error [INVALID_ARGUMENT]: start --all runs in background and accepts only
 --no-wait, --bg, --background, --accel, --timeout-extra, --secure-login and
 --no-secure-login. Start an individual machine to use other options.
 ```
+
+## quickchr 0.6.0 package review
+
+Run on 2026-11-20 against the published package, installed from npm into
+an empty project and invoked by path (`./node_modules/.bin/quickchr`), not
+from a checkout:
+
+```sh
+bun add @tikoci/quickchr@0.6.0     # quickchr --version → "quickchr 0.6.0"
+npm view @tikoci/quickchr@0.6.0 gitHead
+# → 47b02eac53ad7a05694c4a524563cc7ea5242053 (= tag v0.6.0)
+npm view @tikoci/quickchr dist-tags
+# → { "latest": "0.5.6", "next": "0.6.0" }
+```
+
+0.6.0 was promoted to `latest` later the same day (`npm dist-tag add`, the
+same tarball; no republish), so `latest` and `next` both point at it.
+
+Environment: macOS Intel x64, QEMU with HVF, Bun 1.4.4 (the package's
+`.bun-version`; `engines.bun` is `>=1.4.3`), centrs 0.1.9, warm image
+cache, RouterOS CHR 7.25.1 x86 (the stable channel that day). Machine names
+were nonce (`sk60-*`), every one was removed afterwards, and machines
+already on the host were not touched.
+
+Checked in the published source: `src/index.ts` exports `cacheAdd`,
+`cacheKey`, `createLogger`, `defaultBootTimeout`, `accelTimeoutFactor` and
+`detectAccel`; `ErrorCode` in `src/lib/types.ts` includes `REBOOT_FAILED`
+and `PERMISSION_DENIED`; in `src/lib/quickchr.ts` the boot timeout adds
+`opts.timeoutExtra` on the create path, the behavior quickchr#291 fixed
+after this release.
+
+### /app on CHR
+
+```sh
+quickchr start --name sk60-app --version 7.25.1 --arch x86 \
+  --secure-login --device-mode-enable container --add-package container --add-disk 1G
+# → Uploading: container-7.25.1.npk / Rebooting CHR to activate packages...
+#   Applying device-mode (mode=rose container=yes)... mode: advanced -> rose
+#   Device-mode verified: mode=rose container=yes
+#   quickchr account created (user: quickchr)
+#   ● sk60-app created and started          elapsed 73s
+centrs retrieve --quickchr sk60-app /system/package    # → container, routeros
+centrs retrieve --quickchr sk60-app /disk               # → slot pcie1, fs "-", 1 GiB, virtio
+centrs execute --quickchr sk60-app --yes '/app/settings/set disk=pcie1'
+# → [routeros/invalid-value] … input does not match any value of disk
+centrs execute --quickchr sk60-app --yes '/disk/format pcie1 file-system=ext4'
+# → mke2fs … pcie1: format done (about 1s)
+centrs execute --quickchr sk60-app --yes '/app/settings/set disk=pcie1'   # → accepted
+```
+
+`/console/inspect` `request=child path=app,add` on 7.25.1 lists
+`auto-update container-command-lines copy-from devices disabled environment
+extra-mounts firewall-redirects network network-outgoing-access network-pvid
+required-hw-devices required-mounts secrets use-https yaml`, so there is no
+`yaml-url`.
+
+A minimal app (`traefik/whoami`, port `"8088:80:web:tcp"`) added with
+`PUT /rest/app` and `{"yaml": …}` and no `use-https` came back
+`disabled=true`, `use-https=true`. Enabled as is, it read
+`status: wait for reverse proxy`, `running: false` after 150 s. After
+`/app/set … use-https=no` it was `running: true` within about 16 s, with
+`ui-url` `http://10.0.2.15:8088`, a container `app-sk60-whoami`, and a
+dstnat rule `dst-port=8088 → 172.18.0.2:80` ("app sk60-whoami redirect to
+web"). The log had no cloud-DNS line matching the #37 draft's quote, so the
+skill does not quote one.
+
+A second machine checked the post-boot package route and a host forward
+to the app's port:
+
+```sh
+quickchr start --name sk60-app2 --version 7.25.1 --arch x86 \
+  --secure-login --device-mode-enable container --add-disk 1G --forward web:9188:8088
+# → Ports: … winbox:9145 web:9188          elapsed 62s
+quickchr set sk60-app2 --package container
+# → Installed 1 package on sk60-app2: container (machine rebooted to activate).  14s
+# format pcie1, set the app disk, PUT the same app with "use-https": "no", enable it
+curl -s http://127.0.0.1:9188/
+# → Hostname: CHR … IP: 172.18.0.2 … RemoteAddr: 10.0.2.2:64866
+```
+
+### Test recipe (library)
+
+The MANUAL §4 "Using quickchr in another project's tests" example, copied
+into a `bun:test` file with one test that reads `/system/resource`:
+
+```text
+bun test recipe.test.ts      # stdout: only bun's own banner
+# stderr: quickchr:   Using cached image: chr-7.25.1
+#         machine: sk60-it-5108bbab version=7.25.1 hookTimeout=780000 hvfBudget=180000
+#  1 pass, 0 fail — 21.96s; the machine was gone from `quickchr list` afterwards
+```
+
+`defaultBootTimeout("x86", false, "tcg")` + 300 s gave the 780,000 ms hook
+timeout; the `hvf` budget is 180,000 ms. This exercised only the passing
+path, not a forced `BOOT_TIMEOUT`.
+
+### SSH with `--secure-login`
+
+On `sk60-app` above:
+
+```sh
+quickchr inspect sk60-app --json | jq '.services.ssh.auth'
+# → username "quickchr", batchModes ["private-key"], privateKeyPath set
+centrs execute --quickchr sk60-app --via ssh '/system/identity/print' --json
+# → ok, meta.via "ssh", target port 9142 (the machine's SSH port)
+```
+
+The negative case (a machine without `--secure-login` failing centrs SSH)
+was not re-run; it rests on quickchr#253 and tikoci/routeros-skills#56.
+
+### Waiting start with no `user` NIC
+
+```text
+quickchr start --name sk60-nouser --version 7.25.1 --arch x86 --add-network socket::sk60seg
+Error [INVALID_NETWORK]: Machine "sk60-nouser" has only socket network interfaces and no
+user-mode NIC, so start cannot wait for it to boot: …
+  Hint: Add a user-mode NIC alongside the others (--add-network user --add-network <spec>),
+  or pass --no-wait (wait: false) to boot without waiting.
+```
+
+No machine was left behind (`quickchr list` did not show it).
+
+### What the 0.6.0 pass did *not* cover
+
+- macOS `quickchr networks create` and the `shared`/`bridged` refusal
+  without a daemon (#256), the `PERMISSION_DENIED` path for a
+  root-owned QEMU (#259), license levels (#261), and the relative
+  `QUICKCHR_DATA_DIR` refusal (#276). The skill states these from
+  quickchr's CHANGELOG `[0.6.0]`.
+- `--timeout-extra` on a resume, and `add()`'s stdout line (#290); both
+  are from quickchr's CHANGELOG and open issues.
+- Earlier sections keep their own versions; nothing above re-ran them.

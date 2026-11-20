@@ -5,9 +5,10 @@ description: "Ground RouterOS config/scripts/API code against a REAL router usin
 
 # Grounding RouterOS with quickchr
 
-Pinned to **0.5.2**. Read the release `CHANGELOG.md` entries
-from `[0.5.0]` through `[0.5.2]` before upgrading from 0.4.x. Where a
-behavior changed, this skill names the version.[^versions]
+Pinned to **0.6.0**. 0.6.0 has breaking changes: read its
+`CHANGELOG.md` "Breaking (0.6.0)" list before upgrading from 0.5.x, and
+`[0.5.0]` through `[0.5.2]` before upgrading from 0.4.x. Where a behavior changed, this skill names the
+version.[^versions]
 
 ## What this is for
 
@@ -44,8 +45,8 @@ await chr.remove();   // tear down
 ```
 
 `exec()` runs a CLI command (config writes, scripts) and returns `{ output, via }`;
-`rest()` does a REST call and returns parsed JSON. Install from npm (`bun add @tikoci/quickchr@0.5.2`)
-or run the CLI without installing (`bunx @tikoci/quickchr@0.5.2 <cmd>`). Worked, runnable version:
+`rest()` does a REST call and returns parsed JSON. Install from npm (`bun add @tikoci/quickchr@0.6.0`)
+or run the CLI without installing (`bunx @tikoci/quickchr@0.6.0 <cmd>`). Worked, runnable version:
 [`examples/grounding/`](https://github.com/tikoci/quickchr/tree/main/examples/grounding).
 Minimal boot-and-read smoke test:
 [`examples/quickstart/`](https://github.com/tikoci/quickchr/tree/main/examples/quickstart).
@@ -71,11 +72,13 @@ See also [`references/quickchr-api.md`](./references/quickchr-api.md) in this sk
 | Pick RouterOS | `channel` (`stable`/`long-term`/`testing`/`development`) **or** `version` (`"7.23.1"`); if both, `version` wins (with a warning) |
 | Return before ready | `wait: false`, then `instance.waitForBoot()`; refused with provisioning options |
 | Architecture | `arch:` — `"x86"` or `"arm64"` |
-| Managed login vs open admin | `secureLogin: true` (managed user, real password) / `false` |
-| Run a CLI command | `instance.exec(cmd, opts?)` — `opts.via` is `auto`/`rest`/`ssh`/`console`/`qga` |
+| Managed login vs open admin | `secureLogin: true` (managed user, real password, managed SSH key) / `false`. Use `true` for anything that will use SSH/SFTP, centrs over SSH included: the key is made at first boot only (see gotchas) |
+| Run a CLI command | `instance.exec(cmd, opts?)` — `opts.via` is `auto`/`rest`/`console`/`qga`. The type also lists `ssh`, but on 0.6.0 `exec()` throws `EXEC_FAILED` for it; for SSH use `centrs execute --quickchr <name> --via ssh` |
 | REST call | `instance.rest(path, init?)` |
 | Move files | `instance.upload(local, remote?)` / `instance.download(remote, local)` |
-| Add a package | `instance.installPackage(name)` (downloads + reboots; returns installed names) |
+| Add a package | `packages` at first boot, or `instance.installPackage(name)` later (downloads + reboots; returns installed names) |
+| Pre-download an image | `cacheAdd({ channel \| version, arch })` — no machine |
+| Size your own timeouts | `defaultBootTimeout(arch, withPackages?, accel?)` — the per-attempt budget `start()` uses |
 | Custom port-forwards | `extraPorts` / CLI `--forward` (see Networking) |
 | Extra NICs | `networks` / CLI `--add-network` (see Networking) |
 | Connection surface for a child process | `instance.subprocessEnv()` / `instance.descriptor()` |
@@ -88,7 +91,7 @@ skill owns the CLI lifecycle (`add`, `start`, `networks`, `cache`)
 and the `centrs --quickchr` driving pattern — this skill does not repeat
 it. Library dependency patterns (npm / `file:` / `bun link`):
 [`examples/README.md`](https://github.com/tikoci/quickchr/blob/main/examples/README.md).
-CLI without installing: `bunx @tikoci/quickchr@0.5.2 <cmd>`.
+CLI without installing: `bunx @tikoci/quickchr@0.6.0 <cmd>`.
 
 ## Networking — which mechanism for which traffic
 
@@ -104,7 +107,7 @@ forward) and is all most grounding needs. Reach past it only for these shapes
 | Receive UDP the **guest sends** (syslog, NetFlow, TZSP, a server replying) | guest → host | guest sends to gateway `10.0.2.2:<port>`; host binds an **unconnected** socket — **no forward** |
 | Receive guest **L2 frames / broadcasts** (MNDP, MAC-Telnet, raw Ethernet) | guest ↔ host | `socket-connect` L2 NIC (host runs a TCP server) |
 | L2 link between two VMs | VM ↔ VM | `socket::<name>` named socket (default `dgram` unix pair, **either machine may start first**; `--mode mcast` is UDP multicast — see gotchas) or an explicit `socket:listen:`/`socket:connect:` pair (listener starts first) |
-| Real LAN presence / DHCP from the host | full L3 | `shared` or `bridged:<iface>` |
+| Real LAN presence / DHCP from the host | full L3 | `shared` or `bridged:<iface>` (macOS without root: `quickchr networks create <net>` once per network, a sudo step, QEMU 7.2+) |
 
 Two non-obvious points worth keeping:
 
@@ -122,6 +125,11 @@ Two non-obvious points worth keeping:
   [`examples/mndp/`](https://github.com/tikoci/quickchr/tree/main/examples/mndp).
   Keep `user` **first** (ether1) in any multi-NIC config — RouterOS only
   auto-DHCPs ether1, and `hostfwd` needs the guest's `10.0.2.15`.
+  `networks` *replaces* the default NIC, so list `"user"` yourself: since
+  0.6.0 a waiting, non-provisioning `start()` with no `user` NIC is
+  refused with `INVALID_NETWORK` before anything downloads (`wait: false`
+  boots it without waiting). Provisioning needs a `user` NIC regardless
+  and fails with `NETWORK_UNAVAILABLE` without one.[^nic]
 
 ## Driving an external tool against a live CHR
 
@@ -163,6 +171,50 @@ forwarding rule"*).[^ground-race] For versions before the 0.5.0 fix, create mach
 one at a time, or give each an explicit `portBase` at least 10 apart.
 Once created, machines can run side by side.
 
+## Using quickchr in another project's tests
+
+The pattern for a project that boots CHRs from its own `bun:test`
+integration tests. quickchr's MANUAL has the full example and the timeout
+arithmetic:
+[Using quickchr in another project's tests](https://github.com/tikoci/quickchr/blob/main/MANUAL.md#using-quickchr-in-another-projects-tests).
+centrs's own integration tests work this way.[^tests]
+
+- **Download first, outside every test timeout.** Call `cacheAdd()` in a
+  bunfig preload, or run `quickchr cache add` as a CI step. Then boot the
+  `version` it returns, not the channel, so a channel that moves between
+  the two steps cannot start a download inside a test.
+- **Create and boot with one `start()`** on a random name
+  (`myapp-it-<hex>`). Don't use `add()` then `start({ name })`: `start()`
+  claims a new name under the same locks and returns the handle. On a
+  first-boot timeout quickchr normally stops and removes the machine it
+  just made; if that cleanup fails, or `QUICKCHR_PRESERVE_ON_FAILURE=1`
+  is set, the printed name and the failure report find what was kept. On 0.6.0, `start()` on a
+  machine `add()` made also ignores `timeoutExtra` (fixed after 0.6.0,
+  quickchr#291).
+- **Keep stdout the test's own.** Send `onProgress` to stderr, pass it
+  to `start()`, and pass `logger: createLogger(onProgress)` to
+  `cacheAdd()`. In the warm-cache background recipe that left no quickchr
+  output on stdout. `add()` does not forward the image logger on 0.6.0
+  and prints its image line anyway (quickchr#290).
+- **The hook timeout must outlive quickchr's own waits**, so a slow boot
+  ends in quickchr's `BOOT_TIMEOUT` report instead of the runner cutting it
+  off. For a start **without provisioning** (the MANUAL's recipe), start
+  from `defaultBootTimeout(arch, false, "tcg")` and add the margins the
+  MANUAL lists (`timeoutExtra` twice, for the respawn, plus 300 s for the
+  lock, the failure report and the stop). Provisioning adds waits on top:
+  the package-install reboot waits up to `defaultBootTimeout(arch, true,
+  accel)` and the device-mode power-cycle up to `defaultBootTimeout(arch,
+  false, accel)` for the boot and again for the device-mode API, so add
+  those, or keep provisioning out of the test's `start()`.[^tests]
+- **Print the machine name** (to stderr) before `start()`, so a killed run
+  says what it left behind, and **`remove()` in `afterAll`**.
+- **In CI, give the run its own `QUICKCHR_DATA_DIR`** (an absolute path in
+  the runner's temp directory; 0.6.0 refuses a relative one) and cache
+  `<data dir>/cache` between runs.
+- **Pass `arch` explicitly.** The default is the Bun process's
+  architecture, which is `x86` for an x64 Bun under Rosetta on Apple
+  Silicon (quickchr#293).
+
 ## Grounding gotchas & known limitations
 
 - **Provisioning floor:** managed login, package install, and `exec`-write
@@ -175,6 +227,19 @@ Once created, machines can run side by side.
   names the route that still works (`setDeviceMode()`,
   `installPackage()`, or `clean()` and start again). (On 0.4.8 they
   were silently dropped.)[^window]
+- **The managed SSH key is first-boot only.** `secureLogin: true` (without
+  `user`) on the first boot is the only way a machine gets the
+  batch-verified key that `descriptor()` advertises and centrs needs for
+  every SSH/SFTP path. Leave `user` out, and before connecting check that
+  `descriptor()` lists `private-key` in `services.ssh.auth.batchModes`,
+  which quickchr does only after verifying the key. A machine booted
+  without it gets no key later (adding one is quickchr#280); on a
+  disposable VM, `clean()` erases the guest disks and reopens first-boot
+  provisioning (quickchr#253).[^secure-login]
+- **A machine whose QEMU another user owns** (one started with `sudo`) is
+  refused by `stop()`, `shutdown()`, `remove()` and `clean()` with
+  `PERMISSION_DENIED` since 0.6.0. Run them as that user against the same
+  data dir.
 - **`BOOT_TIMEOUT` on a restart:** 0.5.0 preserves a machine that
   booted before. A machine created by
   the same call is still removed, and one `add()` created that never
@@ -218,8 +283,10 @@ Once created, machines can run side by side.
   (the gateway-UDP and `socket-connect` recipes above feed these).
 
 [^versions]: quickchr
-    [`CHANGELOG.md`](https://github.com/tikoci/quickchr/blob/v0.5.2/CHANGELOG.md)
-    `[0.5.0]` through `[0.5.2]`;
+    [`CHANGELOG.md`](https://github.com/tikoci/quickchr/blob/v0.6.0/CHANGELOG.md)
+    `[0.5.0]` through `[0.6.0]`;
+    [0.6.0 package review](../routeros-tikoci-quickchr-cli/references/cli-grounding.md#quickchr-060-package-review)
+    and, before it, the
     [0.5.2 package review](../routeros-tikoci-quickchr-cli/references/cli-grounding.md#quickchr-052-package-review). The 0.5.0 behavior here was re-run against the published
     package (`routeros-tikoci-quickchr-cli/references/cli-grounding.md`
     §quickchr 0.5.0 re-check).
@@ -244,3 +311,22 @@ Once created, machines can run side by side.
     four creations, and three processes started at the same instant, get
     distinct blocks) and by a live test in which two concurrent starts
     both boot (`test/integration/start-stop.test.ts`, "concurrent starts").
+[^nic]: quickchr CHANGELOG `[0.6.0]` Breaking and Fixed (#268); the
+    refusal was reproduced against the published 0.6.0 package in
+    `routeros-tikoci-quickchr-cli/references/cli-grounding.md`
+    §quickchr 0.6.0 package review.
+[^tests]: quickchr MANUAL.md §4 "Using quickchr in another project's
+    tests" (tikoci/quickchr#296, merged in #297). The MANUAL's example ran
+    as a `bun:test` against the published 0.6.0 package: one pass in 22 s,
+    nothing from quickchr on stdout, the machine removed afterwards
+    (`routeros-tikoci-quickchr-cli/references/cli-grounding.md`
+    §quickchr 0.6.0 package review). The provisioning waits are read from
+    [`src/lib/quickchr.ts` at v0.6.0](https://github.com/tikoci/quickchr/blob/v0.6.0/src/lib/quickchr.ts):
+    the package-install reboot wait and the device-mode power-cycle's
+    `waitForBoot` and `waitForDeviceModeApi`, each with its own
+    `defaultBootTimeout`. Not forced live.
+[^secure-login]: quickchr MANUAL.md `StartOptions` (`secureLogin` row,
+    #253). On 0.6.0 a `--secure-login` machine's `inspect --json` listed
+    `batchModes: ["private-key"]`, and `centrs execute --via ssh` reached it
+    (`routeros-tikoci-quickchr-cli/references/cli-grounding.md`
+    §quickchr 0.6.0 package review).
