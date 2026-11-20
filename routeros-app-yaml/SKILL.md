@@ -14,7 +14,7 @@ The `/app` subsystem lets users define one or more containers as a single "appli
 **Key concepts:**
 
 - Each `/app` is defined by a YAML document with services, configs, volumes, and networks
-- The YAML is loaded into RouterOS via CLI (`/app/add yaml-url=...`) or REST API
+- The YAML is loaded into RouterOS via CLI (`/app/add yaml=...`) or REST (`PUT /rest/app` with `{"yaml": "..."}`). 7.24.5 has no `yaml-url` parameter on `/app/add`; fetch the file first (see [Lifecycle](#lifecycle-on-the-router))
 - Built-in apps ship with RouterOS (visible at `GET /rest/app`)
 - Custom apps can be added from URLs or inline YAML
 - App stores (`app-store-urls=`) provide curated collections
@@ -97,10 +97,12 @@ Each key under `services:` defines one container. Required property: `image`.
 
 RouterOS supports two port mapping string formats. Both are valid; new apps from 7.23beta2+ prefer the colon style.
 
+**Never put an IP address in front of a port.** RouterOS takes the first octet as the published port and shifts every other field left: `"192.168.88.1:8088:8080/tcp:web"` became a live dstnat rule on `dst-port=192`, with the label `8080/tcp`. Both styles break the same way (CHR 7.24.5 x86, and a field report on an RB5009 running 7.22+).[^ip-prefix] `/app` publishes ports on the router's own address, so there is nothing to put there. The manual's port syntax has no IP field either.[^manual-apps] The strict restraml schema still accepts the prefix ([tikoci/restraml#106](https://github.com/tikoci/restraml/issues/106)), so a green schema check doesn't catch it.
+
 ### Old OCI-style (pre-7.23)
 
 ```text
-[ip:]host_port:container_port[/tcp|/udp][:label]
+host_port:container_port[/tcp|/udp][:label]
 ```
 
 Examples:
@@ -109,13 +111,13 @@ Examples:
 ports:
   - "8080:80/tcp"
   - "8443:443/tcp:https"
-  - "192.168.1.1:53:53/udp:dns"
+  - "53:53/udp:dns"
 ```
 
 ### New RouterOS style (7.23+)
 
 ```text
-[ip:]host_port:container_port[:label][:tcp|:udp]
+host_port:container_port[:label][:tcp|:udp]
 ```
 
 Protocol is appended with colon instead of slash:
@@ -138,15 +140,7 @@ ports:
     app_protocol: http
 ```
 
-### IP Addresses and Placeholders in Ports
-
-Port strings can include literal IPs or placeholder expressions:
-
-```yaml
-ports:
-  - "[accessIP]:[accessPort]:80/tcp:web"      # Old style with placeholders
-  - "[accessIP]:[accessPort]:80:web:tcp"       # New style with placeholders
-```
+A port labelled `web` makes RouterOS set up a reverse proxy with a generated URL, and port 80 counts as `web` unless labelled otherwise. The health check probes that port, so an app with nothing listening there stays in `starting`. Label ports explicitly.[^manual-apps]
 
 ## Placeholders
 
@@ -154,13 +148,32 @@ RouterOS expands these placeholders at deploy time:
 
 | Placeholder | Expands to |
 |---|---|
-| `[accessIP]` | IP address for accessing the app from outside |
-| `[accessPort]` | Primary host port for external access |
-| `[accessPort2]` | Secondary host port |
+| `[accessIP]` | IP address or hostname used to reach the app from outside |
+| `[accessPort]` | Router port mapped to the app's web interface |
+| `[accessProto]` | `http` or `https` |
 | `[containerIP]` | IP address assigned to the container |
-| `[routerIP]` | Router's own IP address |
+| `[containerInterface]` | Name of the app's VETH interface |
+| `[routerIP]` | Router's IP address on the app network |
+| `[env:variable]`, `[env:service:variable]` | Another environment variable of the app or of one service |
+| `[secret:name]` | A value from the app-level `secrets:` section (see below) |
 
-Placeholders appear in port mappings, environment values, and config content.
+The manual lists environment values and the default-credentials field as the places placeholders expand.[^manual-apps] It doesn't list port strings (and an address there is parsed wrongly, above) or config content; test a placeholder in a config file before relying on it.
+
+## Secrets
+
+Declare secrets at app level and reference them as `[secret:name]`, or list them under a service to get a file at `/run/secrets/<name>`. RouterOS generates the value when the app runs.[^manual-apps]
+
+```yaml
+secrets:
+  db_password:
+services:
+  db:
+    image: docker.io/postgres:17
+    environment:
+      POSTGRES_PASSWORD: "[secret:db_password]"
+```
+
+Don't put passwords or keys in `environment:` as literals. The app's YAML is router configuration, so it lands in `/export` and backups (7.23 fixed custom-app YAML missing from exports).
 
 ## Configs (Inline Files)
 
@@ -226,11 +239,26 @@ const apps = await fetch(`${base}/app`, auth).then(r => r.json());
 await fetch(`${base}/app`, {
   method: "PUT",
   ...auth,
-  body: JSON.stringify({ "yaml-url": "https://example.com/my-app.tikapp.yaml" }),
+  body: JSON.stringify({ yaml: yamlText, "use-https": "no" }),
 });
+// The new app is disabled: PATCH it with {"disabled": "no"} (see Lifecycle)
 ```
 
 **Note:** The `/app` endpoint requires the **container** extra package to be installed.
+
+## Lifecycle on the Router
+
+Measured on CHR 7.25.1 (and 7.26beta5 where noted) by tikoci/app-t3code, unless marked as a field report.[^t3code]
+
+- **Before enabling:** `/app` refuses to enable an app until a disk is set with `/app/settings/set disk=<mount-point>`. Format it first (`/disk/format <id> file-system=ext4`; the id is positional).
+- **Adding leaves the app disabled.** After `/app/add` or `PUT /rest/app`, run `/app/set [find where name=<app>] disabled=no`, then poll `/container` (`.running` is the string `"true"`).
+- **`use-https=yes` needs a cloud DNS name.** Without one (a free-license CHR has no `/ip/cloud`), the app stalls at `wait for reverse proxy`; use `use-https=no` in labs.[^ip-prefix]
+- **Fetching YAML from a URL:** `/app/add yaml=([/tool/fetch url="https://…/my.tikapp.yaml" output=user as-value]->"data")`.
+- **Never change an installed app's `yaml=` to change settings.** `/app/set … yaml=` recreates the app's volumes, wiping their data even for a comment-only change, and leaves the app disabled (7.25.1 and 7.26beta5). Back up every app-owned volume first if the YAML really must change.
+- **Use `/app/update` for a new image and `/app/set environment=` for settings.** `environment=` restarts the container and keeps its volumes, and the value survives `/app/update` and reboots. But it replaces the **whole** list (the YAML's `environment:` is only the starting value), and a string value is split on commas, so set values without commas or rebuild the list from `[/app/get <app> environment]`.
+- **Stop with `/app/set … disabled=yes`**, not `/container/stop`: /app restarts a stopped container within about 30 s (field report, RB5009, 7.22+).[^ip-prefix]
+- **A redeploy can change the container's IP and recreate its VETH.** Bridge-filter rules that named the old VETH go invalid and are skipped, so isolation fails open. Match on address lists and re-point rules after a redeploy (field report).[^ip-prefix]
+- **Check `/ip/reverse-proxy print` after deploying.** A `web` port gets a reverse-proxy entry with a generated URL,[^manual-apps] which can make the app reachable through the router's cloud DNS name.
 
 ## JSON Schema for Validation
 
@@ -269,6 +297,9 @@ Use `.editor.json` URLs for better autocompletion at the cost of less strict val
 - **Assuming docker-compose compatibility** — not all properties are supported, some behave differently
 - **Using `version:` key** — RouterOS ignores it; not needed
 - **Mixing port format styles** in a single entry — each port string must use ONE style exclusively
+- **An IP address in a port string** — RouterOS publishes the first octet as the port (see [Port Format](#port-format--two-styles))
+- **Editing an installed app's YAML to change a setting** — it wipes the app's volumes; use `environment=` or `/app/update`
+- **Secrets as literal `environment:` values** — they end up in `/export`; use `secrets:`
 - **Uppercase env var names required** in strict validation — use `*.editor.json` for mixed case
 - **Forgetting the container package** — `/app` returns 404 without the `container` extra package
 - **Using `deploy:` or `resources:`** — not supported by RouterOS
@@ -278,3 +309,7 @@ Use `.editor.json` URLs for better autocompletion at the cost of less strict val
 - For RouterOS fundamentals, CLI syntax, REST API: see the `routeros-fundamentals` skill
 - For running CHR in QEMU (needed to test /app): see the `routeros-qemu-chr` skill
 - MikroTik forum reference: <https://forum.mikrotik.com/t/amm0s-manual-for-custom-app-containers-7-22beta/268036/22>
+
+[^manual-apps]: MikroTik manual, [Apps](https://manual.mikrotik.com/docs/containers/apps/): "Port Mapping", "Runtime Placeholders" and "Secrets".
+[^ip-prefix]: [#36](https://github.com/tikoci/routeros-skills/issues/36): CHR 7.24.5 x86 lab (container package, ext4 app disk) reproducing the field report from [adelomer12/routeros-inverterscout](https://github.com/adelomer12/routeros-inverterscout) (RB5009, 7.22+). The `dst-port=192` rule, `use-https` stall and missing `yaml-url` were seen on the CHR; the `/container/stop` and VETH items are from the field report only.
+[^t3code]: tikoci/app-t3code, [`AGENTS.md` "Gotchas"](https://github.com/tikoci/app-t3code/blob/037158bbf3c4776cf2be65b03e1d9a2536bceb67/AGENTS.md) and [`docs/research/2026-11-app-set-environment/README.md`](https://github.com/tikoci/app-t3code/blob/037158bbf3c4776cf2be65b03e1d9a2536bceb67/docs/research/2026-11-app-set-environment/README.md): disposable CHRs on 7.25.1 and 7.26beta5 x86 with an Alpine probe app that records volume recreation and restarts.

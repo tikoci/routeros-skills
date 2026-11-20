@@ -8,6 +8,7 @@ ACK
 ACK's
 ACPI
 addrs
+adelomer
 Adlist
 aiskillstore
 alogin
@@ -37,6 +38,7 @@ CCR
 CDB
 CDP
 centrs
+Cgt
 changeme
 chardev
 chipset
@@ -130,6 +132,7 @@ ifaces
 IGMP
 INSPECTFILE
 Interworking
+inverterscout
 ipc
 iscsi
 jsproxy
@@ -349,6 +352,7 @@ tikappstore
 tikbook
 tikoci
 Tilera
+tini
 TLV
 toarray
 toh

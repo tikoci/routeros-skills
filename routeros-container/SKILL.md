@@ -273,6 +273,7 @@ async function deleteContainer(id) {
 - **`.running` field** is the status indicator — values are strings `"true"` / `"false"`, not booleans
 - **No `.stopped` field exists** — only check `.running`
 - **Delete while stopping = HTTP 400** — must poll `.running` until `"false"` before DELETE
+- **Stop is SIGKILL unless PID 1 catches SIGTERM.** RouterOS sends the stop signal only if PID 1 has a handler for it (`SigCgt` in `/proc/1/status`); otherwise it logs `signal 15 (Terminated) not caught, kill immediately`. An init that only blocks signals, such as tini, always gets killed. Measured on CHR 7.25 by tikoci/app-t3code ([`docs/research/2026-11-routeros-sigterm`](https://github.com/tikoci/app-t3code/tree/037158bbf3c4776cf2be65b03e1d9a2536bceb67/docs/research/2026-11-routeros-sigterm))
 - **`file=` for local tar**, `remote-image=` for registry pull
 - **Container `envlists=`** (plural, 7.20+) references the env list name — note the plural. Pre-7.20 used `envlist=` (singular). See env/mount version history above.
 

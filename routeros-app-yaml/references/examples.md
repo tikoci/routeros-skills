@@ -39,7 +39,7 @@ services:
     entrypoint: ["/bin/sh", "-c"]
     command: "nginx -g 'daemon off;'"
     ports:
-      - "[accessIP]:[accessPort]:80:web:tcp"
+      - "8080:80:web:tcp"
       - "8443:443/tcp:https"
       - target: 9090
         published: 9090
@@ -150,14 +150,14 @@ ports:
   - "8080:80/tcp"                      # Explicit tcp
   - "53:53/udp"                        # UDP
   - "8080:80/tcp:web"                  # With label
-  - "192.168.1.1:8080:80/tcp"         # With bind IP
-  - "[accessIP]:[accessPort]:80/tcp"   # With placeholders
 
 # === New RouterOS 7.23+ style ===
 ports:
   - "8080:80:web:tcp"                  # Label then protocol
   - "53:53:dns:udp"                    # UDP with label
-  - "[accessIP]:[accessPort]:80:web:tcp"  # With placeholders
+
+# === Never: an IP or placeholder in front of the host port ===
+# "192.168.1.1:8080:80/tcp" publishes port 192 (see SKILL.md, Port Format)
 
 # === Long-form object syntax ===
 ports:
@@ -175,10 +175,10 @@ services:
   web:
     image: nginx:alpine
     ports:
-      - "[accessIP]:[accessPort]:80/tcp:web"
+      - "8080:80/tcp:web"
     environment:
-      # These expand to actual IPs/ports at deploy time
-      PUBLIC_URL: "http://[accessIP]:[accessPort]"
+      # Placeholders expand in environment values, not in port strings
+      PUBLIC_URL: "[accessProto]://[accessIP]:[accessPort]"
       INTERNAL_IP: "[containerIP]"
       ROUTER: "[routerIP]"
 ```
