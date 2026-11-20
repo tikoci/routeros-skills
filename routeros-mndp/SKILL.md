@@ -229,8 +229,13 @@ This is expected behavior, not a bug. When displaying results, **group by identi
 RouterOS's own `/ip/neighbor` keys a row on the frame's Ethernet source MAC, not TLV 1,
 and takes `address4` from TLV 17, or from the IP source address when TLV 17 is missing
 (seen on 7.17.2 and 7.26beta5 with a spoofed packet).[^m2ir-wire] A UDP listener can't
-see the Ethernet source, so TLV 1 is the best it has; on real routers the two match. Do
-fall back to the IP source when TLV 17 is absent, as it can be right after boot.
+see the Ethernet source, so TLV 1 is the best it has; on real routers the two match. The
+IP source rarely stands in for a missing TLV 17: on 7.26beta5, 7.20.8 and 6.49.23, every
+captured IPv4 announcement without TLV 17 came from `0.0.0.0`, at 2–47 s of
+uptime.[^m2ir-wire] Leave `address4` unset in that case rather than recording
+`0.0.0.0`. The likely cause, not yet tested, is an interface with no IPv4 address yet.
+Whether a real router ever sends a usable IPv4 source without TLV 17 is still unknown
+(evidence in [#61](https://github.com/tikoci/routeros-skills/issues/61)).
 
 ## Timing and Reliability
 

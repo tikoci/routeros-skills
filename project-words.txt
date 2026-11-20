@@ -60,6 +60,7 @@ CRS
 Customisation
 CWMP
 datagram
+datagrams
 datapath
 DDNS
 DECID
