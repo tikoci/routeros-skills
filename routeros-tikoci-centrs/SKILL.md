@@ -402,8 +402,10 @@ auto-selects SFTP. The SSH clients run with `BatchMode=yes`, so SFTP never sends
 password: on a device with no SSH key installed, the auto-hop fails on
 authentication rather than on size. For a `--quickchr` target, the key exists only
 if the machine was first booted with `--secure-login` (see
-**routeros-tikoci-quickchr-cli**); otherwise `quickchr clean` it and start again
-with the flag. A CDB record's `via=ssh` now selects SFTP, and
+**routeros-tikoci-quickchr-cli**). A booted machine cannot gain the key later. Only
+for a disposable VM, `quickchr clean` and start again with the flag: `clean`
+re-copies the boot disk and recreates extra disks, erasing configuration, app data
+and snapshots, so copy off anything you need first. A CDB record's `via=ssh` now selects SFTP, and
 `--via ssh` is accepted as an alias for `sftp`. `download` replaces an
 existing local file, like `curl -o`.
 

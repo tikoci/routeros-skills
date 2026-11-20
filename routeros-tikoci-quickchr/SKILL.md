@@ -198,9 +198,14 @@ centrs's own integration tests work this way.[^tests]
   and prints its image line anyway (quickchr#290).
 - **The hook timeout must outlive quickchr's own waits**, so a slow boot
   ends in quickchr's `BOOT_TIMEOUT` report instead of the runner cutting it
-  off. Start from `defaultBootTimeout(arch, withPackages, "tcg")` and add
-  the margins the MANUAL lists (`timeoutExtra` twice, for the respawn, plus
-  300 s for the lock, the failure report and the stop).
+  off. For a start **without provisioning** (the MANUAL's recipe), start
+  from `defaultBootTimeout(arch, false, "tcg")` and add the margins the
+  MANUAL lists (`timeoutExtra` twice, for the respawn, plus 300 s for the
+  lock, the failure report and the stop). Provisioning adds waits on top:
+  the package-install reboot waits up to `defaultBootTimeout(arch, true,
+  accel)` and the device-mode power-cycle up to `defaultBootTimeout(arch,
+  false, accel)` for the boot and again for the device-mode API, so add
+  those, or keep provisioning out of the test's `start()`.[^tests]
 - **Print the machine name** (to stderr) before `start()`, so a killed run
   says what it left behind, and **`remove()` in `afterAll`**.
 - **In CI, give the run its own `QUICKCHR_DATA_DIR`** (an absolute path in
@@ -315,7 +320,11 @@ centrs's own integration tests work this way.[^tests]
     as a `bun:test` against the published 0.6.0 package: one pass in 22 s,
     nothing from quickchr on stdout, the machine removed afterwards
     (`routeros-tikoci-quickchr-cli/references/cli-grounding.md`
-    §quickchr 0.6.0 package review).
+    §quickchr 0.6.0 package review). The provisioning waits are read from
+    [`src/lib/quickchr.ts` at v0.6.0](https://github.com/tikoci/quickchr/blob/v0.6.0/src/lib/quickchr.ts):
+    the package-install reboot wait and the device-mode power-cycle's
+    `waitForBoot` and `waitForDeviceModeApi`, each with its own
+    `defaultBootTimeout`. Not forced live.
 [^secure-login]: quickchr MANUAL.md `StartOptions` (`secureLogin` row,
     #253). On 0.6.0 a `--secure-login` machine's `inspect --json` listed
     `batchModes: ["private-key"]`, and `centrs execute --via ssh` reached it
