@@ -675,6 +675,9 @@ npm view @tikoci/quickchr dist-tags
 # → { "latest": "0.5.6", "next": "0.6.0" }
 ```
 
+0.6.0 was promoted to `latest` later the same day (`npm dist-tag add`, the
+same tarball; no republish), so `latest` and `next` both point at it.
+
 Environment: macOS Intel x64, QEMU with HVF, Bun 1.4.4 (the package's
 `.bun-version`; `engines.bun` is `>=1.4.3`), centrs 0.1.9, warm image
 cache, RouterOS CHR 7.25.1 x86 (the stable channel that day). Machine names

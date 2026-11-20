@@ -5,11 +5,9 @@ description: "Ground RouterOS config/scripts/API code against a REAL router usin
 
 # Grounding RouterOS with quickchr
 
-Pinned to **0.6.0**, published to npm's `next` tag; `latest` is
-still 0.5.6, so install the pinned version explicitly. 0.6.0 has
-breaking changes: read its `CHANGELOG.md` "Breaking (0.6.0)" list before
-upgrading from 0.5.x, and `[0.5.0]` through `[0.5.2]` before upgrading
-from 0.4.x. Where a behavior changed, this skill names the
+Pinned to **0.6.0**. 0.6.0 has breaking changes: read its
+`CHANGELOG.md` "Breaking (0.6.0)" list before upgrading from 0.5.x, and
+`[0.5.0]` through `[0.5.2]` before upgrading from 0.4.x. Where a behavior changed, this skill names the
 version.[^versions]
 
 ## What this is for

@@ -20,8 +20,7 @@ Verify signatures there before relying on exact shapes; this doc favors stable
 concepts over version-specific detail. Installed from npm as `@tikoci/quickchr`
 (`bun add @tikoci/quickchr@0.6.0`, or `bunx @tikoci/quickchr@0.6.0 <cmd>` without installing).
 
-Pinned to **0.6.0**, which is on npm's `next` tag; `latest` is still
-0.5.6, so an unpinned install gets 0.5.6. Rows that changed after 0.5.2
+Pinned to **0.6.0**. Rows that changed after 0.5.2
 are labelled where the difference matters. The surface follows the
 `[0.5.3]` through `[0.6.0]` sections of quickchr's
 [`CHANGELOG.md`](https://github.com/tikoci/quickchr/blob/main/CHANGELOG.md) and

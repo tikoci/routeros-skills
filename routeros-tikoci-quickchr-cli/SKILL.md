@@ -16,8 +16,7 @@ commands (e.g. in a `forum.mikrotik.com` reply). If you are writing a
 Behavior below is pinned to **0.6.0**. Install with
 `bun install -g @tikoci/quickchr@0.6.0`, or invoke
 `bunx @tikoci/quickchr@0.6.0 <command>`. Check yours with
-`quickchr --version`. 0.6.0 is on npm's `next` tag (`latest` is still
-0.5.6), so name the version; its breaking changes are noted inline
+`quickchr --version`. 0.6.0's breaking changes are noted inline
 below. Where 0.4.8 and earlier differ in a way that can
 hurt you, the text says so inline; the rest of the version history
 lives in the footnotes.[^pin]
