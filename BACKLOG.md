@@ -19,6 +19,24 @@ Weakness is assessed from the perspective of a modern general-purpose LLM
 - **Scripting corpus scarcity** — `.rsc` has a tiny public corpus vs. bash/python;
   the model often invents syntax.
 
+## Decided triage
+
+Decided in [#47](https://github.com/tikoci/routeros-skills/issues/47) (2026-11-02), amended
+2026-11-20. Reopen a verdict only with evidence of an agent failure, not for coverage symmetry.
+
+| Verdict | Items |
+|---|---|
+| Accepted as new skills | `routeros-wifi` (#48), `routeros-bridge-vlan` (#49), `routeros-routing-v7` (#50), `routeros-users-aaa` (#51), `routeros-certificates` (#52) |
+| Second wave | `routeros-queues-qos` (not filed yet) |
+| Deferred as standalone skills | DHCP, DNS, VPN, IPsec |
+| Reference-only (fold into existing skills) | tools, logging, files-and-backup, interface-lists (into `routeros-firewall`) |
+| Declined | Mirroring another skill catalog; a meta skill-discovery skill |
+| Fold-in | API operational facts (#39) into `routeros-tikoci-centrs` / `routeros-fundamentals` |
+| Split by package | `routeros-wifi` covers the `wifi-*` packages and their integrated CAPsMAN; `routeros-legacy-wireless` (done) covers the legacy `wireless` package: `/interface/wireless`, `/caps-man` and `/interface/w60g`. Each points to the other only to say which applies |
+
+References default to manual.mikrotik.com links (the references pipeline in #38 was
+closed as not planned); rosetta usage goes into a thin `routeros-tikoci-rosetta` skill (#69).
+
 ## Legend
 
 - **Priority** — H/M/L by expected value of a grounded SKILL
@@ -104,6 +122,9 @@ the RouterOS command tree is already documented in `routeros-command-tree/SKILL.
 scripting skill.
 
 ### `routeros-wifi`
+
+Scope (decided above): the `wifi-*` packages only. The legacy `wireless` package,
+including legacy CAPsMAN and W60G, is `routeros-legacy-wireless`.
 
 The "new" wifi package (7.13+), which displaces legacy `wireless`. This is the
 single biggest area where LLM training data is wrong, because (a) it's recent
