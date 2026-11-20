@@ -24,7 +24,7 @@ The built-in sniffer captures packets on specified interfaces with extensive fil
 | Output | Setting | Notes |
 |--------|---------|-------|
 | Memory buffer | (always on) | Viewable via `quick`, `packet`, `protocol`, `host`, `connection` submenus. Packets available for 10 minutes |
-| File on flash | `file-name=capture.pcap` | PCAPNG format since RouterOS 7.20 |
+| File on flash | `file-name=capture.pcapng` | PCAPNG since RouterOS 7.20, whatever the file name says[^tzsp-lab] |
 | TZSP stream | `streaming-enabled=yes` | UDP to `streaming-server` on `streaming-port` (default 37008) |
 
 ### Live TZSP Streaming
@@ -52,7 +52,7 @@ The receiver host runs Wireshark, tshark, or another TZSP-capable tool (see [TZS
 ```routeros
 # Capture to file on router flash
 /tool/sniffer
-set file-name=capture.pcap filter-interface=ether1
+set file-name=capture.pcapng filter-interface=ether1
 
 /tool/sniffer/start
 # ... let it capture ...
@@ -70,7 +70,7 @@ File + streaming can run simultaneously:
 
 ```routeros
 /tool/sniffer
-set file-name=capture.pcap streaming-enabled=yes streaming-server=<RECEIVER-IP>:37008
+set file-name=capture.pcapng streaming-enabled=yes streaming-server=<RECEIVER-IP>:37008
 /tool/sniffer/start
 ```
 
@@ -99,13 +99,16 @@ Key filter options for `/tool/sniffer/set`:
 | `filter-ip-protocol` | Up to 16 protocols (tcp, udp, icmp, etc.) |
 | `filter-mac-protocol` | Up to 16 MAC protocols (ip, arp, ipv6, vlan, etc.) |
 | `filter-direction` | `any`, `rx`, or `tx` |
-| `filter-stream` | `yes`/`no` — filter out sniffer's own TZSP packets (default: yes) |
+| `filter-stream` | `yes`/`no` — filter out sniffer's own TZSP packets (default: `no` on 7.24.6 and 7.25.1)[^tzsp-lab] |
 | `filter-vlan` | Up to 16 VLAN IDs |
 | `memory-limit` | Memory buffer size (default: 100 KiB) |
 | `file-limit` | Max file size (default: 1000 KiB) |
-| `only-headers` | Save only packet headers, not full payload |
+| `only-headers` | Keep only the first 60 bytes of each Ethernet frame; no TZSP tag gives the original length[^tzsp-lab] |
+| `filter-operator-between-entries` | How filters combine: `or` (default) or `and`[^tzsp-lab] |
 
-**Important:** `filter-stream=yes` (default) excludes the sniffer's own TZSP stream packets from the capture — leave this on to avoid feedback loops.
+**Important:** set `filter-stream=yes` whenever you stream. It is off by default, and with it off a filter that matches the stream's own UDP captures the stream: on a CHR, one ping with `filter-ip-protocol=icmp,udp` became about 800 nested TZSP datagrams in 4 s.[^tzsp-lab]
+
+Filters combine with `or` by default. With `filter-operator-between-entries=and`, a protocol list such as `filter-ip-protocol=icmp,udp` (and no other filter) streamed nothing in the same lab.
 
 ## Method 2: Firewall Mangle (Targeted Mirroring)
 
@@ -137,9 +140,16 @@ Properties for `sniff-tzsp`:
 
 - `sniff-target` (IP) — destination IP for the TZSP UDP packets
 - `sniff-target-port` (port, default 37008) — destination UDP port
-- `sniff-id` — optional identifier tag
+
+`sniff-tzsp` accepts `sniff-id=` on `add` but doesn't keep it: it is missing from the REST record, `print detail` and `export`, and the datagrams carry no tag for it.[^tzsp-lab]
+
+Copies taken in the `output` and `postrouting` chains carry an Ethernet header with all-zero MACs; `prerouting` and `input` copies keep the link's MACs.[^tzsp-lab]
 
 **Key behavior:** `sniff-tzsp` acts like `passthrough` — after matching, the packet continues to the next mangle rule. The original packet is NOT modified or dropped; only a copy is sent as TZSP.
+
+### action=sniff-pc (Not TZSP)
+
+The other sniff action, `sniff-pc`, keeps `sniff-id` but doesn't send TZSP. In the CHR lab each datagram began with the id as 4 big-endian bytes, then 8 bytes that changed per packet, then the IPv4 packet with no Ethernet header.[^tzsp-lab] A TZSP receiver can't read it; use `sniff-tzsp` for Wireshark or tshark.
 
 ### Mangle vs /tool/sniffer: When to Use Which
 
@@ -163,7 +173,7 @@ UDP (port 37008) → TZSP header (4 bytes) → tags (variable) → TAG_END → o
 - **Default port:** 37008 (`0x9090`) — not IANA-registered but the RouterOS/Wireshark standard
 - **Encapsulation:** Typically Ethernet (type 1); 802.11 for wireless captures
 - **Tags:** Optional metadata (WLAN signal strength, channel, etc.); Ethernet captures usually have no tags
-- **Keepalives:** Type 4 (Null) packets sent periodically — no inner frame, filter these when processing
+- **Record type:** every datagram from both senders in the CHR lab began `01 00 00 01 01` (version 1, type 0 "received", Ethernet, end tag, no tags).[^tzsp-lab] The TZSP format defines other types, such as 4 (keepalive), but none were seen in those short runs, so a receiver should skip any record that isn't type 0 rather than expect keepalives
 
 ## CHR Testing Pattern
 
@@ -203,8 +213,8 @@ For full QEMU setup details, see the `routeros-qemu-chr` skill. For CHR licensin
 - **Hardware-offloaded bridge traffic** is NOT visible to the sniffer — only flooded packets (unknown unicast, broadcast, multicast) may appear
 - **Wireless client-to-client** unicast with forwarding enabled is NOT visible
 - **Sniffed packets in memory expire after 10 minutes** — save to file or use streaming for persistent capture
-- **PCAPNG format** (RouterOS 7.20+) is the default for saved files — older tools may need PCAP
-- **`filter-stream=yes`** (default) is important — without it, the sniffer captures its own TZSP stream packets, creating a feedback loop
+- **PCAPNG format** (RouterOS 7.20+) is what saved files contain, even when the name ends in `.pcap` — RouterOS keeps the name exactly as given. Each direction is its own interface (`ether1 rx`, `ether1 tx`), timestamps are in nanoseconds, and every packet carries a `cpu:0 fp:0` comment. Older tools may need PCAP
+- **`filter-stream` is off by default** — set `filter-stream=yes` when streaming, or the sniffer can capture its own TZSP packets in a feedback loop
 - **1 Mbps CHR speed limit** may cause "slow" captures — this is the free license limit, not a sniffer issue. See [CHR licensing](../routeros-qemu-chr/references/chr-licensing.md)
 - **`file-limit` should not exceed free memory** — the router may crash or behave unexpectedly
 
@@ -242,3 +252,5 @@ set streaming-enabled=no streaming-server=0.0.0.0 file-name=""
 **MCP tools:**
 
 - For RouterOS docs lookup: use the `rosetta` MCP server tools (`routeros_search`, `routeros_get_page`)
+
+[^tzsp-lab]: tikoci/tzsp-sniff TZSP sender lab, 2026-11-19: quickchr CHRs on 7.25.1 (x86_64 and arm64) and 7.24.6 long-term (x86_64), raw datagrams and saved files retained as evidence. [`test/lab/tzsp-senders/REPORT.md`](https://github.com/tikoci/tzsp-sniff/blob/c548cfe47f5a675da77b508f10bad29b7a46c2d1/test/lab/tzsp-senders/REPORT.md) (tikoci/tzsp-sniff#7).
