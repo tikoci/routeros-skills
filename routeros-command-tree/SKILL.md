@@ -368,4 +368,4 @@ without switch hardware) appeared in the arm64 crawl only.[^arch-diff]
 - For running a CHR to query: see the `routeros-qemu-chr` skill
 - For /app YAML format (a feature visible in the tree under 7.22+): see the `routeros-app-yaml` skill
 
-[^arch-diff]: [tikoci/restraml `docs/deep-inspect.md`](https://github.com/tikoci/restraml/blob/0893732e0e7860df696ba1203a9704e30e884fb4/docs/deep-inspect.md), "Reference local baseline" (7.23beta5, all extra packages on both architectures). For a later version, see the published [7.26beta4 diff](https://github.com/tikoci/restraml/blob/0893732e0e7860df696ba1203a9704e30e884fb4/docs/7.26beta4/extra/diff-deep-inspect.json).
+[^arch-diff]: [tikoci/restraml `docs/deep-inspect.md`](https://github.com/tikoci/restraml/blob/0893732e0e7860df696ba1203a9704e30e884fb4/docs/deep-inspect.md), "Reference local baseline" (7.23beta5, all extra packages on both architectures). For a later version, see the published [7.26beta4 diff](https://github.com/tikoci/restraml/blob/5f1e490037144d655c2c1ad503f4761043658f34/docs/7.26beta4/extra/diff-deep-inspect.json).
