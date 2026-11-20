@@ -29,6 +29,7 @@
   - Monitor Commands and Hyphenated Properties
   - File Creation and Append Are Indirect
   - Script Policies Affect Execution
+- `/import` — Debugging with Verbose Dry-Run
 - Important Gotchas
 
 ## Overview

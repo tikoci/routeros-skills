@@ -17,6 +17,7 @@
 - quickchr 0.5.0 re-check
 - What the 0.5.0 re-check did *not* cover
 - quickchr 0.5.2 package review
+  - Follow-up live checks (PR review)
 
 Live runs behind the claims in `routeros-tikoci-quickchr-cli/SKILL.md`, so a
 reviewer can re-run any of them. Every section up to "What was *not*
