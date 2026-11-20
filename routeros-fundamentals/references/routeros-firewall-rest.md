@@ -1,5 +1,45 @@
 # RouterOS Firewall REST API Reference
 
+## Contents
+
+- ⚠️ RULE ORDERING — READ THIS FIRST
+- HTTP Verb Mapping (Firewall-Specific)
+- 1\. `/ip/firewall/filter` — Firewall Filter Rules
+  - GET — List Rules
+  - GET — Filter and Proplist
+  - GET — Single Rule by ID
+  - PUT — Add Rule
+  - PATCH — Modify Rule
+  - DELETE — Remove Rule
+  - Filter Actions
+  - Key Matcher Properties
+- 2\. `/ip/firewall/nat` — NAT Rules
+  - GET — List NAT Rules
+  - PUT — Add NAT Rule
+  - NAT-Specific Actions
+  - NAT-Specific Properties
+- 3\. `/ip/firewall/mangle` — Packet Marking
+  - GET / PUT / PATCH / DELETE
+  - Mangle-Specific Actions
+  - Mangle-Specific Properties
+- `.id` References
+- Common Firewall Patterns via REST
+  - Pattern 1: Minimal Input Protection
+  - Pattern 2: Adding a Rule to an Existing Firewall
+  - Pattern 3: Masquerade for NAT
+  - Pattern 4: Port Forwarding (dst-nat)
+  - Pattern 5: Connection + Packet Marking for QoS
+- Gotchas
+  - 1\. PUT Appends — Use `place-before`
+  - 2\. No `move` via REST
+  - 3\. Boolean Values Are Strings
+  - 4\. `protocol` Required for Port Matchers
+  - 5\. Connection State Is Comma-Separated
+  - 6\. Dynamic Rules
+  - 7\. `reject-with` Only for `action=reject`
+  - 8\. Address Lists Are Separate
+- Related Endpoints
+
 Reference for `/ip/firewall/filter`, `/ip/firewall/nat`, and `/ip/firewall/mangle` REST endpoints. Response shapes from docs — not lab-verified unless noted.
 
 ## ⚠️ RULE ORDERING — READ THIS FIRST

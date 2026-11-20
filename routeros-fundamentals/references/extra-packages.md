@@ -55,6 +55,11 @@ For packages not built into the image (e.g., third-party `.npk` files):
 | `tr069-client` | `/tr069-client` | TR-069/CWMP |
 | `user-manager` | `/user-manager` | RADIUS user management |
 
+Not every package ships for every architecture. In a 7.23beta5 CHR crawl, `/zerotier`
+and the `switch-marvell` menus appeared on arm64 but not x86, so an x86 CHR shows fewer menus.
+Tools that read the command tree should see `routeros-command-tree` → "Architecture
+Changes the Tree".
+
 ## Download URL
 
 Extra packages are bundled in a single zip per architecture:

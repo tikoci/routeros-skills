@@ -1,5 +1,23 @@
 # TZSP Receivers — Host-Side Setup
 
+## Contents
+
+- Wireshark (GUI)
+  - Capture Filter (recommended)
+  - Display Filter
+  - What You See
+- tshark (CLI — Recommended for Agents)
+  - Basic Live Capture
+  - Capture to File
+  - Time-Limited Capture
+  - Filtering Inner Protocol
+  - Installation
+- tcpdump (Minimal — No TZSP Decode)
+- QEMU CHR + TZSP: Network Path
+  - Example End-to-End
+- Port Conflicts
+- Firewall Considerations (Host)
+
 How to receive and decode TZSP packets from RouterOS on the host machine (macOS, Linux, or Windows).
 
 ## Wireshark (GUI)

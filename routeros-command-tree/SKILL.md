@@ -331,6 +331,30 @@ const children = Object.entries(node)
 - Use `INSPECTFILE` for development/testing to avoid repeated live queries
 - The tree is version-specific — different RouterOS versions have different command sets
 - Extra packages (container, iot, zerotier, etc.) add additional command tree branches
+- Over the native API, `request=completion` can silently omit candidates
+  (measured on 7.22.1); `=.proplist=completion` cuts the drops but doesn't end
+  them. Use REST when the list must be complete. See the hazard table in
+  `routeros-syntax-inspection`.
+
+## Architecture Changes the Tree
+
+A tree taken from an x86 CHR is not the whole command set. Some packages are
+not built for x86, so their menus never appear there. With all extra packages
+installed on both, restraml's 7.23beta5 CHR crawl found 46,483 shared paths,
+plus 1,433 only on arm64 and 37 only on x86. `/zerotier` and
+`/interface/ethernet/switch` (the `switch-marvell` subtree, present even
+without switch hardware) appeared in the arm64 crawl only.[^arch-diff]
+
+- Use the tree for the architecture you target, or compare both per-architecture
+  files as restraml does (`deep-inspect.x86.json` and `deep-inspect.arm64.json`,
+  with a published diff per version under `docs/<version>/extra/`). restraml
+  deliberately doesn't merge them.
+- A path missing from an x86-only tree proves nothing about other
+  architectures. rosetta keys its command data on version and architecture for
+  this reason; its version check notes when a path is in its arm64 data only
+  and which versions were extracted for x86 alone.
+- Completion enums can differ between the two trees too (1,137 arguments
+  differed in the same crawl).
 
 ## Additional Resources
 
@@ -343,3 +367,5 @@ const children = Object.entries(node)
 - For REST API details: see `routeros-fundamentals` skill → [REST API patterns](../routeros-fundamentals/references/rest-api-patterns.md)
 - For running a CHR to query: see the `routeros-qemu-chr` skill
 - For /app YAML format (a feature visible in the tree under 7.22+): see the `routeros-app-yaml` skill
+
+[^arch-diff]: [tikoci/restraml `docs/deep-inspect.md`](https://github.com/tikoci/restraml/blob/0893732e0e7860df696ba1203a9704e30e884fb4/docs/deep-inspect.md), "Reference local baseline" (7.23beta5, all extra packages on both architectures). For a later version, see the published [7.26beta4 diff](https://github.com/tikoci/restraml/blob/5f1e490037144d655c2c1ad503f4761043658f34/docs/7.26beta4/extra/diff-deep-inspect.json).

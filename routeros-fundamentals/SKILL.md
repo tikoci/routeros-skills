@@ -26,7 +26,7 @@ RouterOS runs a Linux kernel (5.6.3) but **everything above the kernel is MikroT
 - REST API at `/rest/` (HTTP, port 80 by default) — the primary programmatic interface
 - RouterOS scripting language (`.rsc` files) — its own syntax, not bash. See the `routeros-scripting` skill and [Scripting reference](./references/scripting.md)
 - WebFig (web UI) on port 80
-- WinBox protocol on port 8291
+- WinBox protocol on port 8291 — MikroTik-proprietary; for it and the other vendor protocols (MNDP, MAC-Telnet, RoMON, EoIP, …) see [routeros-proprietary-protocols](../routeros-proprietary-protocols/SKILL.md)
 
 **Common agent mistakes to avoid:**
 

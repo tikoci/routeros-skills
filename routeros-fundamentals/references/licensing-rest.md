@@ -1,5 +1,17 @@
 # RouterOS `/system/license` REST API Reference
 
+## Contents
+
+- CHR License Tiers
+- GET `/rest/system/license`
+  - Free Tier (default)
+  - Via `/rest/execute`
+- POST `/rest/system/license/renew`
+  - Request Fields
+  - Response Shapes
+- Error Classification
+- Recommended Pattern
+
 > Lab-verified on CHR 7.22.1 (x86_64). Every response shape below was captured via `curl` against a running instance.
 
 ## CHR License Tiers

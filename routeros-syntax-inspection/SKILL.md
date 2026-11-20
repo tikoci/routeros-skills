@@ -43,18 +43,36 @@ generation), see the **`routeros-command-tree`** skill — this skill covers the
 
 ## Request shape
 
-All four inspect surfaces share one endpoint (basic auth, any RouterOS 7.x):
+REST (basic auth, any RouterOS 7.x):
 
 ```text
 POST /rest/console/inspect
 {"request": "highlight" | "completion" | "syntax" | "child",
  "input": "<console input>",     // optional
- "path":  "ip,address,add"}      // optional comma-separated menu context
+ "path":  "ip,address,add"}      // optional comma-joined menu tokens
 ```
 
-Every successful response is a JSON array of flat all-string objects with a
-`type` field naming the request type. Beyond that, the four response shapes
-share nothing — treat them as four APIs behind one endpoint.
+Native API — the same four modes as `=request=` / `=path=` words:
+
+```text
+/console/inspect
+  =request=child
+  =path=ip,address
+```
+
+**`path` takes comma-joined menu tokens, never a slash command.** Only the
+comma form walks the menu: `system,license` returns that menu's nodes, while
+`system/license` and `/system/license` return nothing on both transports, and
+a JSON array body (`{"path":["system","license"]}`) silently returns the
+**root** listing — a wrong answer that looks like a successful one. Measured
+on 7.23.7; the comma form was independently confirmed on 7.23.1 [^5].
+
+Every successful response is a JSON array of flat all-string objects (REST) or
+one `!re` sentence per item (native). `highlight`, `completion` and `syntax`
+rows carry a `type` field naming the request type; `request=child` instead
+spends `type` on the row's role (`self`/`child`) and reports the node class in
+`node-type`. Beyond that, the four response shapes share nothing — treat them
+as four APIs behind one endpoint.
 
 ## Version baseline and safety
 
@@ -75,6 +93,7 @@ share nothing — treat them as four APIs behind one endpoint.
 | `request=syntax` with `input`, or command-level `syntax`, stalls ~60 s | observed on 7.9.2 | Query `syntax` by `path` only; feature-detect command-level lookups with a short timeout |
 | `input` beyond 32,767 bytes rejected | all | Route oversized input to `:parse` (no cap) or reject it — never highlight a truncated copy and present it as validating the whole script |
 | Highlight latency cliff near 28 KB | observed 7.23.x | Prefer a `:parse` pre-check for big scripts (no such cliff, no 32 KB cap) |
+| Native-API `request=completion` can silently omit candidates | measured 7.22.1 x86_64 CHR [^6] | Use REST when completeness or row metadata matters. Over the native API, add `=.proplist=completion`: on the 47-candidate probe it cut drops from 100% to about 1%, but returns only the `completion` field (no `type` etc.). Larger candidate lists drop more often; no native-only candidate was ever seen |
 
 - **Distinguish `[]`, timeout, and transport failure.** An empty array is a
   real answer (nonexistent path); a timeout is not. Conflating them corrupts
@@ -185,3 +204,10 @@ response or derived, normalization applied, truncation, and outcome
     both 128 MB and 512 MB RAM; all six paths return instantly on 7.21.4+.
 [^4]: [tikoci/bench-routeros-tools](https://github.com/tikoci/bench-routeros-tools)
     `REPORT.md` — the `blackhole=yes` inspect-vs-runtime case.
+[^5]: [tikoci/centrs](https://github.com/tikoci/centrs)
+    `commands/api/AGENTS.md` — CHR 7.23.1 grounding spikes for the comma `path`
+    form and for `/execute` `as-string` on both transports.
+[^6]: [tikoci/restraml `docs/mikrotik-bug-native-api-inspect.md`](https://github.com/tikoci/restraml/blob/0893732e0e7860df696ba1203a9704e30e884fb4/docs/mikrotik-bug-native-api-inspect.md)
+    — CHR 7.22.1 x86_64, reproducible scripts: drops at concurrency 1 (not tag
+    multiplexing), unaffected by RAM, scale with per-item response size;
+    native results never held a candidate that REST lacked.

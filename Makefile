@@ -1,8 +1,8 @@
 # routeros-skills — symlink management for AI assistant skill dirs.
 #
-# Each routeros-*/ dir in this repo must be symlinked into BOTH
-# ~/.copilot/skills/, ~/.claude/skills/, and ~/.agents/skills/ or the
-# assistant won't load it.
+# Each routeros-*/ dir in this repo must be symlinked into
+# ~/.copilot/skills/, ~/.claude/skills/, ~/.agents/skills/, and
+# ~/.hermes/skills/ or the assistant won't load it.
 # (A symlinked skill is still only picked up on a fresh assistant session.)
 #
 #   make link    # idempotently symlink every routeros-* into every target dir

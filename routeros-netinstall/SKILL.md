@@ -184,6 +184,33 @@ Devices must be in **etherboot** mode before Netinstall can see them. Common ent
 - serial console (`Ctrl+E`)
 - RouterOS setting `boot-device=try-ethernet-once-then-nand`
 
+### Arming etherboot remotely (no reset button)
+
+Observed 2026-09-24 on four Cube 60Pro-family devices running 7.20–7.21, PoE-powered from
+a RouterOS switch, before Netinstall put 7.24.4 on them (bench record in
+[tikoci/routeros-skills#29](https://github.com/tikoci/routeros-skills/pull/29)).
+The Netinstall server was the RouterOS `netinstall` package, reached through a VLAN:
+
+1. Their device-mode had `routerboard=no` (an always-off feature). They were switched
+   to `routerboard=yes` before `boot-device` was changed. Whether `boot-device` is refused
+   without it was not tested. Run `:execute "/system/device-mode/update routerboard=yes"`
+   (the plain command blocks while it waits), wait a few seconds for it to start, then
+   power-cycle the device from its PoE switch:
+   `/interface/ethernet/poe/power-cycle etherN duration=5s`. That counted as the
+   physical confirmation. The device came back in ~50 s with `routerboard=true`.
+2. On the device: `/system/routerboard/settings/set boot-device=try-ethernet-once-then-nand`
+   and `:execute ":delay 45s; /system/reboot"`. **Then**, within those 45 s, move its switch
+   port into the Netinstall VLAN. Moving the port first cuts the path you need to send the
+   reboot. If the reboot comes before the move, the one Etherboot try finds no server and
+   the device boots RouterOS from NAND; leave its port on the management VLAN (or move it
+   back), check `boot-device` in `/system/routerboard/settings/print`, and repeat this step.
+3. Migrating a RouterOS **v6** device onto v7: it has no REST and no device-mode, so it was
+   armed from the neighboring v7 switch. Give the switch a temporary address in the device's
+   subnet, then send the `boot-device` setting and the delayed reboot from step 2 with
+   `/system/ssh-exec address=<ip> user=admin password="<its-password>" command="…"`.
+   Run it inside `:execute { … }` with `output-to-file=` to see the result; called
+   directly through the API it timed out. It went from 6.49.3 straight to v7.
+
 Netinstall uses BOOTP/DHCP ports, so avoid other DHCP sources on the same segment. The docs also call out two common failure cases:
 
 - some USB Ethernet adapters create an extra link flap and the device is missed

@@ -1,5 +1,15 @@
 # Mangle and Policy Routing
 
+## Contents
+
+- Routing Tables
+- mark-routing in Mangle Prerouting
+- Exempt DNS from Policy Routing
+- `hotspot=auth` Matcher
+- Generic Policy Routing Pattern
+- MSS Clamping
+- FastTrack Interaction
+
 RouterOS mangle chains and routing marks for policy-based routing. Referenced from `routeros-firewall` SKILL.md.
 
 ## Routing Tables

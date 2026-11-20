@@ -1,5 +1,12 @@
 # `child`, `syntax`, `completion` — schema and candidates
 
+## Contents
+
+- `request=child` — node enumeration
+- `request=syntax` — structured help
+- `request=completion` — candidates, enums, validity signal
+  - Validity checking (the sentinel decision rule)
+
 The three non-highlight request types of `/console/inspect`. Grounded on a
 37-context probe catalog captured verbatim on RouterOS 7.9.2, 7.23.2, and
 7.24rc2:
@@ -16,8 +23,12 @@ Items: `{name, node-type: "dir"|"path"|"cmd"|"arg", type: "self"|"child"}`.
 - `type:"self"` describes the addressed node itself; `"child"` rows are its
   children. A name that is both a command and an argument returns both rows.
 - Root (`path:""`) lists every top-level menu and scripting command.
-- **A nonexistent path returns `[]`, not an error** — absence is the only
-  "not found" signal.
+- **A nonexistent path is an empty answer, not an error** — REST returns `[]`,
+  native a bare `!done` with no `!re` (never a `!trap`). Absence is the only
+  "not found" signal on either transport.
+- **Pass comma-joined tokens** (`ip,address`, native `=path=ip,address`).
+  Slash forms return the same empty answer, and a JSON array body returns the
+  root listing — see the request-shape section of the skill.
 - `input` is **ignored**; filtering is the caller's job.
 
 This is the surface schema crawlers (e.g.
@@ -58,7 +69,7 @@ Each item proposes text that could continue or repair the input:
 
 | Field | Meaning (observed) |
 |---|---|
-| `completion` | Candidate text; empty string on sentinel rows |
+| `completion` | Candidate text; empty string on sentinel rows. Bare (`address`, not `address=`) — the row's position, not its text, says where it goes |
 | `offset` | **Byte offset into `input`** where replacement begins (RouterOS counts raw bytes as received; the REST wire is UTF-8, so non-ASCII shifts offsets off JS/UTF-16 indexes — ASCII-normalize first). End-of-input = append; smaller = replaces the partial word |
 | `preference` | Observed ranking weight, not a documented enum. Typical: `96` names, `95` separators, `75` expression openers, `40` statement glue, `-1` hidden placeholders, `-10` obsolete-syntax, `-20` unknown-name sentinels |
 | `show` | `"true"` = display as candidate; `"false"` = machine-facing row (connectives, placeholders, sentinels). Not a validity flag |

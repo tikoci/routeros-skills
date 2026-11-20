@@ -10,6 +10,7 @@ This document describes how the skill directories are organized locally. It is *
 | `~/.copilot/skills/routeros-*` | Symlinks → `~/GitHub/routeros-skills/routeros-*` |
 | `~/.claude/skills/routeros-*` | Symlinks → `~/GitHub/routeros-skills/routeros-*` |
 | `~/.agents/skills/routeros-*` | Symlinks → `~/GitHub/routeros-skills/routeros-*` for Codex |
+| `~/.hermes/skills/routeros-*` | Symlinks → `~/GitHub/routeros-skills/routeros-*` for Hermes |
 | `~/.copilot/skills/<non-routeros>` | Real dirs or symlinks to `~/.claude/skills/` — local-only, not in this repo |
 | `~/.claude/skills/<non-routeros>` | Real dirs — local-only, not in this repo |
 | `~/.agents/skills/<non-routeros>` | Real dirs or symlinks — local-only, not in this repo |
@@ -22,14 +23,19 @@ repo-owned `routeros-*` symlinks.
 
 **Only `routeros-*` named skills.** Anything else (`tikoci-*`, `screenshot`, `sql-as-rag`, `markdownlint-setup`, etc.) is personal/project-scoped and stays in the local `~/.*/skills/` directories only.
 
+Within the public family, use `routeros-tikoci-<tool>` for skills about tikoci
+tools, with a suffix when needed (for example, `routeros-tikoci-quickchr-cli`).
+Use the ordinary `routeros-<topic>` form for RouterOS features, protocols, and
+platform knowledge. Both follow the same public-content and grounding rules.
+
 ## Setting up the symlinks (fresh machine)
 
 ```sh
 git clone https://github.com/tikoci/routeros-skills.git ~/GitHub/routeros-skills
 
 cd ~/GitHub/routeros-skills
-make link   # symlink every routeros-* into Copilot, Claude, and Codex dirs
-make check  # verify every repo skill is a symlink in all three dirs
+make link   # symlink every routeros-* into Copilot, Claude, Codex, and Hermes dirs
+make check  # verify every repo skill is a symlink in all four dirs
 ```
 
 ## Updating
@@ -39,6 +45,29 @@ cd ~/GitHub/routeros-skills && git pull
 ```
 
 Because the AI tools follow symlinks to the real files, `git pull` immediately takes effect — no re-linking needed.
+
+Renamed or newly added skill directories also need `make link` and a fresh
+assistant session.
+
+## Renamed tikoci tool skills
+
+| Previous name | Current name |
+|---------------|--------------|
+| `routeros-centrs` | `routeros-tikoci-centrs` |
+| `routeros-quickchr` | `routeros-tikoci-quickchr` |
+| `routeros-quickchr-cli` | `routeros-tikoci-quickchr-cli` |
+
+After pulling this rename, run `make link` followed by `make check`.
+`make link` removes the three obsolete symlinks in the four supported assistant
+directories only when they point to the old paths in this checkout, then creates
+the current links. Real directories and links to other checkouts are preserved.
+For installations made by copying folders or another installer, remove the old
+skills and install the new names using that method.
+
+Update explicit skill invocations, saved prompts, and links to the old skill
+directories. The old names are retired without alias skills; start a fresh
+assistant session to discover the new names. The `centrs` and `quickchr` CLI
+commands and `@tikoci/centrs` / `@tikoci/quickchr` package names are unchanged.
 
 ## Linting locally
 
@@ -63,24 +92,26 @@ skill=routeros-<name>
 ln -s ~/GitHub/routeros-skills/$skill ~/.copilot/skills/$skill
 ln -s ~/GitHub/routeros-skills/$skill ~/.claude/skills/$skill
 ln -s ~/GitHub/routeros-skills/$skill ~/.agents/skills/$skill
+ln -s ~/GitHub/routeros-skills/$skill ~/.hermes/skills/$skill
 ```
 
    Or, idempotently link **all** skills into all target dirs (preferred — avoids the
    "committed but never symlinked" drift):
 
 ```sh
-make link    # symlink every routeros-* into Copilot, Claude, and Codex dirs
-make check   # verify every repo skill is linked into all target dirs (non-zero exit if not)
+make link    # symlink every routeros-* into ~/.copilot/skills, ~/.claude/skills,
+             #   ~/.agents/skills (Codex), and ~/.hermes/skills
+make check   # verify every repo skill is linked into all four dirs (non-zero exit if not)
 ```
 
-   Note: a symlinked skill is only picked up on a **fresh** assistant session.
+   Note: a symlinked skill is only picked up on a **fresh** assistant session — quit and restart Hermes to see any new skills.
 
 1. Commit and push to GitHub.
 
 ## Current symlink state (reference)
 
-After setup, `ls -la ~/.copilot/skills/`, `ls -la ~/.claude/skills/`, and
-`ls -la ~/.agents/skills/` should show all `routeros-*` entries as symlinks
+After setup, `ls -la ~/.copilot/skills/`, `ls -la ~/.claude/skills/`,
+`ls -la ~/.agents/skills/`, and `ls -la ~/.hermes/skills/` should show all `routeros-*` entries as symlinks
 pointing to `~/GitHub/routeros-skills/routeros-*`, for example:
 
 ```text

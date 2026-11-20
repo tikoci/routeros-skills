@@ -1,5 +1,21 @@
 # Device-Mode REST API Behavior
 
+## Contents
+
+- GET /rest/system/device-mode
+  - .proplist
+  - /print Does Not Work
+- POST /rest/system/device-mode/update — Blocking Endpoint
+  - activation-timeout
+- quickchr Automation Pattern
+- Timeout Expiry (No Power-Cycle)
+- attempt-count Behavior
+- flagged vs attempt-count
+- Error Responses (Immediate — No Blocking)
+- Via /rest/execute
+- Via SSH
+- Post-Boot REST Race
+
 Lab-tested reference for `/system/device-mode` REST endpoints on CHR 7.22.1 (x86_64). Supplements `device-mode.md` (which covers modes and feature matrix) with REST-specific behavior, blocking semantics, and the quickchr automation pattern.
 
 ## GET /rest/system/device-mode

@@ -1,5 +1,22 @@
 # Hotspot HTML Template Variables — Full Reference
 
+## Contents
+
+- Servlet Pages
+- POST Form Fields
+- Common Server Variables
+- Link Variables
+- Client Variables
+- Session / Limit Variables
+- Auth / Error Variables
+- RADIUS Pass-Through
+- HTTP Request / Response Control
+- Conditional Syntax
+- Multi-Language Templates
+- Escaping Rules
+- External Captive Portal Flow
+- See Also
+
 RouterOS substitutes `$(name)` placeholders **server-side** before serving any file from `html-directory-override`. Substitution happens in HTML, JS embedded in HTML, and `errors.txt`. The browser never sees the `$(...)` tokens.
 
 Source: <https://help.mikrotik.com/docs/spaces/ROS/pages/87162881/Hotspot+customisation>

@@ -1,5 +1,14 @@
 # `:parse` IL — the structural view
 
+## Contents
+
+- Readout recipe
+- Grammar essentials
+- Canonicalizations (useful for "RouterOS will see this as…")
+- Errors
+- Drift
+- Choosing highlight vs `:parse`
+
 `:parse` lowers a script to the textual intermediate language ("parseIL") the
 RouterOS engine executes. It is the structural complement to highlight's flat
 token stream: blocks, expressions, scopes, evaluation order. Full grammar and
@@ -17,22 +26,30 @@ collapse to the placeholder `(code)`):
 # (evl /putmessage=hello)
 ```
 
-Over REST, avoid string-escape collisions by uploading first:
+Avoid string-escape collisions by uploading first (REST and native shown):
 
 ```text
 # use a per-run unique NAME (e.g. parse-<nonce>.rsc) so concurrent probes and
 # any pre-existing file can't collide; /file/add fails on a name that exists
+
+# REST
 POST /rest/file/add     {"name":"parse-<nonce>.rsc","contents":"...script..."}
 POST /rest/execute      {"script":":put [:parse [/file/get parse-<nonce>.rsc contents]]","as-string":"true"}
 POST /rest/file/remove  {"numbers":"parse-<nonce>.rsc"}
+
+# Native API — same file; execute via /execute with =as-string= for sync output
+/execute
+  =script=:put [:parse [/file/get parse-<nonce>.rsc contents]]
+  =as-string=
+# → !done =ret=(evl ...)  (without =as-string= both transports are fire-and-forget: REST {"ret":"*18"}, native =ret=*31 job id)
 ```
 
-Note this recipe touches `/file` and `/rest/execute` — inspection-flavored
+Note this recipe touches `/file` and `/execute` — inspection-flavored
 but not purely read-only. Remove the temp file on **both** the success and
 error paths (an interrupted probe otherwise leaves it behind and the next
-`add` of the same name fails). Limits: `/rest/file/add` returns 413 above the
-upload cap (~126 KiB observed); `:parse` itself has **no 32 KB cap** and no
-latency cliff (56 KB parsed cleanly; ≤10 ms typical for small scripts).
+`add` of the same name fails). Limits: `POST /rest/file/add` returns HTTP 413
+above the upload cap (~126 KiB observed); `:parse` itself has **no 32 KB cap**
+and no latency cliff (56 KB parsed cleanly; ≤10 ms typical for small scripts).
 
 ## Grammar essentials
 

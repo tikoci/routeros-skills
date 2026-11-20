@@ -1,5 +1,14 @@
 # Bun Runtime Gotchas for quickchr
 
+## Contents
+
+- Bug 1 — `req.destroy()` Doesn't Emit `error` Event
+- Bug 2 — `fetch()` Connection Pool (Stale Responses)
+- Bug 3 — `Bun.secrets.get()` Keychain Dialog
+- Bug 4 — Test Runner Event Loop Sharing
+- HTTP Client Decision Matrix
+- Future Actions
+
 Consolidated reference for Bun-specific issues encountered in quickchr development. Every item here has been investigated — some confirmed as real bugs, some disproved but documented for posterity.
 
 ## Bug 1 — `req.destroy()` Doesn't Emit `error` Event

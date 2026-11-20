@@ -78,6 +78,11 @@ When cspell flags a word, decide which it is:
 
 ## Adding a new skill
 
+Use `routeros-<topic>` for RouterOS knowledge and `routeros-tikoci-<tool>` for
+tikoci tool usage (with a suffix such as `-cli` when needed). Both are public
+skills with the same grounding requirements. Bare `tikoci-*` skills stay local;
+see [SETUP.md](SETUP.md#rule-what-belongs-in-this-repo).
+
 1. Create `routeros-<name>/SKILL.md` with frontmatter:
 
    ```yaml
@@ -89,5 +94,6 @@ When cspell flags a word, decide which it is:
 
 2. `name` **must** equal the directory name, and the body should start with an H1.
 3. Run `make lint` and fix anything it reports.
-4. See [SETUP.md](SETUP.md) for symlinking the new skill into your local
-   `~/.claude/skills` and `~/.copilot/skills` (`make link`).
+4. See [SETUP.md](SETUP.md) for symlinking the new skill into all four local
+   target dirs — `~/.copilot/skills`, `~/.claude/skills`, `~/.agents/skills`
+   (Codex) and `~/.hermes/skills` (`make link`).

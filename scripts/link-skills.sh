@@ -18,12 +18,33 @@ targets="
 $HOME/.copilot/skills
 $HOME/.claude/skills
 $HOME/.agents/skills
+$HOME/.hermes/skills
 "
 
 same_target() {
   actual=${1%/}
   expected=${2%/}
   [ "$actual" = "$expected" ]
+}
+
+# Physical path of $1; the last component may be missing (e.g. a removed skill).
+phys_path() {
+  p=${1%/}
+  parent=$(CDPATH='' cd -- "$(dirname -- "$p")" 2>/dev/null && pwd -P) || {
+    echo "$p"
+    return 0
+  }
+  echo "${parent%/}/$(basename -- "$p")"
+}
+
+# Where symlink $1 points, resolving a relative target from the link's own dir.
+link_target() {
+  t=$(readlink "$1")
+  case $t in
+    /*) ;;
+    *) t="$(dirname -- "$1")/$t" ;;
+  esac
+  phys_path "$t"
 }
 
 skill_names() {
@@ -59,8 +80,9 @@ unlink_one() {
   dst=$2
 
   if [ -L "$dst" ]; then
-    actual=$(readlink "$dst")
-    if same_target "$actual" "$src"; then
+    # Compare resolved paths so relative links into this checkout also match;
+    # links into any other checkout still differ and are left alone.
+    if same_target "$(link_target "$dst")" "$(phys_path "$src")"; then
       rm "$dst"
       echo "removed $dst"
     fi
@@ -106,6 +128,10 @@ case "$cmd" in
     rc=0
     for target in $targets; do
       mkdir -p "$target"
+      # Retire only this checkout's old tool-skill links; leave unrelated installs.
+      for old in routeros-centrs routeros-quickchr routeros-quickchr-cli; do
+        unlink_one "$repo/$old" "$target/$old"
+      done
       for skill in $(skill_names); do
         link_one "$repo/$skill" "$target/$skill" || rc=1
       done
