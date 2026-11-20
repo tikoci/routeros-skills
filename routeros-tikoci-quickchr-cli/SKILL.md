@@ -1,6 +1,6 @@
 ---
 name: routeros-tikoci-quickchr-cli
-description: "Answer a RouterOS question by asking RouterOS. quickchr boots a real, disposable MikroTik CHR router on the local machine under QEMU — no hardware, no cloud, gone when you remove it — and centrs drives it. Covers the shell path end to end: the add/start/stop/shutdown/remove lifecycle, getting the shell back (--no-wait; --bg does not), getting REST endpoints and credentials out of a machine, L2 links between two VMs, provisioning (device-mode) that applies at first boot and the set route after it, and RouterOS 6 as a boot-only target. Pinned to quickchr 0.5.2. Use when: checking a claim or config against real RouterOS instead of guessing; needing a throwaway router for REST/CLI/API iteration; giving a shell script or CI job a router to talk to. For TypeScript harnesses that import the QuickCHR class, use routeros-tikoci-quickchr instead."
+description: "Answer a RouterOS question by asking RouterOS. quickchr boots a real, disposable MikroTik CHR router on the local machine under QEMU — no hardware, no cloud, gone when you remove it — and centrs drives it. Covers the shell path end to end: the add/start/stop/shutdown/remove lifecycle, getting the shell back (--no-wait; --bg does not), getting REST endpoints and credentials out of a machine, L2 links between two VMs, provisioning (device-mode) that applies at first boot and the set route after it, /app and containers on a CHR, and RouterOS 6 as a boot-only target. Pinned to quickchr 0.6.0. Use when: checking a claim or config against real RouterOS instead of guessing; needing a throwaway router for REST/CLI/API iteration; giving a shell script or CI job a router to talk to. For TypeScript harnesses that import the QuickCHR class, use routeros-tikoci-quickchr instead."
 ---
 
 # CHR from the shell: quickchr CLI + centrs
@@ -13,10 +13,12 @@ commands (e.g. in a `forum.mikrotik.com` reply). If you are writing a
 `bun:test` harness that imports `QuickCHR`, use the
 **routeros-tikoci-quickchr** skill instead — one scheme per task, never both.[^split]
 
-Behavior below is pinned to **0.5.2**. Install with
-`bun install -g @tikoci/quickchr@0.5.2`, or invoke
-`bunx @tikoci/quickchr@0.5.2 <command>`. Check yours with
-`quickchr --version`. Where 0.4.8 and earlier differ in a way that can
+Behavior below is pinned to **0.6.0**. Install with
+`bun install -g @tikoci/quickchr@0.6.0`, or invoke
+`bunx @tikoci/quickchr@0.6.0 <command>`. Check yours with
+`quickchr --version`. 0.6.0 is on npm's `next` tag (`latest` is still
+0.5.6), so name the version; its breaking changes are noted inline
+below. Where 0.4.8 and earlier differ in a way that can
 hurt you, the text says so inline; the rest of the version history
 lives in the footnotes.[^pin]
 
@@ -29,8 +31,10 @@ feature.[^license]
 
 ## Host prerequisites and storage
 
-Use Bun **1.4.4**, the tested runtime shipped in 0.5.2. Run
-`quickchr doctor` for missing dependencies and install hints. The old
+Bun **1.4.3** or newer is the documented minimum (0.5.5+); the 0.6.0
+package is tested on 1.4.4. Run `quickchr doctor` for missing
+dependencies and install hints; it also reports the HTTPS egress proxy
+and warns when only TCG acceleration is available. The old
 `start --install-deps` flag now errors; it never installed dependencies.
 The CLI defaults to **qcow2**, requiring `qemu-img`; the library defaults
 to **raw** unless `bootSize` implies qcow2. Extra disks also need
@@ -42,7 +46,8 @@ operations. The old 10 GiB floor is gone. `QUICKCHR_STORAGE_RESERVE`
 (or `storage-reserve`) adjusts the reserve; cache eviction precedes an
 `INSUFFICIENT_DISK_SPACE` refusal. Cache limits now include packages and
 partial downloads, so the first prune after upgrading can evict more
-than before.[^release052]
+than before.[^release052] Since 0.6.0 a relative `QUICKCHR_DATA_DIR` is
+refused with `STATE_ERROR`; use an absolute path.[^release060]
 
 ## Lifecycle: `add` is not `start`
 
@@ -69,7 +74,11 @@ quickchr remove lab-a
   like your machine came back wrong. Check `quickchr list` before
   retrying a name. Since 0.5.1 the status says "created and started"
   ("created — not waiting for RouterOS" with `--no-wait`); resuming
-  an existing machine says "started".[^release052]
+  an existing machine says "started". Since 0.5.4 resuming boots the
+  machine's recorded version without asking the network, so it works
+  offline.[^release052] On 0.6.0, `--timeout-extra` on a resume is
+  ignored; it applies only when `start` creates the machine (fixed after
+  0.6.0, quickchr#291).
 - `exec <name> <command…>` runs one RouterOS command over REST.
   `--via` is `auto|rest|qga` here, and **`qga` is narrower than it
   looks**: RouterOS only starts its guest agent for an **x86** CHR
@@ -184,6 +193,17 @@ first two cases for inspection.
   'socket::lab-link'`. RouterOS auto-DHCPs only ether1 (observed:
   dynamic `10.0.2.15/24`), and the host port-forwards assume
   it.[^ground-nic]
+- **Any `--add-network` replaces the default NIC**, so name `user`
+  yourself. Since 0.6.0 a waiting `start` with no `user` NIC is refused
+  up front (`INVALID_NETWORK`, nothing downloaded, hint names
+  `--add-network user --add-network <spec>` or `--no-wait`); 0.5.x sat
+  silent until the boot timeout.[^release060]
+- On macOS, `shared` and `bridged:<iface>` need a socket_vmnet daemon:
+  run `quickchr networks create shared` (or `bridged:en0`) once per
+  host. It is the one sudo step, and machines attach without sudo
+  afterwards. Since 0.6.0, without it they fail with
+  `NETWORK_UNAVAILABLE` naming that command instead of falling back to
+  native vmnet.[^release060]
 - For an L2 link between two VMs, prefer a **named socket**
   `socket::<name>`. It resolves through a registry entry, defaults to
   `dgram` (a unix datagram pair) off Windows, and **either machine may
@@ -293,7 +313,7 @@ power-cycle QEMU via the monitor, re-read to confirm (≈45s vs ≈22s
 without). That runs on the first boot, so pass it to `add`, or to the
 first `start` of a machine `add` created plain. After that boot:[^dm-window]
 
-| `start --device-mode-enable container` on… | 0.5.2 |
+| `start --device-mode-enable container` on… | 0.5.0+ |
 |---|---|
 | a machine that never started | applies — "Device-mode verified: mode=rose container=yes" |
 | a machine that has booted | refused, `PROVISIONING_WINDOW_CLOSED`, with the `quickchr set …` command to run |
@@ -316,9 +336,27 @@ versions (see **routeros-tikoci-quickchr**).
 The other provisioning flags also refuse after first boot
 (`--add-package`, `--add-user`, `--disable-admin`, `--secure-login`,
 `--license-*`, `--install-all-packages`). The refusal names the route
-that still works. For anything without one, `quickchr clean <name>`
+that still works: `quickchr set <name> --package <pkg>` (0.5.5+) for a
+package, `quickchr set <name> --license --level <level>` for a license.
+For anything without one, `quickchr clean <name>`
 resets the disk and reopens the window, at first-boot cost. Then repeat
 the original command, because a refused request is not saved.[^window]
+
+**SSH, SFTP and centrs over SSH need `--secure-login` at first boot.**
+It creates the managed `quickchr` user and the batch-verified SSH key
+that `quickchr inspect --json` advertises
+(`services.ssh.auth.batchModes: ["private-key"]`). centrs uses that key
+for every SSH path (`execute --via ssh`, `transfer --via sftp`,
+`terminal`) and never falls back to a password. The key is made only on
+the first boot, and not with `--add-user`. A machine booted without it
+has no route except `clean` (or recreate) and starting again with the
+flag.[^secure-login]
+
+Trial licenses take RouterOS's level names `p1`, `p10` and
+`p-unlimited` (0.6.0; `unlimited` is accepted for `p-unlimited`, and
+failed with HTTP 400 on 0.5.x). `add --license-level` records the level
+only, never credentials, and the first `start` applies it using the
+stored MikroTik credential.[^release060]
 
 The refusal tells you which side of the line a machine is on — no
 detective work needed before relying on a flag:
@@ -331,6 +369,47 @@ Enabling `container` moves the mode itself too (`advanced` → `rose`).
 Provisioning needs RouterOS **7.20.8+** *and* a user-mode NIC — with
 only socket NICs it fails `NETWORK_UNAVAILABLE`; older 7.x is
 boot-only.[^device-mode]
+
+## /app and containers on a CHR
+
+`/app` and `/container` do not work on a fresh CHR. Three things are
+missing, and one `start` supplies all three:[^app]
+
+```sh
+quickchr start --name app-lab --version 7.25.1 --arch x86 \
+  --secure-login --device-mode-enable container \
+  --add-package container --add-disk 1G
+centrs execute --quickchr app-lab --yes '/disk/format pcie1 file-system=ext4'
+centrs execute --quickchr app-lab --yes '/app/settings/set disk=pcie1'
+```
+
+- **The `container` extra package.** It is not in the base image, and
+  without it `/app` returns 404. `--add-package container` downloads the
+  same version's package, uploads it and reboots. After first boot,
+  `quickchr set <name> --package container` (0.5.5+) does the same; no
+  manual SFTP.
+- **Device-mode `container`.** It is a first-boot provisioning flag like
+  any other (see the previous section). It moves the mode to `rose`.
+- **A disk for `/app`.** Enabling an app fails until
+  `/app/settings disk=` is set, and a CHR has only its boot disk.
+  `--add-disk 1G` adds a blank one that RouterOS shows as slot `pcie1`.
+  `disk=pcie1` is **rejected until the disk is formatted** ext4. With
+  several disks, read the slot from `/disk print` rather than assuming
+  `pcie1`.
+
+The run above took 73 s on HVF (package reboot plus device-mode
+power-cycle). After it, `/app` is ordinary RouterOS. Two lab-relevant
+facts are in **routeros-app-yaml**: an added app starts **disabled**,
+and a new app defaults to `use-https=yes`, which on a free-license CHR
+sits at `wait for reverse proxy` and never starts. Add lab apps with
+`use-https=no`. `/app/add` has no `yaml-url` argument, so send the YAML
+inline (`PUT /rest/app` with `{"yaml": …}`).
+
+To reach an app's published port from the host, forward it at creation
+(`--forward web:9188:8088`); the app's dstnat rule lands on the
+`user` NIC's `10.0.2.15`. For the YAML format see
+**routeros-app-yaml**. For `/container` networking, images and the
+`/app` vs manual choice, see **routeros-container**.
 
 ## RouterOS 6: boot-only
 
@@ -380,7 +459,25 @@ not have, and times out. Use 7.x there, or upgrade.
 [^release052]: quickchr [0.5.2 CHANGELOG](https://github.com/tikoci/quickchr/blob/v0.5.2/CHANGELOG.md)
     `[0.5.1]` and `[0.5.2]`;
     [package review](./references/cli-grounding.md#quickchr-052-package-review).
-[^pin]: The 0.5.2 changes were checked against the published package
+[^release060]: quickchr [0.6.0 CHANGELOG](https://github.com/tikoci/quickchr/blob/v0.6.0/CHANGELOG.md)
+    `[0.5.3]` through `[0.6.0]` (#256, #261, #268, #276); the
+    `INVALID_NETWORK` refusal was reproduced in
+    [0.6.0 package review](./references/cli-grounding.md#quickchr-060-package-review).
+[^secure-login]: quickchr MANUAL.md `StartOptions` (`secureLogin`,
+    #253) and tikoci/routeros-skills#56. Reproduced on 0.6.0 with
+    centrs 0.1.9 in
+    [0.6.0 package review](./references/cli-grounding.md#quickchr-060-package-review).
+[^app]: tikoci/routeros-skills#37 (first drafted on quickchr 0.4.8 /
+    CHR 7.24.5 with a manual SFTP install). The recipe as written here
+    was re-run on published quickchr 0.6.0, CHR 7.25.1 x86, HVF, centrs
+    0.1.9: package, device-mode, the `pcie1` rejection before formatting,
+    the `use-https` stall, a running app with its dstnat rule, and on a
+    second machine `set --package container` after first boot and a host
+    `curl` through `--forward web:9188:8088`. See
+    [/app on CHR](./references/cli-grounding.md#app-on-chr).
+[^pin]: The 0.6.0 changes were checked against the published package
+    ([0.6.0 package review](./references/cli-grounding.md#quickchr-060-package-review)).
+    The 0.5.2 changes were checked against the published package
     ([package review](./references/cli-grounding.md#quickchr-052-package-review)).
     Pinned observations: the 0.5.0 claims were re-run against
     published `@tikoci/quickchr@0.5.0` and `@tikoci/centrs@0.1.8`,

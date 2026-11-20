@@ -400,7 +400,10 @@ RouterOS's `/file` contents write caps at **60 KB**, so REST and native API cann
 carry a large upload. With no `--via` pinned, centrs notices the size and
 auto-selects SFTP. The SSH clients run with `BatchMode=yes`, so SFTP never sends a
 password: on a device with no SSH key installed, the auto-hop fails on
-authentication rather than on size. A CDB record's `via=ssh` now selects SFTP, and
+authentication rather than on size. For a `--quickchr` target, the key exists only
+if the machine was first booted with `--secure-login` (see
+**routeros-tikoci-quickchr-cli**); otherwise `quickchr clean` it and start again
+with the flag. A CDB record's `via=ssh` now selects SFTP, and
 `--via ssh` is accepted as an alias for `sftp`. `download` replaces an
 existing local file, like `curl -o`.
 

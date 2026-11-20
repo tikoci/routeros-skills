@@ -334,6 +334,7 @@ Use manual `/container` setup when you need full VETH/bridge/L2 control, such as
 
 - For netinstall and device-mode automation: see the `routeros-netinstall` skill
 - For the /app YAML format: see the `routeros-app-yaml` skill
+- To try a container or /app on a disposable CHR (container package, device-mode and an app disk at first boot): see the `routeros-tikoci-quickchr-cli` skill, "/app and containers on a CHR"
 - For general RouterOS fundamentals (CLI, REST, scripting): see the `routeros-fundamentals` skill
 
 **MCP tools:**

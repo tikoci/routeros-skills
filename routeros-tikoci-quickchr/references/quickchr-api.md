@@ -7,6 +7,7 @@
 - `ChrInstance`
   - `exec` details (what you otherwise need `types.ts` for)
   - Connection surface for child processes
+- Helpers for callers that boot CHRs (tests, CI)
 - Port layout
 - Error codes
 - CLI ↔ library parity
@@ -17,14 +18,16 @@ a navigational summary — the **authoritative, versioned** source is the quickc
 in [`src/lib/types.ts`](https://github.com/tikoci/quickchr/blob/main/src/lib/types.ts).
 Verify signatures there before relying on exact shapes; this doc favors stable
 concepts over version-specific detail. Installed from npm as `@tikoci/quickchr`
-(`bun add @tikoci/quickchr@0.5.2`, or `bunx @tikoci/quickchr@0.5.2 <cmd>` without installing).
+(`bun add @tikoci/quickchr@0.6.0`, or `bunx @tikoci/quickchr@0.6.0 <cmd>` without installing).
 
-Pinned to **0.5.2**. Rows that changed from 0.4.8 are labelled where
-the difference matters. The surface follows the `[0.5.0]` through `[0.5.2]`
-sections of quickchr's
+Pinned to **0.6.0**, which is on npm's `next` tag; `latest` is still
+0.5.6, so an unpinned install gets 0.5.6. Rows that changed after 0.5.2
+are labelled where the difference matters. The surface follows the
+`[0.5.3]` through `[0.6.0]` sections of quickchr's
 [`CHANGELOG.md`](https://github.com/tikoci/quickchr/blob/main/CHANGELOG.md) and
-was checked against the published 0.5.2 package's `src/lib/types.ts`
-([package review](../../routeros-tikoci-quickchr-cli/references/cli-grounding.md#quickchr-052-package-review)).
+was checked against the published 0.6.0 package's `src/lib/types.ts` and
+`src/index.ts`
+([package review](../../routeros-tikoci-quickchr-cli/references/cli-grounding.md#quickchr-060-package-review)).
 
 ## Trigger terms
 
@@ -51,22 +54,24 @@ Common `StartOptions`:
 | `mem` | MiB RAM (default `512`; `1024` for cross-arch TCG) |
 | `background` | `true` (default) — QEMU's stdio goes to a log file, **and since 0.4.8 it is spawned into its own session on POSIX** (`detached: true`), so a signal to the caller's process group no longer reaches it; Windows uses a detached child for the same reason. `false` = foreground, serial on stdio — **except when provisioning options are also set**: `start()` then boots detached anyway (`spawnInBackground = background \|\| (!background && hasProvisioning)`), provisions, `stop()`s, and relaunches with serial attached, so a foreground provisioning run is really boot → provision → full restart. Note none of this is "return immediately": with default `wait`, `start()` resolves after the version-specific readiness check. |
 | `wait` | `true` (default). `false` resolves once QEMU is running, with state and ports saved, and leaves readiness to you (`instance.waitForBoot()`). Throws `INVALID_ARGUMENT` with any provisioning option, including ones `add()` recorded for a first boot, or with `background: false`. (#159) |
-| `secureLogin` | `true` → managed `quickchr` user with a stored password; `false`/omitted → open admin. Inverse alias: `noAuth` (`noAuth: true` ≙ `secureLogin: false`; `secureLogin` wins if both set). Prefer `secureLogin`. **Must be explicitly `true` to take effect** — provisioning tests `secureLogin === true`, so omitting it leaves `admin` password-less (observed: `inspect --json` reports `"password": ""`). That open-admin result holds only when nothing else changes admin's state: `disableAdmin: true` is applied independently and will disable `admin` even with no managed account, warning *"disabling admin without creating another user — you may lose access"*; an explicit `user` creates that user but does not disable `admin`. (Doc comments in 0.4.8 said `secureLogin` defaults to true; the code never did — the comments were fixed in 0.5.0, tikoci/quickchr#178.) |
+| `secureLogin` | `true` → managed `quickchr` user with a stored password **and a managed SSH key** that `descriptor()` advertises (`services.ssh.auth.privateKeyPath`); `false`/omitted → open admin. **Pass `true` whenever the machine will be used over SSH/SFTP or by centrs**: the key is made only on the first boot and only without `user`, and a booted machine cannot gain one later (quickchr#253, #280). Since 0.5.5, `upload()`/`download()`/`installPackage()` offer that key (#229). Inverse alias: `noAuth` (`noAuth: true` ≙ `secureLogin: false`; `secureLogin` wins if both set). Prefer `secureLogin`. **Must be explicitly `true` to take effect** — provisioning tests `secureLogin === true`, so omitting it leaves `admin` password-less (observed: `inspect --json` reports `"password": ""`). That open-admin result holds only when nothing else changes admin's state: `disableAdmin: true` is applied independently and will disable `admin` even with no managed account, warning *"disabling admin without creating another user — you may lose access"*; an explicit `user` creates that user but does not disable `admin`. (Doc comments in 0.4.8 said `secureLogin` defaults to true; the code never did — the comments were fixed in 0.5.0, tikoci/quickchr#178.) |
 | `user` | `{ name, password }` custom user (provisioning, ≥ 7.20.8) |
 | `disableAdmin` | disable default admin after boot (provisioning, ≥ 7.20.8) |
 | `packages` | `string[]` extra packages to install (provisioning, ≥ 7.20.8) |
 | `installAllPackages` | install all packages from all_packages.zip (overrides `packages`) |
-| `license` | one-shot trial/license at start (`"p1"` / `"p10"` / `"unlimited"` or `LicenseOptions`) |
+| `license` | one-shot trial license at first start: `"p1"` / `"p10"` / `"p-unlimited"` or `LicenseOptions`. 0.6.0 sends RouterOS's spelling `p-unlimited` and still accepts `"unlimited"` for it; on 0.5.x `"unlimited"` failed with HTTP 400. Without explicit credentials it uses the stored MikroTik account credential (#261) |
 | `deviceMode` | `/system/device-mode` config (provisioning, ≥ 7.20.8) |
-| `networks` | `NetworkSpecifier[]` — extra NICs (see networking) |
+| `networks` | `NetworkSpecifier[]` — replaces the default single `user` NIC (see networking). Since 0.6.0 a waiting `start()` with no `user` NIC is refused with `INVALID_NETWORK` before anything downloads: list `"user"` first, or pass `wait: false` (#268). macOS `shared`/`bridged:<iface>` need a socket_vmnet daemon from `quickchr networks create <net>` (one sudo step) or fail with `NETWORK_UNAVAILABLE` (#256) |
 | `extraPorts` | custom host→guest forwards — `PortMapping[]` with `proto` `"tcp"` or `"udp"` |
 | `portBase` | first port of the 10-port block (auto from `9100` if omitted) |
 | `excludePorts` | `ServiceName[]` to exclude (e.g. `["winbox", "api-ssl"]`) |
 | `bootSize` | resize boot disk e.g. `"512M"` / `"2G"` (needs `qemu-img`; auto-converts to qcow2) |
 | `bootDiskFormat` | `"raw"` by default in the library; `bootSize` implies `"qcow2"` (snapshots + resize). CLI default: `"qcow2"`. qcow2 and extra disks require `qemu-img` |
 | `extraDisks` | `string[]` extra blank qcow2 disks e.g. `["512M", "1G"]` |
-| `timeoutExtra` | extra ms added to computed boot timeout |
-| `onProgress` | `(msg: string) => void` progress callback (debug lines only when `QUICKCHR_DEBUG=1`) |
+| `timeoutExtra` | extra ms added to the computed boot timeout. On 0.6.0 and earlier it applies only when `start()` **creates** the machine; booting one that exists (made by `add()`, or booted before) ignores it. Fixed on quickchr `main` for the release after 0.6.0 (#291) |
+| `onProgress` | `(msg: string) => void` progress callback (debug lines only when `QUICKCHR_DEBUG=1`). With it, `start()` prints nothing to stdout; `add()` still prints its image line to stdout (#290) |
+| `qemuArgs` | `string[]`, one QEMU argv element each, appended after quickchr's own (0.5.3+, #213). A lab escape hatch for QEMU surface quickchr does not model |
+| `frozen` | boot held at reset (`-S`) with a gdbstub, skipping the wait; resume with `instance.continue()` (0.5.3+, #214). Not with provisioning |
 | `installDeps` | deprecated and ignored since 0.5.1; never installed anything. Run `quickchr doctor` for install hints; CLI `--install-deps` errors |
 | `dryRun` | print resolved options + QEMU command, don't start |
 
@@ -90,9 +95,10 @@ already has is reported as applied rather than refused.
 |---|---|
 | `rest(path, init?)` | REST call → parsed JSON |
 | `exec(cmd, opts?)` | run a CLI command/script → `{ output, via }`. `opts.via`: `auto`/`rest`/`ssh`/`console`/`qga` |
+| `continue()` | resume a `frozen` boot and wait for REST (0.5.3+) |
 | `waitForBoot(timeoutMs?)` | wait for REST on RouterOS 7 or native-API login on RouterOS 6; needed after `wait: false` (default start() already waits) |
 | `waitFor(cond, timeoutMs?)` | poll an arbitrary async predicate (e.g. "/dude enabled") |
-| `installPackage(names)` | one name or an array; download + install + reboot; returns names actually installed |
+| `installPackage(names)` | one name or an array; download + install + reboot; returns names actually installed. Since 0.5.5 it refuses a stopped machine (`MACHINE_STOPPED`) or one without a `user` NIC (`NETWORK_UNAVAILABLE`) up front, throws if the activating reboot fails (`PROCESS_FAILED`/`REBOOT_FAILED`) instead of reporting success, and records the step so a later `start()` with the same `packages` is a no-op (#24) |
 | `availablePackages()` | package names available for this version/arch |
 | `upload(local, remote?)` / `download(remote, local)` | SCP file transfer |
 | `subprocessEnv()` | env vars for a child process (see below) |
@@ -123,6 +129,11 @@ interface ExecResult  { output: string; via: ExecTransport; }
 - Single command per `exec()` call — RouterOS `/rest/execute` runs one script
   statement; multi-line `\n`-joined strings may silently drop after the first line.
   Call `exec()` multiple times or wrap in `:do { /cmd1; /cmd2 }`.
+- `output` has CRLF line endings (RouterOS console style): strip `\r` before
+  hashing or diffing.
+- `via: "auto"` retries a refused or unreachable REST connection (3 retries, 2 s
+  apart), then falls back to the serial console. A reset or timeout is not
+  replayed, because the command may already have run (0.5.5+, #135).
 - Some RouterOS commands return HTTP 200 with an error string in `output`
   (e.g. `"doAdd Agent not implemented"`); `exec()` does not parse soft errors —
   inspect `output` yourself.
@@ -139,6 +150,24 @@ version control (including `.env`, CI logs, or debug artifacts). Prefer redactio
 (`***`) in diagnostics and keep values in memory only for the minimum needed scope.
 `descriptor()` throws `MACHINE_STOPPED` if the machine isn't running — check status
 before using stored ports.
+
+## Helpers for callers that boot CHRs (tests, CI)
+
+Exported from the package root (0.6.0):
+
+| Export | Use |
+|---|---|
+| `cacheAdd({ channel \| version, arch, logger? })` | download and extract one image, no machine. Returns `{ dir, version, arch, path, cacheHit }`; boot the returned `version`, not the channel |
+| `cacheKey(...)` / `CACHE_VERSION_UNRESOLVED` | resolve the cache directory and version without downloading (CI cache keys) |
+| `createLogger(onProgress)` | the `logger` `cacheAdd()` takes, so its output goes where `onProgress` sends it |
+| `defaultBootTimeout(arch, withPackages?, accel?)` | the per-attempt boot budget `start()` uses, in ms. `accel` defaults to `"tcg"`, the slowest case; `timeoutExtra` is not included |
+| `accelTimeoutFactor`, `detectAccel` | the factor and the accelerator detection behind that budget |
+
+A test hook's timeout must outlive quickchr's own waits (the respawn, the
+failure report, the lock), or the runner cuts `start()` off before it can report
+a `BOOT_TIMEOUT`. quickchr's MANUAL gives the arithmetic in
+[Using quickchr in another project's tests](https://github.com/tikoci/quickchr/blob/main/MANUAL.md#using-quickchr-in-another-projects-tests);
+the SKILL body has the rules.
 
 ## Port layout
 
@@ -179,11 +208,20 @@ values.) See "Running several CHRs at once" in `SKILL.md`.
 `INVALID_FORWARD_SPEC`, `INVALID_SETTING_KEY`, `INVALID_SETTING_VALUE`,
 `PROVISIONING_VERSION_UNSUPPORTED`, `PROVISIONING_WINDOW_CLOSED`,
 `REST_UNAVAILABLE`, `INSUFFICIENT_DISK_SPACE`, `STATE_ERROR`,
-`EXEC_FAILED`, `PROCESS_FAILED`, `NETWORK_UNAVAILABLE`. Two are new in 0.5.0:
+`EXEC_FAILED`, `PROCESS_FAILED`, `NETWORK_UNAVAILABLE`, `REBOOT_FAILED`,
+`PERMISSION_DENIED`. Added since 0.4.8:
 
-- `PROVISIONING_WINDOW_CLOSED`: a provisioning option on a machine that has
+- `PROVISIONING_WINDOW_CLOSED` (0.5.0): a provisioning option on a machine that has
   already booted.
-- `REST_UNAVAILABLE`: a REST operation (`exec`, `rest()`) on RouterOS 6.
+- `REST_UNAVAILABLE` (0.5.0): a REST operation (`exec`, `rest()`) on RouterOS 6.
+- `REBOOT_FAILED` (0.5.5): the guest rejected `installPackage()`'s activating reboot.
+- `PERMISSION_DENIED` (0.6.0): `stop`, `shutdown`, `remove`, `clean` or
+  `setDeviceMode()` on a machine whose QEMU another user owns (for example one
+  started with `sudo`). The hint runs the command as that user against the same
+  data dir (#259).
+
+`STATE_ERROR` also covers a relative `QUICKCHR_DATA_DIR`, refused since 0.6.0
+(#276).
 
 `BOOT_TIMEOUT` cleanup: quickchr stops QEMU first. 0.5.0 removes a
 machine this call created, resets one `add()` created that never booted, and
@@ -216,5 +254,8 @@ Frequently seen in grounding: `MISSING_QEMU`, `PORT_CONFLICT`, `BOOT_TIMEOUT`,
 | `quickchr shutdown <name> [--timeout <s>]` | `instance.shutdown({ timeoutMs })` (milliseconds) |
 | `quickchr start --no-wait` | `QuickCHR.start({ wait: false })` |
 | `quickchr set <name> --device-mode…` | `instance.setDeviceMode(opts)` |
+| `quickchr set <name> --package <pkg>` (0.5.5+) | `instance.installPackage(names)` |
+| `quickchr start --frozen` / `quickchr continue <name>` | `QuickCHR.start({ frozen: true })` / `instance.continue()` |
+| `quickchr cache add` / `cache key` | `cacheAdd()` / `cacheKey()` |
 
-Run the CLI without installing: `bunx @tikoci/quickchr@0.5.2 <cmd>`.
+Run the CLI without installing: `bunx @tikoci/quickchr@0.6.0 <cmd>`.
