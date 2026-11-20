@@ -118,17 +118,17 @@ multi-AP deployment this shows up as one AP accumulating far more clients than i
 neighbors (weak-signal clients that should have been rejected and forced to roam never
 get rejected).
 
-**Fix:** re-add the orphaned rule(s) pointing at the current interface name, in the same
-position. The access list is checked top-down until the first match, so a rule appended
-below a catch-all `accept` never matches. Add the new rule just above the old one, then
-remove the old one:
+**Fix:** point the orphaned rule at the current interface in place. Setting the one field
+keeps the rule's position (the list is checked top-down until the first match) and every
+other property on it (MAC, time, VLAN, forwarding and other overrides):
 
 ```routeros
-/caps-man/access-list add interface="AP-A 5GHz" signal-range=-75..0 action=accept \
-    comment="ap-a-5g: accept > -75dBm (fixed)" \
-    place-before=[find comment="ap-a-5g: accept > -75dBm"]
-/caps-man/access-list remove [find comment="ap-a-5g: accept > -75dBm"]
+/caps-man/access-list set [find comment="ap-a-5g: accept > -75dBm"] interface="AP-A 5GHz"
 ```
+
+If you rebuild a rule instead, copy all of its properties from `print detail` and add it
+with `place-before=` the old rule before removing that one; a rule appended below a
+catch-all `accept` never matches.
 
 **Prevention:** avoid `/caps-man/interface remove` on a live interface entirely. Use
 `/caps-man/radio/provision` (above) to force a rebind, or edit the bound configuration
