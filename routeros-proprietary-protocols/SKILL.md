@@ -35,7 +35,7 @@ from MikroTik's [Services][services] page, the bridge filter
 | **MAC-WinBox** | UDP 20561 ([MAC server][mac-server]) | [m2ir source inventory][m2ir-sources] | docs, leads |
 | **MAC-Telnet / MAC-Ping** | UDP 20561 | [routeros-mac-telnet](../routeros-mac-telnet/SKILL.md) | code (centrs); MAC-Ping payload only sketched |
 | **RoMON** | EtherType 0x88bf, dst 01:80:c2:00:88:bf | [RoMON][romon] | docs; centrs support not started |
-| **MNDP** | UDP 5678 | [routeros-mndp](../routeros-mndp/SKILL.md), [centrs codec][centrs-mndp] (predates the grounded map: decodes TLV 14 as unpack and skips TLVs 2–4; [centrs#668][centrs-668]) | grounded wire map ([m2ir lab][m2ir-mndp-wire]); a few types unknown ([m2ir#3][m2ir-mndp]) |
+| **MNDP** | UDP 5678 | [routeros-mndp](../routeros-mndp/SKILL.md), [centrs codec][centrs-mndp] (follows the grounded map since [centrs#668][centrs-668]) | research: canonical YAML ([m2ir grammar][m2ir-mndp-physical], [profile][m2ir-mndp-profile]) from the lab's grounded wire map; a few types unknown ([m2ir#3][m2ir-mndp]) |
 | **API / API-SSL** | TCP 8728 / 8729 | [API][api], [routeros-tikoci-centrs](../routeros-tikoci-centrs/SKILL.md) | spec, code ([centrs][centrs-api]) |
 | **Bandwidth test** | TCP 2000; UDP allocated from 2000 upward | [Bandwidth test][btest], [centrs btest][centrs-btest] | code: client and server, tested against CHR |
 | **EoIP / EoIPv6** | EoIP: GRE, IP protocol 47 | [EoIP][eoip] | docs; no wire reference |
@@ -87,7 +87,8 @@ through m2ir's [discovery guidance][discoveries].
 [m2ir-index]: https://raw.githubusercontent.com/tikoci/m2ir/main/profiles/README.md
 [winbox-guide]: https://raw.githubusercontent.com/tikoci/m2ir/main/profiles/winbox-ipc/README.md
 [m2ir-mndp]: https://github.com/tikoci/m2ir/issues/3
-[m2ir-mndp-wire]: https://github.com/tikoci/m2ir/blob/d0b13b5e87c75db8be3592de7530c9c0effaade6/work/2026-11-mndp-grounding/FINDINGS.md
+[m2ir-mndp-physical]: https://github.com/tikoci/m2ir/blob/2e57a9c3b075bad2e564a05450cb671a8fdc4207/physical/mndp.yaml
+[m2ir-mndp-profile]: https://github.com/tikoci/m2ir/blob/2e57a9c3b075bad2e564a05450cb671a8fdc4207/profiles/mndp/profile.yaml
 [m2ir-sources]: https://raw.githubusercontent.com/tikoci/m2ir/main/work/2026-05-winbox-nova-sources/winbox-nova-source-inventory.md
 [m2ir-dude]: https://raw.githubusercontent.com/tikoci/m2ir/main/profiles/dude-on-disk/profile.yaml
 [m2ir-chr]: https://raw.githubusercontent.com/tikoci/m2ir/main/work/2026-10-chr-extraction/README.md
