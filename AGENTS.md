@@ -1,7 +1,8 @@
 # routeros-skills — agent instructions
 
 This repo publishes the outward-facing `routeros-*` skills: RouterOS v7
-knowledge, and how to use public tikoci tools (`routeros-tikoci-*`). Each
+knowledge, how to use public tikoci tools (`routeros-tikoci-*`), and one
+pointer for contributing to tikoci repos (`routeros-tikoci-house`). Each
 `routeros-*/` folder at the root is one skill (`SKILL.md` plus optional
 `references/`) and is the product. Everything else is lint, CI and install
 tooling. [README.md](README.md) lists the skills; [CONTRIBUTING.md](CONTRIBUTING.md)
@@ -63,4 +64,11 @@ change:
 - **CodeRabbit runs the `chill` profile**, not `assertive`: review here is
   about RouterOS accuracy in prose, and CI owns spelling and Markdown.
 - **The dependency-review workflow stays**: it is a required check on `main`.
-  It does not read `bun.lock`, so it gates only GitHub Actions changes.
+  It sees GitHub Actions and the `package.json` ranges, not `bun.lock`.
+- **Skills may link a sibling skill by relative path** (`../routeros-*/`),
+  since `make link` installs them together; links outside this repo are
+  absolute URLs. A skill meant to stand alone (`routeros-tikoci-house`) uses
+  absolute URLs throughout.
+- **House adoption is partial.** The `tikoci-github` and `tikoci-ci` settings
+  this repo has not adopted yet are tracked in [BACKLOG.md](BACKLOG.md)
+  (Housekeeping), not here.

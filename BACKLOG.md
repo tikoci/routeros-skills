@@ -79,7 +79,7 @@ Future expansion / corpus-mining targets (not all missing from the initial skill
 
 **Grounding: lsp-routeros-ts corpus (primary)**
 
-`tikoci/lsp-routeros-ts` (local: `~/GitHub/lsp-routeros-ts`) holds 630+
+`tikoci/lsp-routeros-ts` holds 630+
 real `.rsc` snippets extracted from the MikroTik forum, organized by topic.
 These are LSP test data parsed and syntax-checked by the LSP. This is the best
 available grounded corpus of valid RouterOS scripting patterns.
@@ -501,3 +501,8 @@ created) since it's the skill where LLM output quality is hardest to verify.
   `routeros-*` copies, no PR, nothing links to it) and the
   `.gitignore merge=ours` line in `.gitattributes` with it, once the
   maintainer agrees (#63).
+- Open: repo settings that still differ from tikoci-github after #77: turn on
+  `sha_pinning_required` once every action on `main` is pinned (#77 pins the
+  last two); decide on a read-only default workflow token (every workflow
+  already declares `contents: read`) and on enforcing branch protection for
+  admins (the house leaves admins unenforced).

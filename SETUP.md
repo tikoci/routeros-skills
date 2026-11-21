@@ -27,15 +27,28 @@ without spaces):
 make link SKILL_DIRS="$HOME/.agents/skills $HOME/.claude/skills"
 ```
 
-`make targets` prints the directories in use. Pass the same `SKILL_DIRS` to
-`make check` and `make unlink`, or export it in your shell profile.
+`make targets` prints the directories in use. Each whitespace-separated word
+is one literal path: no wildcards, and no spaces inside a path (the default
+targets do handle a home directory with spaces). An override that names no
+directory is an error.
+
+A `SKILL_DIRS=...` argument applies to that one `make` run only. Pass the same
+value to `make check` and `make unlink`, or export it in your shell profile.
+The git hooks from `make install-hooks` see only the environment of the
+process that runs git, so with custom targets export `SKILL_DIRS` there too,
+including for a GUI git client. The hooks relink only from the main checkout,
+never from a linked worktree (`git worktree add`), so an agent's review
+worktree does not repoint the installed skills at itself. Use the environment form
+(`SKILL_DIRS=... make link`) for a path containing `$`, which make would
+expand in an argument.
 
 ## What belongs in this repo
 
 Only `routeros-*` skills. They face outward: RouterOS knowledge, and how to
 use public tikoci tools (`routeros-tikoci-<tool>`, with a suffix when needed,
-for example `routeros-tikoci-quickchr-cli`). Both follow the same
-public-content and grounding rules.
+for example `routeros-tikoci-quickchr-cli`). One more, `routeros-tikoci-house`,
+points users who want to report on or contribute to a tikoci repo at the
+right places. All follow the same public-content and grounding rules.
 
 Skills for developing and maintaining tikoci repos are the `tikoci-*` house
 skills, published at <https://tikoci.dev/house/>. Repos copy or reference

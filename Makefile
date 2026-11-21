@@ -23,16 +23,16 @@ export SKILL_DIRS
 .PHONY: link unlink check targets install-hooks lint lint-links
 
 link:
-	@$(LINKER) link
+	@"$(LINKER)" link
 
 unlink:
-	@$(LINKER) unlink
+	@"$(LINKER)" unlink
 
 check:
-	@$(LINKER) check
+	@"$(LINKER)" check
 
 targets:
-	@$(LINKER) targets
+	@"$(LINKER)" targets
 
 install-hooks:
 	@chmod +x "$(REPO)/hooks/"* 2>/dev/null || true; \

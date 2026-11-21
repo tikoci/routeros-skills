@@ -2,8 +2,9 @@ name: CI
 
 # Gate for the routeros-* skills: deterministic, fast checks that must pass
 # before merge to main. Semantic review (RouterOS accuracy, prose) is handled
-# separately by CodeRabbit + Copilot, which review every PR org-wide — see
-# .coderabbit.yaml. Keep this workflow to mechanical, reproducible checks.
+# separately: CodeRabbit reviews once when a PR is marked ready, unless the PR
+# has the skip-review label (see .coderabbit.yaml and CONTRIBUTING.md). Keep
+# this workflow to mechanical, reproducible checks.
 #
 # Jobs:
 #   lint       — markdownlint-cli2 + cspell + the SKILL.md validator (bun run check)

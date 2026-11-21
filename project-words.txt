@@ -429,6 +429,7 @@ Winbox
 Wireshark
 Wize
 WLAN
+worktree
 WPA
 WPS
 writability

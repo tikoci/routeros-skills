@@ -43,10 +43,11 @@ repository settings on 2026-11-20.
 | CodeQL, default setup (`actions`, `javascript-typescript`), Extended suite | enabled |
 | Secret scanning with push protection | enabled |
 | Private vulnerability reporting | enabled |
-| Dependabot alerts | enabled |
-| Dependabot security updates | enabled |
+| Dependabot alerts | enabled, on the dependency graph: GitHub Actions, and `package.json` as version ranges (it does not read the resolved versions in `bun.lock`) |
+| Dependabot security updates | enabled for GitHub Actions; Dependabot has no security updates for Bun |
 | Dependabot version updates | GitHub Actions and Bun, weekly, grouped ([`.github/dependabot.yml`](.github/dependabot.yml)) |
-| Dependency review | [`.github/workflows/dependency-review.yml`](.github/workflows/dependency-review.yml), `fail-on-severity: high`, on pull requests; it does not read `bun.lock`, so it covers GitHub Actions only |
+| Dependency review | [`.github/workflows/dependency-review.yml`](.github/workflows/dependency-review.yml), `fail-on-severity: high`, on pull requests; it compares the same dependency graph (Actions, and `package.json` ranges), not `bun.lock` |
+| `bun audit` of the resolved `bun.lock` tree | not run: the packages are dev-only lint tools that never ship; Dependabot version updates keep them current |
 | Code Quality, AI findings | not enabled: paid features, outside the tikoci house setup |
 
 Third-party Actions in [`.github/workflows/**`](.github/workflows) are pinned
