@@ -45,9 +45,9 @@ repository settings on 2026-11-20.
 | Private vulnerability reporting | enabled |
 | Dependabot alerts | enabled, on the dependency graph: GitHub Actions, and `package.json` as version ranges (it does not read the resolved versions in `bun.lock`) |
 | Dependabot security updates | enabled for GitHub Actions; Dependabot has no security updates for Bun |
-| Dependabot version updates | GitHub Actions and Bun, weekly, grouped ([`.github/dependabot.yml`](.github/dependabot.yml)) |
+| Dependabot version updates | GitHub Actions and Bun, weekly, grouped ([`.github/dependabot.yml`](.github/dependabot.yml)); they raise direct dependencies only, so a vulnerable transitive package can stay locked until a direct dependency releases |
 | Dependency review | [`.github/workflows/dependency-review.yml`](.github/workflows/dependency-review.yml), `fail-on-severity: high`, on pull requests; it compares the same dependency graph (Actions, and `package.json` ranges), not `bun.lock` |
-| `bun audit` of the resolved `bun.lock` tree | not run: the packages are dev-only lint tools that never ship; Dependabot version updates keep them current |
+| `bun audit` of the resolved `bun.lock` tree | [`.github/workflows/audit.yml`](.github/workflows/audit.yml) runs `bun run audit` ([`scripts/audit.ts`](scripts/audit.ts)) when `bun.lock` or `package.json` changes, and weekly; it fails on any advisory not on the script's ignore list, where each entry carries its reason |
 | Code Quality, AI findings | not enabled: paid features, outside the tikoci house setup |
 
 Third-party Actions in [`.github/workflows/**`](.github/workflows) are pinned

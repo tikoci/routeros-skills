@@ -143,6 +143,7 @@ inverterscout
 ipc
 iscsi
 jsproxy
+katex
 kbd
 keepalive
 Keepalives

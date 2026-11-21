@@ -20,7 +20,9 @@ every agent that loads these skills, so we gate quality in CI.
   [`.coderabbit.yaml`](.coderabbit.yaml)).
 - **Add the `skip-review` label** to a PR that needs no hosted review (a typo,
   a link fix, a version bump) before marking it ready. Changes to what a skill
-  claims about RouterOS should get the review.
+  claims about RouterOS should get the review. Applying a label needs triage
+  access; without it, ask a maintainer in the PR description to add the label
+  before you mark the PR ready.
 - **Fill in the [PR template](.github/pull_request_template.md)**: what changed
   and why, how each new claim was grounded, and the checks you ran.
 - This repo follows the tikoci house PR flow
@@ -67,6 +69,7 @@ make lint-links    # offline relative-link + #anchor check (needs lychee)
 | `lint` → skills | [`scripts/check-skills.ts`](scripts/check-skills.ts) | Each `SKILL.md` has valid frontmatter, `name` matches the directory, `description` ≤ 1024 chars, and an H1. |
 | `links` | `lychee` (offline) | Broken **relative** links and `#anchors`. External URLs are skipped so a flaky network never fails the gate. |
 | `actionlint` | `actionlint` | Mistakes in the workflow YAML itself. |
+| `audit` | `bun audit` via [`scripts/audit.ts`](scripts/audit.ts) | Advisories in the resolved `bun.lock` tree. Runs only when `bun.lock` or `package.json` changes, and weekly ([`audit.yml`](.github/workflows/audit.yml)); locally `bun run audit`. Not a required check. |
 
 Security checks (CodeQL default setup, dependency review) also run — see [`SECURITY.md`](SECURITY.md).
 

@@ -1,0 +1,39 @@
+name: Audit
+
+# bun audit of the resolved bun.lock tree (tikoci-ci, "Dependency audit").
+# The packages are dev-only lint tools, but CI installs and runs them. Not on
+# every PR: only when bun.lock or package.json changes, plus a weekly run that
+# catches advisories published since. Not a required check, so a paths filter
+# is fine here. The audit and its ignore list live in scripts/audit.ts.
+
+on:
+  pull_request:
+    branches: [main]
+    paths: [bun.lock, package.json, scripts/audit.ts, .github/workflows/audit.yml]
+  push:
+    branches: [main]
+    paths: [bun.lock, package.json, scripts/audit.ts, .github/workflows/audit.yml]
+  schedule:
+    - cron: "17 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: audit-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  audit:
+    name: audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
+      # bun audit reads bun.lock, so there is no install step.
+      - name: bun audit
+        run: bun run audit

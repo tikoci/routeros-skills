@@ -30,4 +30,5 @@ wording, links or tooling. See CONTRIBUTING.md, "Grounding". -->
 
 <!-- Which agent or person reviewed the draft, or why none did. Decisions that
 deserve the maintainer's look. A typo, link fix or version bump that needs no
-hosted review: add the skip-review label before marking ready. -->
+hosted review: add the skip-review label before marking ready, or, without
+triage access, ask a maintainer here to add it. -->
