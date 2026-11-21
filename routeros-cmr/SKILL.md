@@ -197,6 +197,10 @@ boots:[^beta5]
 /cmr/device/pair [find identity="lab-client"]               # on the controller
 ```
 
+These examples select by identity, which assumes exactly one matching row.
+Identities are not unique (a fresh device is named `MikroTik`), so outside a lab
+pass the connected row's ID to `pair` instead.
+
 To recover a half-paired client, run one bare `/cmr/device/pair` for it; a reboot
 does not fix it. On 7.26beta5 that committed 24 of 24, and each repaired pairing
 survived a controller CMR restart.[^beta5]
