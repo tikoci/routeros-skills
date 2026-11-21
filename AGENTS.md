@@ -69,6 +69,9 @@ change:
   since `make link` installs them together; links outside this repo are
   absolute URLs. A skill meant to stand alone (`routeros-tikoci-house`) uses
   absolute URLs throughout.
-- **House adoption is partial.** The `tikoci-github` and `tikoci-ci` settings
-  this repo has not adopted yet are tracked in [BACKLOG.md](BACKLOG.md)
+- **Branch protection on `main` applies to admins too.** Agents here act
+  through the maintainer's admin login, so enforcement stops an agent from
+  pushing to `main` directly. The maintainer can turn it off to unblock `main`.
+- **House adoption is partial.** The `tikoci-ci` recipes this repo has not
+  adopted yet are tracked in [BACKLOG.md](BACKLOG.md)
   (Housekeeping), not here.
