@@ -41,13 +41,13 @@ repository settings on 2026-11-20.
 | Check | State |
 | --- | --- |
 | CodeQL, default setup (`actions`, `javascript-typescript`), Extended suite | enabled |
-| Code Quality, with AI findings on push | enabled: advisory, not a merge gate; autofix PRs carry the `gh-ai-finding` label |
 | Secret scanning with push protection | enabled |
 | Private vulnerability reporting | enabled |
 | Dependabot alerts | enabled |
-| Dependabot security updates | not enabled |
+| Dependabot security updates | enabled |
 | Dependabot version updates | GitHub Actions and Bun, weekly, grouped ([`.github/dependabot.yml`](.github/dependabot.yml)) |
 | Dependency review | [`.github/workflows/dependency-review.yml`](.github/workflows/dependency-review.yml), `fail-on-severity: high`, on pull requests; it does not read `bun.lock`, so it covers GitHub Actions only |
+| Code Quality, AI findings | not enabled: paid features, outside the tikoci house setup |
 
 Third-party Actions in [`.github/workflows/**`](.github/workflows) are pinned
 to a commit SHA with a `# vX.Y.Z` comment, and Dependabot keeps the pins
