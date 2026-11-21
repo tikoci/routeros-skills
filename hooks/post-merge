@@ -1,5 +1,12 @@
 #!/bin/sh
-# Re-link skills after `git pull`/merge so newly-added routeros-* dirs are
-# symlinked into all configured user-level assistant skill dirs. Idempotent.
+# Re-link skills after `git pull`/merge so newly-present routeros-* dirs are
+# symlinked into the user-level assistant skill dirs. Idempotent.
 # Enable with: make install-hooks
+#
+# core.hooksPath is shared by every worktree of this clone. Relink only from
+# the main worktree: a linked worktree (an agent's review checkout, a feature
+# branch) would otherwise repoint every installed skill at itself.
+git_dir=$(git rev-parse --path-format=absolute --git-dir)
+common_dir=$(git rev-parse --path-format=absolute --git-common-dir)
+[ "$git_dir" = "$common_dir" ] || exit 0
 exec make -C "$(git rev-parse --show-toplevel)" link

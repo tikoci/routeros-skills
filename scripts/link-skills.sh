@@ -14,12 +14,49 @@ fi
 script_dir=$(CDPATH='' cd -- "$(dirname -- "$0")" && pwd)
 repo=$(CDPATH='' cd -- "$script_dir/.." && pwd)
 
-targets="
-$HOME/.copilot/skills
-$HOME/.claude/skills
-$HOME/.agents/skills
-$HOME/.hermes/skills
-"
+# Skill directories to link into, kept as the positional parameters so a path
+# with spaces stays one target. SKILL_DIRS (whitespace-separated) replaces the
+# default: ~/.agents/skills, plus the skills/ directory of each known harness
+# whose home directory exists. A harness that is not installed gets no
+# directory created for it.
+shift
+# Set at all (even to an empty value) means an override; only unset falls back
+# to the default, so `make unlink SKILL_DIRS=` never touches the default dirs.
+if [ "${SKILL_DIRS+set}" = set ]; then
+  # Literal paths: no pathname expansion, so `dir[12]` never selects dir1 and dir2.
+  set -f
+  # shellcheck disable=SC2086 # split on whitespace on purpose
+  set -- $SKILL_DIRS
+  set +f
+  if [ "$#" -eq 0 ]; then
+    echo "SKILL_DIRS is set but names no directory (unset it for the default targets)" >&2
+    exit 2
+  fi
+else
+  set -- "$HOME/.agents/skills"
+  for harness in .claude .copilot .hermes; do
+    if [ -d "$HOME/$harness" ]; then
+      set -- "$@" "$HOME/$harness/skills"
+    fi
+  done
+fi
+
+# Create the real target directories before visiting symlinked ones, so a
+# target that is a link to another selected target (in either direction)
+# resolves once its destination exists.
+prepare_targets() {
+  rc=0
+  for target in "$@"; do
+    [ -L "$target" ] || mkdir -p "$target"
+  done
+  for target in "$@"; do
+    if [ ! -d "$target" ]; then
+      echo "NOT A DIR: $target (a dangling symlink?)" >&2
+      rc=1
+    fi
+  done
+  return "$rc"
+}
 
 same_target() {
   actual=${1%/}
@@ -120,14 +157,15 @@ check_one() {
 
 case "$cmd" in
   targets)
-    for target in $targets; do
+    for target in "$@"; do
       echo "$target"
     done
     ;;
   link)
     rc=0
-    for target in $targets; do
-      mkdir -p "$target"
+    prepare_targets "$@" || rc=1
+    for target in "$@"; do
+      [ -d "$target" ] || continue
       # Retire only this checkout's old tool-skill links; leave unrelated installs.
       for old in routeros-centrs routeros-quickchr routeros-quickchr-cli; do
         unlink_one "$repo/$old" "$target/$old"
@@ -140,7 +178,7 @@ case "$cmd" in
     exit "$rc"
     ;;
   unlink)
-    for target in $targets; do
+    for target in "$@"; do
       for skill in $(skill_names); do
         unlink_one "$repo/$skill" "$target/$skill"
       done
@@ -152,7 +190,7 @@ case "$cmd" in
     count=0
     for skill in $(skill_names); do
       count=$((count + 1))
-      for target in $targets; do
+      for target in "$@"; do
         check_one "$repo/$skill" "$target/$skill" || rc=1
       done
     done

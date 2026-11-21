@@ -11,7 +11,9 @@ Names distinguish RouterOS knowledge from tikoci tooling:
 - `routeros-*`: RouterOS features, protocols, and platform knowledge.
 - `routeros-tikoci-*`: using public tikoci tools with RouterOS, including centrs
   and quickchr. Future tikoci tool skills use this prefix too.
-- Bare `tikoci-*`: local project and maintainer skills, outside this repository.
+- `routeros-tikoci-house`: a pointer for contributing to tikoci repos.
+- `tikoci-*` (not here): house skills for developing tikoci repos, published at
+  <https://tikoci.dev/house/>.
 
 | Skill | Description |
 |-------|-------------|
@@ -35,6 +37,7 @@ Names distinguish RouterOS knowledge from tikoci tooling:
 | **routeros-mndp** | MNDP (MikroTik Neighbor Discovery Protocol) — wire format, `/ip/neighbor`, WinBox discovery. |
 | **routeros-mac-telnet** | MAC-Telnet (UDP 20561) — Layer-2 terminal by MAC address, 22-byte header, control blocks, MD5 + MTWEI (EC-SRP) auth. |
 | **routeros-legacy-wireless** | The legacy `wireless` package — `/interface/wireless`, legacy CAPsMAN (`/caps-man`) provisioning and access-list gotchas, and 60 GHz W60G links (point-to-multipoint, VLANs over `wlan60-station-N`, the 5 GHz backup bond). |
+| **routeros-tikoci-house** | Pointer for reporting on or contributing to tikoci repos — which repo owns what, how to report a bug or vulnerability, what a PR needs, and where the house skills live. |
 | **routeros-sniffer** | RouterOS packet capture and TZSP streaming — `/tool/sniffer`, firewall sniff-tzsp, Wireshark integration. |
 
 ## Install
@@ -42,10 +45,9 @@ Names distinguish RouterOS knowledge from tikoci tooling:
 Clone this repo and symlink the skill folders into your assistant skill directories:
 
 ```sh
-git clone https://github.com/tikoci/routeros-skills.git ~/GitHub/routeros-skills
-
-cd ~/GitHub/routeros-skills
-make link   # Copilot, Claude, Codex, and Hermes
+git clone https://github.com/tikoci/routeros-skills.git
+cd routeros-skills
+make link   # ~/.agents/skills plus each installed harness's skills dir
 make check
 ```
 
@@ -55,19 +57,21 @@ links, and start a fresh assistant session. See [migration details](SETUP.md#ren
 
 Each skill is a folder containing a `SKILL.md` file and optionally a `references/` subfolder. VS Code Copilot and Claude Code automatically discover skills in their respective `~/.*/skills/` directories.
 Codex discovers user-authored skills in `~/.agents/skills`, and Hermes in `~/.hermes/skills`.
+To pick the directories yourself, set `SKILL_DIRS`; see [SETUP.md](SETUP.md#skill-directories).
 
 > **Tip:** Start with **routeros-fundamentals** — it covers the core concepts that other skills reference.
 
 ## Repository layout
 
-This repo is the **single source of truth** for all `routeros-*` skills. Locally, `~/.copilot/skills/routeros-*`, `~/.claude/skills/routeros-*`, `~/.agents/skills/routeros-*`, and `~/.hermes/skills/routeros-*` are symlinks into this repo — editing any of those locations is the same as editing here.
+This repo is the **single source of truth** for all `routeros-*` skills. After `make link`, the `routeros-*` entries in your assistant skill directories are symlinks into your checkout, so editing them is the same as editing here.
 
-Non-`routeros-*` skills (e.g. `tikoci-*`, `screenshot`, `sql-as-rag`) are personal/project-scoped and live only in the local user-level skill directories, **not** in this repo. See [SETUP.md](SETUP.md) for the full local setup guide.
+Skills for developing and maintaining tikoci repos are the `tikoci-*` house skills at <https://tikoci.dev/house/>, **not** this repo. See [SETUP.md](SETUP.md) for the local setup guide.
 
 **The Skill Set is the `routeros-*/` folders only.** Everything else at the repo root is the **CI/QA and tooling layer** that validates and ships those skills — it is *not* part of the skill content and is not symlinked into `~/.*/skills/`:
 
-- `.github/` — CI workflows (lint, link check, dependency review), CodeQL Default Setup, and Dependabot config
-- `scripts/` — the `SKILL.md` validator (`check-skills.ts`) run by CI and `make lint`
+- `AGENTS.md`, `CLAUDE.md` — instructions for agents working on this repo
+- `.github/` — CI workflows (lint, link check, dependency review, audit), Dependabot config, and the PR template
+- `scripts/` — the `SKILL.md` validator (`check-skills.ts`) run by CI and `make lint`, the dependency audit (`audit.ts`, `bun run audit`), and the `make link` helper (`link-skills.sh`)
 - `hooks/` — optional local git hooks that re-symlink skills after checkout/merge (`make install-hooks`)
 - `Makefile`, `.markdownlint*.yaml`, `cspell.json`, `project-words.txt`, `package.json`, `bun.lock` — lint/build configuration and the dev dependency tree
 
@@ -82,7 +86,7 @@ These skills cover **RouterOS 7.x** (long-term and newer releases). RouterOS v6 
 3. Run the checks locally: `make lint` (and `make lint-links` if you have [lychee](https://lychee.cli.rs/))
 4. Open a pull request — `main` is protected, so all changes land via PR
 
-Every PR is gated by [CI](.github/workflows/ci.yml) (markdownlint + cspell + a `SKILL.md` validator + offline link check) and reviewed by CodeRabbit and Copilot. See [CONTRIBUTING.md](CONTRIBUTING.md) for the local setup, the dictionary policy, and what each check does.
+Every PR is gated by [CI](.github/workflows/ci.yml) (markdownlint + cspell + a `SKILL.md` validator + offline link check). See [CONTRIBUTING.md](CONTRIBUTING.md) for when CodeRabbit reviews a PR, the local setup, the dictionary policy, and what each check does.
 
 Feedback, corrections, and new skill ideas are welcome via [issues](https://github.com/tikoci/routeros-skills/issues).
 

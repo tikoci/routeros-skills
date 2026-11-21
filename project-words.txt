@@ -49,6 +49,7 @@ cmr
 coderabbit
 connectivitycheck
 conntrack
+cooldown
 coreutils
 CPE
 CPHEADER
@@ -142,6 +143,7 @@ inverterscout
 ipc
 iscsi
 jsproxy
+katex
 kbd
 keepalive
 Keepalives
@@ -149,6 +151,7 @@ Keymat
 keypair
 killpg
 KVM
+languagetool
 larsa
 lastuser
 LDP
@@ -427,6 +430,7 @@ Winbox
 Wireshark
 Wize
 WLAN
+worktree
 WPA
 WPS
 writability

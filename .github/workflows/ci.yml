@@ -2,8 +2,9 @@ name: CI
 
 # Gate for the routeros-* skills: deterministic, fast checks that must pass
 # before merge to main. Semantic review (RouterOS accuracy, prose) is handled
-# separately by CodeRabbit + Copilot, which review every PR org-wide — see
-# .coderabbit.yaml. Keep this workflow to mechanical, reproducible checks.
+# separately: CodeRabbit reviews once when a PR is marked ready, unless the PR
+# has the skip-review label (see .coderabbit.yaml and CONTRIBUTING.md). Keep
+# this workflow to mechanical, reproducible checks.
 #
 # Jobs:
 #   lint       — markdownlint-cli2 + cspell + the SKILL.md validator (bun run check)
@@ -30,8 +31,13 @@ jobs:
     name: lint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
+        with:
+          # The packageManager pin in package.json, so a rerun gets the same Bun.
+          bun-version-file: package.json
       - run: bun install --frozen-lockfile
       - name: markdownlint + cspell + skill validator
         run: bun run check
@@ -40,7 +46,9 @@ jobs:
     name: links
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       # Offline mode validates relative links and #anchors against the
       # filesystem and SKIPS external http(s) URLs — so a flaky network or a
       # rate-limited host never fails the gate. (External-URL checking can be
@@ -58,6 +66,8 @@ jobs:
     name: actionlint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - name: Lint workflow YAML
         uses: raven-actions/actionlint@3d39aea434753780c3b3d4a1a31c854b4dbf49d7 # v2.2.0

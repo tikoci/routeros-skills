@@ -17,9 +17,11 @@ ignores:
   # ending in `.md`. Fresh CI checkouts don't have these refs, but a local
   # `make lint` after fetching them would otherwise fail on git internals.
   - ".git/**"
-  # LLM instruction files — different audience, intentionally loose structure.
-  # None live in this repo today; listed defensively in case one is added.
+  # CLAUDE.md is the one line `@AGENTS.md` (no heading). AGENTS.md is linted.
   - "CLAUDE.md"
-  - "AGENTS.md"
+  # Scoped instruction files are not used here (tikoci-house); listed
+  # defensively in case one is added.
   - ".github/copilot-instructions.md"
   - ".github/instructions/**"
+  # Temporary work (gitignored).
+  - ".scratch/**"
