@@ -70,8 +70,8 @@ Skills for developing and maintaining tikoci repos are the `tikoci-*` house skil
 **The Skill Set is the `routeros-*/` folders only.** Everything else at the repo root is the **CI/QA and tooling layer** that validates and ships those skills — it is *not* part of the skill content and is not symlinked into `~/.*/skills/`:
 
 - `AGENTS.md`, `CLAUDE.md` — instructions for agents working on this repo
-- `.github/` — CI workflows (lint, link check, dependency review), Dependabot config, and the PR template
-- `scripts/` — the `SKILL.md` validator (`check-skills.ts`) run by CI and `make lint`
+- `.github/` — CI workflows (lint, link check, dependency review, audit), Dependabot config, and the PR template
+- `scripts/` — the `SKILL.md` validator (`check-skills.ts`) run by CI and `make lint`, the dependency audit (`audit.ts`, `bun run audit`), and the `make link` helper (`link-skills.sh`)
 - `hooks/` — optional local git hooks that re-symlink skills after checkout/merge (`make install-hooks`)
 - `Makefile`, `.markdownlint*.yaml`, `cspell.json`, `project-words.txt`, `package.json`, `bun.lock` — lint/build configuration and the dev dependency tree
 
@@ -86,7 +86,7 @@ These skills cover **RouterOS 7.x** (long-term and newer releases). RouterOS v6 
 3. Run the checks locally: `make lint` (and `make lint-links` if you have [lychee](https://lychee.cli.rs/))
 4. Open a pull request — `main` is protected, so all changes land via PR
 
-Every PR is gated by [CI](.github/workflows/ci.yml) (markdownlint + cspell + a `SKILL.md` validator + offline link check) and reviewed by CodeRabbit and Copilot. See [CONTRIBUTING.md](CONTRIBUTING.md) for the local setup, the dictionary policy, and what each check does.
+Every PR is gated by [CI](.github/workflows/ci.yml) (markdownlint + cspell + a `SKILL.md` validator + offline link check). See [CONTRIBUTING.md](CONTRIBUTING.md) for when CodeRabbit reviews a PR, the local setup, the dictionary policy, and what each check does.
 
 Feedback, corrections, and new skill ideas are welcome via [issues](https://github.com/tikoci/routeros-skills/issues).
 

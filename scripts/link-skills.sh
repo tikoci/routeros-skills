@@ -20,14 +20,16 @@ repo=$(CDPATH='' cd -- "$script_dir/.." && pwd)
 # whose home directory exists. A harness that is not installed gets no
 # directory created for it.
 shift
-if [ -n "${SKILL_DIRS:-}" ]; then
+# Set at all (even to an empty value) means an override; only unset falls back
+# to the default, so `make unlink SKILL_DIRS=` never touches the default dirs.
+if [ "${SKILL_DIRS+set}" = set ]; then
   # Literal paths: no pathname expansion, so `dir[12]` never selects dir1 and dir2.
   set -f
   # shellcheck disable=SC2086 # split on whitespace on purpose
   set -- $SKILL_DIRS
   set +f
   if [ "$#" -eq 0 ]; then
-    echo "SKILL_DIRS is set but names no directory" >&2
+    echo "SKILL_DIRS is set but names no directory (unset it for the default targets)" >&2
     exit 2
   fi
 else

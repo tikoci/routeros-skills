@@ -34,6 +34,9 @@ jobs:
         with:
           persist-credentials: false
       - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
+        with:
+          # The packageManager pin in package.json, so a rerun gets the same Bun.
+          bun-version-file: package.json
       # bun audit reads bun.lock, so there is no install step.
       - name: bun audit
         run: bun run audit

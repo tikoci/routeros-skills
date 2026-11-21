@@ -69,7 +69,7 @@ make lint-links    # offline relative-link + #anchor check (needs lychee)
 | `lint` → skills | [`scripts/check-skills.ts`](scripts/check-skills.ts) | Each `SKILL.md` has valid frontmatter, `name` matches the directory, `description` ≤ 1024 chars, and an H1. |
 | `links` | `lychee` (offline) | Broken **relative** links and `#anchors`. External URLs are skipped so a flaky network never fails the gate. |
 | `actionlint` | `actionlint` | Mistakes in the workflow YAML itself. |
-| `audit` | `bun audit` via [`scripts/audit.ts`](scripts/audit.ts) | Advisories in the resolved `bun.lock` tree. Runs only when `bun.lock` or `package.json` changes, and weekly ([`audit.yml`](.github/workflows/audit.yml)); locally `bun run audit`. Not a required check. |
+| `audit` | `bun audit` via [`scripts/audit.ts`](scripts/audit.ts) | Advisories in the resolved `bun.lock` tree. Runs when `bun.lock`, `package.json`, the audit script or its workflow changes, weekly, and on manual dispatch ([`audit.yml`](.github/workflows/audit.yml)); locally `bun run audit`. Not a required check. |
 
 Security checks (CodeQL default setup, dependency review) also run — see [`SECURITY.md`](SECURITY.md).
 

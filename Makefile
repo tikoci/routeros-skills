@@ -18,7 +18,9 @@
 REPO    := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
 LINKER  := $(REPO)/scripts/link-skills.sh
 
-export SKILL_DIRS
+# No `export SKILL_DIRS`: make already passes a SKILL_DIRS from the command line
+# or the environment to the recipes, and an unconditional export would turn
+# "not given" into "given but empty".
 
 .PHONY: link unlink check targets install-hooks lint lint-links
 

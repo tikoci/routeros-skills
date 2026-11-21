@@ -3,6 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
+  "packageManager": "bun@1.4.4",
   "description": "Lint tooling for the routeros-* skills repo (cspell + markdownlint-cli2 + skill validator, plus a dependency audit). The skills themselves are plain Markdown — this package only exists to gate quality in CI and locally.",
   "scripts": {
     "check": "bun run lint:markdown && bun run lint:cspell && bun run lint:skills",

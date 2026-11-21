@@ -500,9 +500,9 @@ created) since it's the skill where LLM output quality is hardest to verify.
 - Open: delete the stale remote `tikoci` branch (old `tikoci-*` and
   `routeros-*` copies, no PR, nothing links to it) and the
   `.gitignore merge=ours` line in `.gitattributes` with it, once the
-  maintainer agrees (#63).
+  maintainer agrees (#63, #78).
 - Open: repo settings that still differ from tikoci-github after #77: turn on
   `sha_pinning_required` once every action on `main` is pinned (#77 pins the
   last two); decide on a read-only default workflow token (every workflow
   already declares `contents: read`) and on enforcing branch protection for
-  admins (the house leaves admins unenforced).
+  admins (the house leaves admins unenforced). Tracked in #78.

@@ -12,11 +12,12 @@
  */
 // cspell:ignore pmpm
 const IGNORE: string[] = [
-    // KaTeX prototype pollution (fixed in katex 0.18.2). Reached only through
-    // markdownlint > micromark-extension-math, which pins katex ^0.16.0 and
-    // loads it only in its `mathHtml` renderer; markdownlint imports the
-    // `math` syntax extension alone, so KaTeX never runs. Drop when
-    // micromark-extension-math allows katex >= 0.18.2.
+    // KaTeX prototype pollution in rendering (fixed in katex 0.18.2). Reached
+    // only through markdownlint > micromark-extension-math, which allows
+    // katex ^0.16.0. The module loads (the package index re-exports
+    // `mathHtml`), but markdownlint registers only the `math` syntax
+    // extension, never the `mathHtml` renderer, so `katex.renderToString` is
+    // never called. Drop when micromark-extension-math allows katex >= 0.18.2.
     "GHSA-238p-pmpm-9mq7",
 ];
 

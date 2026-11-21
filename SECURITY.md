@@ -19,9 +19,11 @@ credentials. The only executable code is tooling:
 
 - `scripts/check-skills.ts`: a Bun script that validates skill frontmatter, run
   in CI and locally.
+- `scripts/audit.ts`: runs `bun audit` with a reasoned ignore list, in CI and
+  locally (`bun run audit`).
 - `scripts/link-skills.sh` and `hooks/`: local install helpers that symlink the
   skills into assistant skill directories (`make link`).
-- `.github/workflows/**`: CI workflows (lint, link check, dependency review).
+- `.github/workflows/**`: CI workflows (lint, link check, dependency review, audit).
 
 So the practical security surface is the **CI workflows** and the **dev
 dependency tree** (`cspell`, `markdownlint-cli2`), not anything that runs on a
@@ -47,7 +49,7 @@ repository settings on 2026-11-20.
 | Dependabot security updates | enabled for GitHub Actions; Dependabot has no security updates for Bun |
 | Dependabot version updates | GitHub Actions and Bun, weekly, grouped ([`.github/dependabot.yml`](.github/dependabot.yml)); they raise direct dependencies only, so a vulnerable transitive package can stay locked until a direct dependency releases |
 | Dependency review | [`.github/workflows/dependency-review.yml`](.github/workflows/dependency-review.yml), `fail-on-severity: high`, on pull requests; it compares the same dependency graph (Actions, and `package.json` ranges), not `bun.lock` |
-| `bun audit` of the resolved `bun.lock` tree | [`.github/workflows/audit.yml`](.github/workflows/audit.yml) runs `bun run audit` ([`scripts/audit.ts`](scripts/audit.ts)) when `bun.lock` or `package.json` changes, and weekly; it fails on any advisory not on the script's ignore list, where each entry carries its reason |
+| `bun audit` of the resolved `bun.lock` tree | [`.github/workflows/audit.yml`](.github/workflows/audit.yml) runs `bun run audit` ([`scripts/audit.ts`](scripts/audit.ts)) when `bun.lock`, `package.json`, the audit script or its workflow changes, weekly, and on manual dispatch; it fails on any advisory not on the script's ignore list, where each entry carries its reason |
 | Code Quality, AI findings | not enabled: paid features, outside the tikoci house setup |
 
 Third-party Actions in [`.github/workflows/**`](.github/workflows) are pinned

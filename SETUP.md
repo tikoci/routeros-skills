@@ -30,7 +30,8 @@ make link SKILL_DIRS="$HOME/.agents/skills $HOME/.claude/skills"
 `make targets` prints the directories in use. Each whitespace-separated word
 is one literal path: no wildcards, and no spaces inside a path (the default
 targets do handle a home directory with spaces). An override that names no
-directory is an error.
+directory is an error, including an empty `SKILL_DIRS=`: unset the variable
+to get the default targets.
 
 A `SKILL_DIRS=...` argument applies to that one `make` run only. Pass the same
 value to `make check` and `make unlink`, or export it in your shell profile.
