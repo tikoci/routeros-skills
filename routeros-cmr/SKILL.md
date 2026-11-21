@@ -63,11 +63,12 @@ about pairing, and a client's own CMR state was not in its announcements.[^beta5
 retry.** Two cases were measured, and the fix differs:
 
 - **7.26beta5, client enabled right after its link address was added:** in
-  quickchr's two-router lab (11 of 11 fresh boots), the client's first SYN left
-  through the **link** interface with the **management** NIC's source address
-  (10.0.2.15, QEMU user-mode). Every lab router has that address, the controller
-  included, so no reply could reach the client: it gave up after about 85 s, then
-  connected from the link address at once. The four-router lab, which enables
+  quickchr's two-router lab, all 11 fresh boots took about 85 s to reach pending.
+  In the 4 with a wire capture, the client's first SYN left through the **link**
+  interface with the **management** NIC's source address (10.0.2.15, QEMU
+  user-mode). Every lab router has that address, the controller included, so no
+  reply could reach the client: it gave up after about 85 s, then connected from
+  the link address at once. The four-router lab, which enables
   clients minutes after addressing them, connected within 35 ms. Why the first
   connect picks that source is not established. On a network with unique
   management addresses such a SYN might be answered instead, and the session would
@@ -111,11 +112,10 @@ controller reboot after loading a binary backup.[^beta1][^lab]
 
 Both ends have a `pairing-requirement` of `none`, `password` or `confirm`. The
 controller has a global value (`/cmr`) and a per-device override
-(`/cmr/device`). There is no separate CMR pairing password: the controller-side
-`pair` takes a RouterOS login **on the client**, the client-side `pair` a login
-**on the controller**. Each side's login is needed only when the other side
-requires `password`; a bare `pair` on either side approves that side
-locally.[^docs][^lab]
+(`/cmr/device`). There is no separate CMR pairing password. A side that requires
+`password` is satisfied by a RouterOS login **on that side**, passed to the `pair`
+run on the other side: the controller's `pair` takes a client login, the client's
+`pair` a controller login. A bare `pair` approves the local side.[^docs][^lab]
 
 On 7.26beta5:
 
@@ -130,10 +130,12 @@ On 7.26beta5:
   to the default, makes it pair again.[^beta5]
 - In the six-combination matrix (client `none`/`password` × device
   `none`/`password`/`confirm`), `none`/`none` paired automatically and the others
-  paired with one command: a client `pair` with a controller login, a bare
-  controller `pair`, or a credentialed one. Client `password` + device `confirm`
-  was the only combination **observed** to half-pair (below); one run of each
-  combination per lab, so other triggers are not ruled out.[^beta5][^lab]
+  reached `paired` with one command: a client `pair` with a controller login, a
+  bare controller `pair`, or a credentialed one. Client `password` + device
+  `confirm` was the only combination **observed** to half-pair (below): it needed
+  one more bare `pair` on the KVM run and none on the HVF run. One run of each
+  combination per lab, not restart-tested, so other triggers are not ruled
+  out.[^beta5][^lab]
 
 The unpaired row's `state` spells out both sides as
 `pair: device:<client condition>, cmr:<controller condition>`.[^beta5]
@@ -150,13 +152,14 @@ Both paired and half-paired rows read `pairing-requirement=none`, so that field
 proves nothing.[^beta5]
 
 **The client's `paired,connected` alone does not prove pairing.** A half-paired
-session is idle (TCP keepalives only). After any reconnect (a controller CMR
-restart, or a reboot of either side) the client is pending again and the row reads
+session is idle (TCP keepalives only). After each tested reconnect (a controller
+CMR restart, or a reboot of either side) the client was pending again and the row read
 `cmr:waiting confirmation`: the controller's approval was never stored.[^beta5]
 
 A readiness check: several rows can exist briefly after a reconnect, so pick the
-row for the client's identity with `connected=true`. Require that row to have an
-empty `state` and an `upgrade-rule`, and the client to read `paired,connected`.
+row for the client's identity with `connected=true`, and pass that row's ID to
+`pair` if more than one row matches. Require that row to have no `state` starting
+with `pair:` and an `upgrade-rule`, and the client to read `paired,connected`.
 Where it matters, confirm that `run-script` selects the device and returns its
 output. The controller's own row is the exception noted above.[^beta5]
 
@@ -170,7 +173,8 @@ single credentialed command half-paired 7 of 9 fresh pairings on three boots, an
 ```
 
 Its output predicts the result: a last table ending `device:ok, cmr:ok` meant
-half-paired, `paired` meant committed, in every captured trial. **Committed**
+half-paired, `paired` meant committed, in all 9 captured trials of the pairing
+study. **Committed**
 means still paired after the controller's CMR service restarts (`/cmr set
 enabled=no`, then `enabled=yes`), a lab check that drops every client's session.
 These sequences were committed 9 of 9 each, interleaved on the same
@@ -307,9 +311,10 @@ matching labelled rule claimed devices ahead of it.[^lab]
 `available-version` appeared within 60 s of pairing (a version check was not
 awaited). Separately on beta5, a rule pinned to `channel=7.26beta1` gave beta5
 devices `available-version=7.26beta1` and `upgrade-available=true` (flag `U`) and
-fired the `upgrade-available` alert. MikroTik staff said the older offer is
-intended, and the manual says the offered version "can be earlier than
-installed" and that a pinned channel can downgrade devices. The U flag means "a
+fired the `upgrade-available` alert. MikroTik staff said the stable channel
+points to 7.24.5, with no exception, until 7.26 is released, and the manual says
+the offered version "can be earlier than installed" and that a pinned channel can
+downgrade devices. The U flag means "a
 different version is offered", not "newer".[^beta1][^beta5][^vendor][^docs]
 
 Add a lab rule without a schedule, and never call `upgrade` or `trigger` in a
@@ -382,15 +387,17 @@ findings page keeps the open questions.[^findings]
     2026-11-12 to 2026-11-14 (`evidence/7.26beta5/`: `pairing.json`,
     `policy.json`, `recheck.json`, `wire.json`, `demo-probe.json`), and the
     `repair` study on an Intel Mac (HVF), 2026-11-20 (`repair.json`), summarized
-    in [FINDINGS.md][findings].
+    in [FINDINGS.md][findings]. Evidence at
+    [`9bce9f2`](https://github.com/tikoci/quickchr/tree/9bce9f237a1815cb5ae25cfde71b29cd45272073/examples/cmr/evidence/7.26beta5).
 [^lab]: The [CMR example][example]'s four-router lab (controller, transit, routed
     remote over OSPF, direct discovery client) with `--probe`. It passed on
     7.26beta1 (2026-10-05), on 7.26beta5 on a Linux KVM host
     (`evidence/7.26beta5/demo-probe.json`, where the `password`/`confirm` matrix
     case half-paired and was finished with a bare `pair`), and again for this
-    revision on 2026-11-20, x86 CHR under HVF on an Intel Mac, quickchr `main` @
-    `5573f30` (`evidence/7.26beta5/demo-probe-hvf-2026-11-20.json`), where all six
-    matrix cases committed.
+    revision on 2026-11-20, x86 CHR under HVF on an Intel Mac, run from quickchr
+    `5573f30` and stored at `9bce9f2`
+    (`evidence/7.26beta5/demo-probe-hvf-2026-11-20.json`), where all six matrix
+    cases reached `paired` without a repair.
 [^beta1]: 7.26beta1 only: the original quickchr lab (2026-10-05,
     [REPORT.md](https://github.com/tikoci/quickchr/blob/main/examples/cmr/REPORT.md)
     and `evidence/7.26beta1/`) or an earlier hardware session the same day (arm64
@@ -402,12 +409,11 @@ findings page keeps the open questions.[^findings]
     [#655](https://github.com/tikoci/centrs/pull/655) (VLAN `port-labels`, beta3
     vs beta4).
 [^vendor]: MikroTik staff on the forum:
-    [client `confirm` and disable/enable](https://forum.mikrotik.com/t/claude-and-codex-try-out-cmr-in-7-26beta-mostly-successful/273613/4),
+    [client `confirm`, disable/enable and the 7.24.5 stable target](https://forum.mikrotik.com/t/claude-and-codex-try-out-cmr-in-7-26beta-mostly-successful/273613/4)
+    (it calls disable/enable intended, replying to a report of the client case),
     [empty port selector](https://forum.mikrotik.com/t/7-26beta-development-is-released/273582/188),
     [bridge rebuild](https://forum.mikrotik.com/t/7-26beta-development-is-released/273582/232),
     [announced bridge reuse](https://forum.mikrotik.com/t/7-26beta-development-is-released/273582/248).
-    The older-offer statement is linked from the matching row of
-    [FINDINGS.md][findings].
 [^log]: MikroTik `CHANGELOG` for the named build. A claim until a lab confirms it.
 [^docs]: MikroTik [CMR manual](https://manual.mikrotik.com/docs/management-tools/cmr/),
     [CMR client](https://manual.mikrotik.com/docs/management-tools/cmr/client/),
