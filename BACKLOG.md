@@ -497,12 +497,11 @@ created) since it's the skill where LLM output quality is hardest to verify.
 - Done: [CONTRIBUTING.md](CONTRIBUTING.md#grounding-dont-record-what-you-havent-verified)
   codifies the grounding discipline; CI checks SKILL.md frontmatter and the H1
   (`scripts/check-skills.ts`) and relative links (lychee, offline).
-- Open: delete the stale remote `tikoci` branch (old `tikoci-*` and
-  `routeros-*` copies, no PR, nothing links to it) and the
-  `.gitignore merge=ours` line in `.gitattributes` with it, once the
-  maintainer agrees (#63, #78).
-- Open: repo settings that still differ from tikoci-github after #77: turn on
-  `sha_pinning_required` once every action on `main` is pinned (#77 pins the
-  last two); decide on a read-only default workflow token (every workflow
-  already declares `contents: read`) and on enforcing branch protection for
-  admins (the house leaves admins unenforced). Tracked in #78.
+- Done (#78): the stale `tikoci` branch is deleted; its tip stays reachable
+  as the tag `archive/tikoci-branch`. Repo settings match tikoci-github
+  (`sha_pinning_required` on, read-only default workflow token), except admin
+  enforcement on `main`, which is a house exception in [AGENTS.md](AGENTS.md).
+- Open: tikoci-ci recipes not adopted yet: `timeout-minutes` on every job
+  (only `audit` has one), a zizmor workflow reporting to code scanning, and
+  one gate job as the required check. Bump the Bun pin (`packageManager` in
+  `package.json`) by hand; Dependabot does not.

@@ -438,5 +438,6 @@ Wws
 XEN
 xzf
 zerotier
+zizmor
 Zmen
 ztcentral
