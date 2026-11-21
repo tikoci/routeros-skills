@@ -219,8 +219,10 @@ credentials and explicit controller approval for anything but a lab.[^docs]
 /cmr/layout/rebuild-links [find name=lab]
 ```
 
-Plain labels are OR; `+label` requires a label and `-label` excludes it. Combined
-predicates were not exercised by the labs.[^docs]
+Plain labels are OR; `+label` requires a label and `-label` excludes it. `all`
+selects every device, the controller's own row included, so a `labels=all` script
+also runs on the controller. Combined predicates were not exercised by the
+labs.[^docs][^centrs]
 
 Fleet-script results include progress sections, and a device's successful output
 can appear in more than one. Check the final result **per device** rather than
@@ -243,6 +245,12 @@ tested. Adding `write` alone or `reboot` alone was refused for both
 varied. The beta4 changelog says only that `alert/test` requires `write`. A
 `read`-only login can still list `/cmr/device`.[^beta5][^log]
 
+On 7.26beta1, `/cmr/device/reboot` needed only `read`, `test` and `api` on the
+controller login and rebooted clients, although the same login was refused a
+direct `/system/reboot`.[^centrs] Its caller policy, and that of `upgrade` and
+`pair`, is not measured on a later build: treat them as writes whatever the
+login's group.
+
 **On the client, a script is not bounded by the documented policies.** The manual
 says scripts sent with `run-script` run on each client "with the `read`, `write`,
 `test`, and `reboot` policies, without a user session", so `/user add` should
@@ -260,6 +268,23 @@ login and from the least-privileged login tested
 Only `/export file=` was refused. Treat a `write,reboot` controller login as close
 to full control of every client it can select, and give it out
 accordingly.[^beta5]
+
+**Calling `run-script` from a program** (7.26beta1, not re-measured):[^centrs]
+
+- `timeout=` returns `failed`, `timed out (6)`, but the client script keeps
+  running. A hard ~60 s per-call ceiling (`std failure: timeout (13)`) leaves it
+  running too, and `duration=` does not lift it. REST closes at 60 s with
+  `Session closed`, which also ends a bare `/cmr/client/pair` still waiting for
+  approval. A cancelled call does not stop client scripts either.
+- Result rows carry no device ID; `device` is a cached `identity@address` that
+  changed during a call when a client dropped. To bind a result to a device,
+  make one call per device with `numbers=<.id>`. A stale ID in `numbers=` is
+  dropped silently, and `numbers=` does not take `ids`.
+- Output is capped at ~60 KiB per device, marked in-band with `..(+N B)`, while
+  `status` stays `success`.
+- `/cmr/device/dashboard` closed a native API session; over REST it held the
+  controller's REST service for every caller for 10–30 s. Don't call it from
+  automation.
 
 ## Alerts and HTTP webhooks
 
@@ -407,9 +432,14 @@ findings page keeps the open questions.[^findings]
     and `evidence/7.26beta1/`) or an earlier hardware session the same day (arm64
     controller, mipsbe client). Not re-measured on a later build.
 [^centrs]: centrs integration lab:
-    [#456](https://github.com/tikoci/centrs/issues/456) (beta1 run-script),
+    [#456](https://github.com/tikoci/centrs/issues/456) (beta1 run-script and
+    `/cmr/device/reboot` caller policy),
     [#527](https://github.com/tikoci/centrs/issues/527) (beta3 refusal; per-boot
-    half-pair rate),
+    half-pair rate, and 3 of 3 pending without a `pair` in
+    [this comment](https://github.com/tikoci/centrs/issues/527#issuecomment-6814617733)),
+    [#441](https://github.com/tikoci/centrs/issues/441) and
+    `commands/execute/README.md` → CMR (beta1 `run-script` API behavior,
+    `labels=all`),
     [#655](https://github.com/tikoci/centrs/pull/655) (VLAN `port-labels`, beta3
     vs beta4).
 [^vendor]: MikroTik staff on the forum:
