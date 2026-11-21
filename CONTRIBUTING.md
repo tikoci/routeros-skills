@@ -1,7 +1,7 @@
 # Contributing to routeros-skills
 
 This repo is the canonical source for the public `routeros-*` skills consumed by
-Claude Code and GitHub Copilot. Changes are small and content-focused — a skill
+Claude Code, Codex, GitHub Copilot and similar agents. Changes are small and content-focused — a skill
 is just a `<name>/SKILL.md` file (plus optional `references/`) — but they ship to
 every agent that loads these skills, so we gate quality in CI.
 
@@ -12,11 +12,20 @@ every agent that loads these skills, so we gate quality in CI.
 - **CI must be green** before merge (see below). No approving review is required —
   this is a small, often solo-maintained repo — but the deterministic checks are
   required.
-- **Every PR is also reviewed by [CodeRabbit] and [GitHub Copilot]** automatically.
-  They handle the *semantic* side — RouterOS factual accuracy and the
+- **[CodeRabbit] reviews a PR once, when it is marked ready** (drafts and later
+  pushes get no automatic review), and [GitHub Copilot] may review too. They
+  handle the *semantic* side — RouterOS factual accuracy and the
   footnote-grounding discipline — which the linters can't. CI owns spelling and
   Markdown structure; the bots don't re-report those (configured in
   [`.coderabbit.yaml`](.coderabbit.yaml)).
+- **Add the `skip-review` label** to a PR that needs no hosted review (a typo,
+  a link fix, a version bump) before marking it ready. Changes to what a skill
+  claims about RouterOS should get the review.
+- **Fill in the [PR template](.github/pull_request_template.md)**: what changed
+  and why, how each new claim was grounded, and the checks you ran.
+- This repo follows the tikoci house PR flow
+  ([tikoci-pr-flow](https://tikoci.dev/house/skills/tikoci-pr-flow/SKILL.md))
+  where it applies; [AGENTS.md](AGENTS.md) lists the exceptions.
 
 [CodeRabbit]: https://coderabbit.ai/
 [GitHub Copilot]: https://github.com/features/copilot
@@ -39,7 +48,7 @@ the bar for what gets written down is higher than "it seemed true once":
 ## Running the checks locally
 
 Prerequisites: [Bun](https://bun.sh). Optional: [lychee](https://lychee.cli.rs/)
-(`brew install lychee`) for the link check.
+for the link check.
 
 ```sh
 bun install        # one-time: installs cspell + markdownlint-cli2
@@ -80,8 +89,9 @@ When cspell flags a word, decide which it is:
 
 Use `routeros-<topic>` for RouterOS knowledge and `routeros-tikoci-<tool>` for
 tikoci tool usage (with a suffix such as `-cli` when needed). Both are public
-skills with the same grounding requirements. Bare `tikoci-*` skills stay local;
-see [SETUP.md](SETUP.md#rule-what-belongs-in-this-repo).
+skills with the same grounding requirements. `tikoci-*` names are reserved for
+the house skills at <https://tikoci.dev/house/>; see
+[SETUP.md](SETUP.md#what-belongs-in-this-repo).
 
 1. Create `routeros-<name>/SKILL.md` with frontmatter:
 
@@ -94,6 +104,6 @@ see [SETUP.md](SETUP.md#rule-what-belongs-in-this-repo).
 
 2. `name` **must** equal the directory name, and the body should start with an H1.
 3. Run `make lint` and fix anything it reports.
-4. See [SETUP.md](SETUP.md) for symlinking the new skill into all four local
-   target dirs — `~/.copilot/skills`, `~/.claude/skills`, `~/.agents/skills`
-   (Codex) and `~/.hermes/skills` (`make link`).
+4. Run `make link` to try it in your own assistant (see
+   [SETUP.md](SETUP.md#skill-directories)), and add a row to the skills table
+   in [README.md](README.md).

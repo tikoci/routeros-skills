@@ -1,12 +1,33 @@
 version: 2
-# Keep the SHA-pinned third-party Actions in .github/workflows/** fresh.
-# Without this, pinning to a commit SHA (required by the CodeQL
-# actions/unpinned-tag rule) would silently freeze versions forever.
-# Dependabot bumps the SHA and updates the trailing `# vX.Y.Z` comment.
+# Based on the tikoci house config (tikoci-dependencies). Every third-party
+# Action in .github/workflows/** is pinned to a commit SHA with a `# vX.Y.Z`
+# comment; without this file those pins would silently freeze. Dependabot
+# bumps the SHA and the trailing comment.
 updates:
+  # Action SHAs, bumped weekly in one grouped PR.
   - package-ecosystem: github-actions
     directory: /
     schedule:
       interval: weekly
+    # Version updates wait until a release is a week old; security updates do not.
+    cooldown:
+      default-days: 7
+    groups:
+      github-actions:
+        patterns: ["*"]
     commit-message:
       prefix: ci
+
+  # Dev-only lint tooling in package.json and bun.lock (cspell,
+  # markdownlint-cli2), bumped weekly in one grouped PR.
+  - package-ecosystem: bun
+    directory: /
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    groups:
+      bun:
+        patterns: ["*"]
+    commit-message:
+      prefix: chore

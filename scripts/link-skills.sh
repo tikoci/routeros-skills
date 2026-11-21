@@ -14,12 +14,20 @@ fi
 script_dir=$(CDPATH='' cd -- "$(dirname -- "$0")" && pwd)
 repo=$(CDPATH='' cd -- "$script_dir/.." && pwd)
 
-targets="
-$HOME/.copilot/skills
-$HOME/.claude/skills
-$HOME/.agents/skills
-$HOME/.hermes/skills
-"
+# Skill directories to link into. SKILL_DIRS (whitespace-separated, no spaces
+# inside a path) replaces the default: ~/.agents/skills, plus the skills/
+# directory of each known harness whose home directory exists. A harness that
+# is not installed gets no directory created for it.
+if [ -n "${SKILL_DIRS:-}" ]; then
+  targets=$SKILL_DIRS
+else
+  targets="$HOME/.agents/skills"
+  for harness in .claude .copilot .hermes; do
+    if [ -d "$HOME/$harness" ]; then
+      targets="$targets $HOME/$harness/skills"
+    fi
+  done
+fi
 
 same_target() {
   actual=${1%/}

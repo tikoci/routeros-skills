@@ -1,2 +1,4 @@
 .DS_Store
 node_modules/
+# Temporary work (repro scripts, logs, drafts); never referenced by committed files.
+.scratch/

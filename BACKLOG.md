@@ -494,9 +494,10 @@ created) since it's the skill where LLM output quality is hardest to verify.
 
 ## Housekeeping
 
-- Consider a `CONTRIBUTING.md` or section in the README that codifies the
-  "grounding discipline" — each non-obvious claim cites a public tikoci repo,
-  mikrotik.com docs URL, `/console/inspect` query, or anchor test.
-- Consider adding a simple CI check that each SKILL.md starts with valid
-  frontmatter and a leading `# Title` heading, and that `references/*.md`
-  linked from a SKILL actually exist.
+- Done: [CONTRIBUTING.md](CONTRIBUTING.md#grounding-dont-record-what-you-havent-verified)
+  codifies the grounding discipline; CI checks SKILL.md frontmatter and the H1
+  (`scripts/check-skills.ts`) and relative links (lychee, offline).
+- Open: delete the stale remote `tikoci` branch (old `tikoci-*` and
+  `routeros-*` copies, no PR, nothing links to it) and the
+  `.gitignore merge=ours` line in `.gitattributes` with it, once the
+  maintainer agrees (#63).

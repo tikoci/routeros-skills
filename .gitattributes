@@ -1,1 +1,10 @@
+# LF in the repo and in every checkout, so a shell script cloned on Windows
+# still runs, and no diff is only line endings.
+* text=auto eol=lf
+
+# Generated: collapsed in GitHub diffs and left out of language stats.
+bun.lock linguist-generated=true
+
+# Kept the per-branch .gitignore when merging the old `tikoci` branch (needs a
+# local `merge.ours.driver`). Remove together with that branch.
 .gitignore merge=ours

@@ -1,20 +1,26 @@
-# routeros-skills — symlink management for AI assistant skill dirs.
+# routeros-skills — link the routeros-* skills into assistant skill directories.
 #
-# Each routeros-*/ dir in this repo must be symlinked into
-# ~/.copilot/skills/, ~/.claude/skills/, ~/.agents/skills/, and
-# ~/.hermes/skills/ or the assistant won't load it.
-# (A symlinked skill is still only picked up on a fresh assistant session.)
+# By default the targets are ~/.agents/skills plus the skills/ directory of
+# each installed harness (~/.claude, ~/.copilot, ~/.hermes). Set SKILL_DIRS to
+# a space-separated list to choose them yourself:
+#
+#   make link SKILL_DIRS="$HOME/.agents/skills $HOME/.claude/skills"
+#
+# A newly linked skill is picked up on a fresh assistant session.
 #
 #   make link    # idempotently symlink every routeros-* into every target dir
 #   make check   # report any missing/wrong/non-symlink target (non-zero exit)
-#   make unlink   # remove this repo's routeros-* symlinks from every target dir
+#   make unlink  # remove this repo's routeros-* symlinks from every target dir
+#   make targets # print the target dirs that link/check/unlink use
 #   make install-hooks  # run `make link` automatically after pull/checkout
 #   make lint    # run the same lint gate as CI (markdownlint + cspell + skill validator)
 
 REPO    := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
 LINKER  := $(REPO)/scripts/link-skills.sh
 
-.PHONY: link unlink check targets install-hooks lint
+export SKILL_DIRS
+
+.PHONY: link unlink check targets install-hooks lint lint-links
 
 link:
 	@$(LINKER) link
@@ -39,7 +45,7 @@ lint:
 	@cd "$(REPO)" && bun run check
 
 # Offline link + #anchor check (mirrors the CI `links` job). Requires `lychee`
-# on PATH (`brew install lychee`). External URLs are skipped — relative links
-# and same-/cross-file anchors only.
+# on PATH. External URLs are skipped: relative links and same-/cross-file
+# anchors only.
 lint-links:
 	@cd "$(REPO)" && lychee --offline --include-fragments --exclude-path node_modules './**/*.md'

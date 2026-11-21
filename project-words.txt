@@ -49,6 +49,7 @@ cmr
 coderabbit
 connectivitycheck
 conntrack
+cooldown
 coreutils
 CPE
 CPHEADER
@@ -149,6 +150,7 @@ Keymat
 keypair
 killpg
 KVM
+languagetool
 larsa
 lastuser
 LDP

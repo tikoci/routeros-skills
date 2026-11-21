@@ -1,22 +1,44 @@
 # yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
 #
-# CodeRabbit + GitHub Copilot review every PR in this org. This config makes
-# them COMPLEMENT the CI lint gate instead of duplicating it: spelling and
-# Markdown structure are already enforced deterministically by cspell +
-# markdownlint-cli2 (see .github/workflows/ci.yml), so CodeRabbit is steered
-# toward the thing only a reader can judge — RouterOS factual accuracy and the
-# repo's footnote-grounding discipline.
+# Based on the tikoci house config (tikoci-pr-flow, assets/coderabbit.example.yaml
+# at https://tikoci.dev/house/skills/tikoci-pr-flow/SKILL.md). CodeRabbit
+# reviews a PR once, when it is marked ready; the `skip-review` label keeps it
+# off a PR that needs no hosted review (typo, link fix, version bump). The
+# review allowance is small and shared across tikoci repos.
+#
+# This config makes CodeRabbit COMPLEMENT the CI lint gate instead of
+# duplicating it: spelling and Markdown structure are already enforced
+# deterministically by cspell + markdownlint-cli2 (see
+# .github/workflows/ci.yml), so CodeRabbit is steered toward the thing only a
+# reader can judge — RouterOS factual accuracy and the repo's
+# footnote-grounding discipline.
+#
+# Which config a review used depends on CodeRabbit's configuration source: a
+# PR that changes this file may be reviewed with main's copy. Each review's
+# "Review info" shows the file and commit it applied.
 
 language: en-US
+tone_instructions: >-
+  Terse and actionable. State the finding, the file and line, and the fix.
+  No praise, preamble, poems or filler.
 
 reviews:
   profile: chill
   request_changes_workflow: false
-  high_level_summary: true
   poem: false
+  in_progress_fortune: false
+  # The summary goes in the walkthrough comment, not the PR description, which
+  # becomes the squash commit's body.
+  high_level_summary: true
+  high_level_summary_in_walkthrough: true
   auto_review:
     enabled: true
     drafts: false
+    auto_incremental_review: false # one review per PR; later pushes get none
+    labels:
+      - "!skip-review" # a PR labeled skip-review gets no automatic review
+    ignore_usernames:
+      - "dependabot[bot]" # grouped action/package bumps; CI checks them
     base_branches:
       - main
 
@@ -24,6 +46,7 @@ reviews:
   path_filters:
     - "!bun.lock"
     - "!project-words.txt"
+    - "!.scratch/**"
 
   path_instructions:
     - path: "**/SKILL.md"
@@ -49,4 +72,7 @@ reviews:
   tools:
     # CI owns markdownlint; turning it off here avoids duplicate inline comments.
     markdownlint:
+      enabled: false
+    # Flags RouterOS terms and project names; cspell owns spelling.
+    languagetool:
       enabled: false
