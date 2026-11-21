@@ -62,11 +62,16 @@ about pairing, and a client's own CMR state was not in its announcements.[^beta5
 **A connect that stalls for about 85–90 s is a TCP connect timeout, not a CMR
 retry.** Two cases were measured, and the fix differs:
 
-- **7.26beta5, fresh boot:** the client's first SYN left through the **link**
-  interface but with the **management** NIC's source address (10.0.2.15). The
-  controller answered through its own default route, so the client never saw the
-  reply and gave up after about 85 s, then connected from the link address at
-  once. Why the first connect picks that source is not established.[^beta5]
+- **7.26beta5, client enabled right after its link address was added:** in
+  quickchr's two-router lab (11 of 11 fresh boots), the client's first SYN left
+  through the **link** interface with the **management** NIC's source address
+  (10.0.2.15, QEMU user-mode). Every lab router has that address, the controller
+  included, so no reply could reach the client: it gave up after about 85 s, then
+  connected from the link address at once. The four-router lab, which enables
+  clients minutes after addressing them, connected within 35 ms. Why the first
+  connect picks that source is not established. On a network with unique
+  management addresses such a SYN might be answered instead, and the session would
+  run from that address (untested).[^beta5]
 - **7.26beta1, route withdrawn:** while OSPF had no route to the controller, the
   connect left via the default route out of the management interface, and its
   retransmits kept that source after the route returned (about 90 s). A TCP reset
@@ -108,8 +113,9 @@ Both ends have a `pairing-requirement` of `none`, `password` or `confirm`. The
 controller has a global value (`/cmr`) and a per-device override
 (`/cmr/device`). There is no separate CMR pairing password: the controller-side
 `pair` takes a RouterOS login **on the client**, the client-side `pair` a login
-**on the controller**, needed only when the controller requires `password`. A
-bare `pair` on either side approves that side locally.[^docs]
+**on the controller**. Each side's login is needed only when the other side
+requires `password`; a bare `pair` on either side approves that side
+locally.[^docs][^lab]
 
 On 7.26beta5:
 
@@ -144,9 +150,9 @@ Both paired and half-paired rows read `pairing-requirement=none`, so that field
 proves nothing.[^beta5]
 
 **The client's `paired,connected` alone does not prove pairing.** A half-paired
-session is idle (TCP keepalives only), and after the controller's CMR service
-restarts the row is pending again with `cmr:waiting confirmation`: the
-controller's approval was never stored.[^beta5]
+session is idle (TCP keepalives only). After any reconnect (a controller CMR
+restart, or a reboot of either side) the client is pending again and the row reads
+`cmr:waiting confirmation`: the controller's approval was never stored.[^beta5]
 
 A readiness check: several rows can exist briefly after a reconnect, so pick the
 row for the client's identity with `connected=true`. Require that row to have an
@@ -155,8 +161,8 @@ Where it matters, confirm that `run-script` selects the device and returns its
 output. The controller's own row is the exception noted above.[^beta5]
 
 With the 7.26beta5 defaults (client `password`, device `confirm`), the manual's
-single credentialed command half-paired 7 of 9 fresh pairings on three boots;
-centrs saw anywhere from 0 to 100% per boot:[^beta5][^centrs]
+single credentialed command half-paired 7 of 9 fresh pairings on three boots, and
+24 of 26 on two more; centrs saw anywhere from 0 to 100% per boot:[^beta5][^centrs]
 
 ```routeros
 # Can half-pair on 7.26beta5:
@@ -164,8 +170,11 @@ centrs saw anywhere from 0 to 100% per boot:[^beta5][^centrs]
 ```
 
 Its output predicts the result: a last table ending `device:ok, cmr:ok` meant
-half-paired, `paired` meant committed, in every captured trial. These sequences
-were committed 9 of 9 each, interleaved on the same boots:[^beta5]
+half-paired, `paired` meant committed, in every captured trial. **Committed**
+means still paired after the controller's CMR service restarts (`/cmr set
+enabled=no`, then `enabled=yes`), a lab check that drops every client's session.
+These sequences were committed 9 of 9 each, interleaved on the same
+boots:[^beta5]
 
 ```routeros
 # 1. Controller approves first, then supplies the client's login:
@@ -184,8 +193,9 @@ were committed 9 of 9 each, interleaved on the same boots:[^beta5]
 /cmr/device/pair [find identity="lab-client"]               # on the controller
 ```
 
-To recover a half-paired client, run one bare `/cmr/device/pair` for it, then
-repeat the readiness check. That recovered 7 of 7 in the study.[^beta5]
+To recover a half-paired client, run one bare `/cmr/device/pair` for it; a reboot
+does not fix it. On 7.26beta5 that committed 24 of 24, and each repaired pairing
+survived a controller CMR restart.[^beta5]
 
 Client-side `none` accepts pairing without the client's approval; the
 controller's own `password` or `confirm` must still be satisfied. Use real client
@@ -365,18 +375,22 @@ findings page keeps the open questions.[^findings]
 [example]: https://github.com/tikoci/quickchr/tree/main/examples/cmr
 
 [^findings]: quickchr [`examples/cmr/FINDINGS.md`][findings] (CMR findings, by
-    build), read at quickchr `main` @ `5573f30`, 2026-11-20.
+    build), read at
+    [`9bce9f2`](https://github.com/tikoci/quickchr/blob/9bce9f237a1815cb5ae25cfde71b29cd45272073/examples/cmr/FINDINGS.md),
+    2026-11-20.
 [^beta5]: 7.26beta5 x86 CHR. quickchr CMR example studies on a Linux KVM host,
     2026-11-12 to 2026-11-14 (`evidence/7.26beta5/`: `pairing.json`,
-    `policy.json`, `recheck.json`, `wire.json`, `demo-probe.json`), summarized in
-    [FINDINGS.md][findings].
+    `policy.json`, `recheck.json`, `wire.json`, `demo-probe.json`), and the
+    `repair` study on an Intel Mac (HVF), 2026-11-20 (`repair.json`), summarized
+    in [FINDINGS.md][findings].
 [^lab]: The [CMR example][example]'s four-router lab (controller, transit, routed
     remote over OSPF, direct discovery client) with `--probe`. It passed on
     7.26beta1 (2026-10-05), on 7.26beta5 on a Linux KVM host
     (`evidence/7.26beta5/demo-probe.json`, where the `password`/`confirm` matrix
     case half-paired and was finished with a bare `pair`), and again for this
     revision on 2026-11-20, x86 CHR under HVF on an Intel Mac, quickchr `main` @
-    `5573f30`, where all six matrix cases committed.
+    `5573f30` (`evidence/7.26beta5/demo-probe-hvf-2026-11-20.json`), where all six
+    matrix cases committed.
 [^beta1]: 7.26beta1 only: the original quickchr lab (2026-10-05,
     [REPORT.md](https://github.com/tikoci/quickchr/blob/main/examples/cmr/REPORT.md)
     and `evidence/7.26beta1/`) or an earlier hardware session the same day (arm64
